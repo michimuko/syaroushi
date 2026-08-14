@@ -165,6 +165,7 @@
 | Push通知 | `laravel-notification-channels/webpush` | Web Push対応（差別化機能C） |
 | 権限管理（将来） | `spatie/laravel-permission` | 事務所内の役割分担が複雑化した場合に備える |
 | ファイル管理（将来） | `spatie/laravel-medialibrary` | 書類チェックリストのアップロード対応 |
+| ファイルストレージ（将来） | S3互換オブジェクトストレージ（SSE必須） | 特定個人情報を含み得る書類の保存。非公開バケット＋署名付きURL（7.7章） |
 | キュー監視 | `laravel/horizon` | 通知バッチの可視化。ポートフォリオとしての見せ場にもなる |
 | テスト | `pestphp/pest` | 期限計算ロジック（法定手続きの周期計算）は単体テストで担保すべき重要ロジック |
 
@@ -195,7 +196,10 @@ unique(client_id, procedure_type_id)
 id / **office_id(FK)** / client_id(FK) / procedure_type_id(FK) / title / due_date / status(enum: not_started, in_progress, documents_collected, submitted, completed) / assigned_user_id(FK, nullable) / completed_at(nullable) / notes / **custom_fields(json, nullable)** / **calc_result(json, nullable ※差別化機能Dの計算結果を保存)** / timestamps
 
 ### procedure_task_documents（書類チェックリスト）
-id / **office_id(FK)** / procedure_task_id(FK) / name / is_required / is_collected / collected_at(nullable) / file_path(nullable) / timestamps
+id / **office_id(FK)** / procedure_task_id(FK) / name / is_required / is_collected / collected_at(nullable) / file_path(nullable) / **retention_years(int, nullable)** / **retention_until(date, nullable ※collected_at確定時に自動計算、7.7章)** / timestamps
+
+### document_access_logs（書類の閲覧・ダウンロード記録、7.7章）
+id / office_id(FK) / procedure_task_document_id(FK) / user_id(FK) / action(enum: view, download) / accessed_at
 
 ### notification_logs（送信済み通知の記録）
 id / **office_id(FK)** / procedure_task_id(FK) / recipient_user_id(FK) / channel(enum: email, slack, line, webpush) / lead_days / sent_at
@@ -270,10 +274,47 @@ id / **office_id(FK)** / client_id(FK) / generated_by(FK→users.id) / period_st
 
 ---
 
+## 7.7 個人情報・特定個人情報（マイナンバー）取扱い要件（2026-08-15確定）
+
+### 法的背景
+
+社労士事務所は顧問先従業員の個人情報を通常業務で扱うため、**個人情報保護法**に加えて**マイナンバー法（番号法）**の上乗せ規制（特定個人情報）を受ける。現行DB設計にマイナンバー専用カラムはなく、`procedure_task_documents`（書類チェックリスト）経由のファイルアップロードにのみ特定個人情報が入り得る構造。ここと、`custom_fields`/`notes`等の自由入力欄が主な対応対象になる。
+
+### ファイルストレージ：クラウドストレージ＋サーバーサイド暗号化必須
+
+- 本番運用はS3互換のオブジェクトストレージ（AWS S3等）を採用。**サーバーサイド暗号化（SSE）を必須**とする
+- バケットは非公開（private）固定。直接公開URLは発行せず、**署名付きURL（一時URL、短い有効期限）でのみダウンロード可**とする（Laravelの`Storage::disk('s3')->temporaryUrl()`を利用）
+- 開発中（Phase1〜4）はローカルディスクで進めてよいが、`procedure_task_documents`の実装に着手するPhase5より前にS3ディスクへ切り替える
+- ダウンロード可否は7.5章の権限モデル（担当staff＋ownerのみ）にそのまま従う
+
+### 保存期限管理：検知・通知は自動、削除は人が実行
+
+- `procedure_task_documents`に `retention_years`(int, nullable) と `retention_until`(date, nullable) を追加。書類収集時（`collected_at`確定時）に、書類種別ごとの法定保存年数から`retention_until`を自動計算する
+- 新規バッチ **`documents:notify-retention-expiry`**（毎日実行）：`retention_until`を過ぎた書類を検出し、ownerに通知する。**自動削除はしない**（誤って必要書類を消す事故を避けるため）。削除はダッシュボード等に表示される「保存期限切れ書類一覧」からownerが確認のうえ手動実行する
+- 番号法が求める「不要になったら遅滞なく廃棄」の努力義務は、検知→通知→人の実行、という形で担保する
+
+### アクセスログ：閲覧・ダウンロードの記録
+
+特定個人情報の「取扱状況の把握」要件に対応するため、新テーブル `document_access_logs` を新設する。
+id / office_id(FK) / procedure_task_document_id(FK) / user_id(FK) / action(enum: view, download) / accessed_at
+
+### 自由入力欄への混入対策：検知して警告
+
+- `clients.custom_fields` / `procedure_tasks.custom_fields` / `procedure_tasks.notes` への保存時、マイナンバーらしき文字列（12桁の数字、ハイフン区切り含む）を正規表現で検知し、フロント側で警告表示する
+- **入力自体はブロックしない**（計算アシスタントの一時メモ等、正当な用途もあり得るため）。「マイナンバーは入力せず書類アップロードを使ってください」という警告に留める
+
+### 今後の実装への影響
+
+- Phase5（書類チェックリスト実装）着手前に、S3ディスク設定・署名付きURL・`retention_years`/`retention_until`・`document_access_logs`をまとめて実装する
+- 7.6章のマルチテナント設計（`office_id`によるテナント分離）は、個人情報保護の観点からも必須要件だったことを再確認しておく
+
+---
+
 ## 8. 主要バッチ処理（Laravel Scheduler）
 
 - **`procedures:generate-upcoming`**（毎日実行）：`client_procedure_subscriptions` を走査し、周期ルールに基づき先読み期間内の `procedure_tasks` を自動生成。同時に `procedure_type` に紐づく書類テンプレートから `procedure_task_documents` を生成
 - **`procedures:send-reminders`**（毎日実行）：期限との差分が通知ルールに一致するタスクを抽出し、`notification_logs` を確認しつつ重複なく通知（メール／Web Push／Slack／LINE）を送信
+- **`documents:notify-retention-expiry`**（毎日実行）：`procedure_task_documents.retention_until`を過ぎた書類を検出し、ownerに通知（7.7章）
 
 ---
 
@@ -301,7 +342,7 @@ id / **office_id(FK)** / client_id(FK) / generated_by(FK→users.id) / period_st
 2. **Phase 2 - マスタとタスク管理**：`procedure_types` シード投入（十数種類の法定手続き）、`client_procedure_subscriptions`、`procedure_tasks` の手動CRUD・一覧・フィルタ
 3. **Phase 3 - カレンダー**：FullCalendarでのタスク表示、ステータス色分け
 4. **Phase 4 - 自動化＋リアルタイム通知**：`procedures:generate-upcoming`／`procedures:send-reminders` バッチ実装、メール通知、**Web Push通知（差別化C・Level1）**
-5. **Phase 5 - 差別化モジュール①**：書類チェックリスト（`procedure_task_documents`）、**Excel移行アシスタント（差別化A）**
+5. **Phase 5 - 差別化モジュール①**：書類チェックリスト（`procedure_task_documents`、S3暗号化ストレージ・署名付きURL・保存期限管理・`document_access_logs`を含む、7.7章）、**Excel移行アシスタント（差別化A）**
 6. **Phase 6 - 差別化モジュール②**：**顧問先向けPDFレポート（差別化B）**、**計算アシスタント（差別化D、要：社労士Tools内容の実地確認後に要件化）**
 7. **Phase 7（発展）**：カスタムフィールドの本格活用（差別化E）、ダッシュボード集計の可視化強化、権限管理の高度化、事務所ごとの契約プラン・課金機能、**ネイティブデスクトップ通知アプリ（差別化C・Level2、Tauri）**（※マルチテナントのスキーマ自体はPhase1で対応済み。ここでは課金・プラン管理等の"SaaS運営機能"を指す）
 
@@ -317,6 +358,7 @@ id / **office_id(FK)** / client_id(FK) / generated_by(FK→users.id) / period_st
 ### 確定事項（2026-08-15追加）
 - ~~マルチテナント化のタイミングは未決定~~ → **確定**：v1から複数事務所対応。行レベル分離（`office_id`＋Global Scope）で実装する。詳細は7.5章（権限モデル）・7.6章（マルチテナント設計方針）を参照
 - owner/staffの権限マトリクスを確定（7.5章）
+- 個人情報・特定個人情報（マイナンバー）の取扱い要件を確定：S3暗号化ストレージ＋署名付きURL、保存期限の検知通知（削除は人が実行）、閲覧・DLログ（`document_access_logs`）、自由入力欄への混入検知警告。詳細は7.7章を参照
 
 ### 次にやってほしいこと（実装着手時の初手）
 1. Laravel Breeze（Inertia＋Vue3）でのプロジェクト初期化
