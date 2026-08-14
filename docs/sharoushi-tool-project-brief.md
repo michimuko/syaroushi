@@ -172,33 +172,39 @@
 
 ## 7. DB設計（詳細版・今回の差別化機能を反映）
 
+※マルチテナント方針（7.6章）に基づき、テナント配下の全テーブルに `office_id` を直接持たせる。以下の一覧では `office_id` の記載を省略せず明示する。
+
+### offices（社労士事務所＝テナント）
+id / name / contract_plan(仮, nullable) / timestamps
+
 ### users（事務所スタッフ）
-id / name / email / password / role(enum: owner, staff) / timestamps
+id / **office_id(FK)** / name / email / password / role(enum: owner, staff) / timestamps
 
 ### clients（顧問先）
-id / name / representative_name / address / phone / email / contract_start_date / status(enum: active, inactive) / assigned_user_id(FK) / notes / **custom_fields(json, nullable)** / timestamps
+id / **office_id(FK)** / name / representative_name / address / phone / email / contract_start_date / status(enum: active, inactive) / assigned_user_id(FK) / notes / **custom_fields(json, nullable)** / timestamps
 
 ### procedure_types（手続き種別マスタ）
 id / name / category / recurrence_type(enum: yearly, monthly, one_time, custom) / recurrence_rule(json) / default_lead_days(json, 例: [90,30,7]) / description / is_active / timestamps
+※`office_id`を持たない**全事務所共有のグローバルマスタ**（7.6章参照）
 
 ### client_procedure_subscriptions（顧問先×手続き種別の紐付け）
-id / client_id(FK) / procedure_type_id(FK) / is_active / lead_days_override(json, nullable) / timestamps
+id / **office_id(FK)** / client_id(FK) / procedure_type_id(FK) / is_active / lead_days_override(json, nullable) / timestamps
 unique(client_id, procedure_type_id)
 
 ### procedure_tasks（個別タスクインスタンス）
-id / client_id(FK) / procedure_type_id(FK) / title / due_date / status(enum: not_started, in_progress, documents_collected, submitted, completed) / assigned_user_id(FK, nullable) / completed_at(nullable) / notes / **custom_fields(json, nullable)** / **calc_result(json, nullable ※差別化機能Dの計算結果を保存)** / timestamps
+id / **office_id(FK)** / client_id(FK) / procedure_type_id(FK) / title / due_date / status(enum: not_started, in_progress, documents_collected, submitted, completed) / assigned_user_id(FK, nullable) / completed_at(nullable) / notes / **custom_fields(json, nullable)** / **calc_result(json, nullable ※差別化機能Dの計算結果を保存)** / timestamps
 
 ### procedure_task_documents（書類チェックリスト）
-id / procedure_task_id(FK) / name / is_required / is_collected / collected_at(nullable) / file_path(nullable) / timestamps
+id / **office_id(FK)** / procedure_task_id(FK) / name / is_required / is_collected / collected_at(nullable) / file_path(nullable) / timestamps
 
 ### notification_logs（送信済み通知の記録）
-id / procedure_task_id(FK) / recipient_user_id(FK) / channel(enum: email, slack, line, webpush) / lead_days / sent_at
+id / **office_id(FK)** / procedure_task_id(FK) / recipient_user_id(FK) / channel(enum: email, slack, line, webpush) / lead_days / sent_at
 
 ### push_subscriptions（差別化機能C：Web Push用）
-id / user_id(FK) / endpoint / public_key / auth_token / content_encoding / created_at
+id / **office_id(FK)** / user_id(FK) / endpoint / public_key / auth_token / content_encoding / created_at
 
 ### client_reports（差別化機能B：顧問先向けPDFレポートの生成履歴）
-id / client_id(FK) / generated_by(FK→users.id) / period_start / period_end / pdf_path / created_at
+id / **office_id(FK)** / client_id(FK) / generated_by(FK→users.id) / period_start / period_end / pdf_path / created_at
 
 ---
 
@@ -230,6 +236,40 @@ id / client_id(FK) / generated_by(FK→users.id) / period_start / period_end / p
 
 ---
 
+## 7.6 マルチテナント設計方針（2026-08-15確定）
+
+**方針転換**：当初「v1は単一事務所前提」としていたが、複数の社労士事務所（互いに無関係な顧客企業）が同一システムを共有利用する**マルチテナントSaaS**を最初から前提に設計する。単一事務所限定の簡易実装は行わない（拡張性・保守性を優先する恒久方針、CLAUDE.md参照）。
+
+### 採用方式：行レベル分離（共有DB + `office_id`によるテナント分離）
+
+- テナント本体として `offices` テーブルを新設
+- テナント配下の全テーブル（`users` / `clients` / `client_procedure_subscriptions` / `procedure_tasks` / `procedure_task_documents` / `notification_logs` / `push_subscriptions` / `client_reports`）に **`office_id`(FK, NOT NULL) を直接カラムとして持たせる**。親テーブル経由のJOINでの間接スコープには頼らない（クエリの安全性・速度を優先し、非正規化を許容する）
+- `procedure_types`（法定手続きマスタ）のみ `office_id` を持たない**全事務所共有のグローバルマスタ**とする。算定基礎届・36協定届などの法定手続きルールは全国共通のため、法改正時に1箇所を直せば全事務所へ反映される。事務所ごとの調整は既存の `client_procedure_subscriptions.lead_days_override` で吸収する
+
+### 安全性の担保：情報漏洩を構造的に防ぐ二重防御
+
+1. **Eloquent Global Scope**：`office_id` を持つ全モデルは共通の `BelongsToOffice` トレイトを継承必須とし、Global Scopeで `where office_id = auth()->user()->office_id` を自動的に強制する。個別クエリでのWHERE書き忘れによる他事務所データの漏洩を構造的に防ぐ
+2. **Policy層での二重チェック**：7.5章の権限モデル（Policyクラス）にも「対象レコードの`office_id`が自分の所属事務所と一致すること」を必ず組み込み、Global Scopeとの二重防御にする
+3. **`office_id`はクライアント入力を信用しない**：常にモデルの`creating`イベントで認証ユーザーの`office_id`から自動セットする（フォームやAPIパラメータから受け取らない）
+4. **専用テストの必須化**：「他事務所のデータには（URLを直接叩いても）一切アクセスできないこと」を検証するPestテストスイートを実装時に必ず用意する
+
+### 採用しなかった方式とその理由
+
+事務所ごとにDB/スキーマを物理分離する方式（`stancl/tenancy`等）は分離の堅牢性ではより高いが、事務所数の増加に比例してマイグレーション適用・バックアップ・DB接続管理の運用負荷が増える。開発者はバックエンド経験が浅く稼働時間も週5〜15時間であるため、現時点では運用が破綻するリスクの方が大きいと判断し不採用とした。ただし`office_id`によるスコープ設計は、将来「特定の大手事務所だけ専用DBに切り出したい」等の要件が出た場合にも土台として流用できる。
+
+### 認証・ログイン方式
+
+- v1ではサブドメイン等によるテナント振り分けは行わない。単一ドメインでログインし、ログイン後は `auth()->user()->office_id` から所属事務所が一意に決まる
+- メールアドレスはプラットフォーム全体でユニーク（事務所をまたいだ重複は不可）とする。1人が複数事務所を兼務するケースは稀と想定しv1では非対応。将来必要になれば `(office_id, email)` の複合ユニーク制約への変更で対応可能
+
+### 今後の実装への影響
+
+- **Phase1**（`users`/`clients`CRUD）の時点で`offices`テーブルと`office_id`を含めたマイグレーションを書く。ここを後回しにしない
+- 開発・シードデータとして最低1件の`offices`レコードを用意し、開発者自身の事務所として動作確認する
+- 価格モデル・課金体系（企画書11章、未決定）は`offices`テーブルを起点に設計する（`contract_plan`等のカラムを想定済み）
+
+---
+
 ## 8. 主要バッチ処理（Laravel Scheduler）
 
 - **`procedures:generate-upcoming`**（毎日実行）：`client_procedure_subscriptions` を走査し、周期ルールに基づき先読み期間内の `procedure_tasks` を自動生成。同時に `procedure_type` に紐づく書類テンプレートから `procedure_task_documents` を生成
@@ -257,13 +297,13 @@ id / client_id(FK) / generated_by(FK→users.id) / period_start / period_end / p
 
 ## 10. 実装ロードマップ（更新版）
 
-1. **Phase 1 - 土台**：Laravel Breeze（Inertia＋Vue3）セットアップ、認証、`users`／`clients` CRUD
+1. **Phase 1 - 土台**：Laravel Breeze（Inertia＋Vue3）セットアップ、認証、`offices`／`users`／`clients` CRUD（`office_id`によるマルチテナントスコープを最初から実装、7.6章参照）
 2. **Phase 2 - マスタとタスク管理**：`procedure_types` シード投入（十数種類の法定手続き）、`client_procedure_subscriptions`、`procedure_tasks` の手動CRUD・一覧・フィルタ
 3. **Phase 3 - カレンダー**：FullCalendarでのタスク表示、ステータス色分け
 4. **Phase 4 - 自動化＋リアルタイム通知**：`procedures:generate-upcoming`／`procedures:send-reminders` バッチ実装、メール通知、**Web Push通知（差別化C・Level1）**
 5. **Phase 5 - 差別化モジュール①**：書類チェックリスト（`procedure_task_documents`）、**Excel移行アシスタント（差別化A）**
 6. **Phase 6 - 差別化モジュール②**：**顧問先向けPDFレポート（差別化B）**、**計算アシスタント（差別化D、要：社労士Tools内容の実地確認後に要件化）**
-7. **Phase 7（発展）**：カスタムフィールドの本格活用（差別化E）、ダッシュボード集計の可視化強化、権限管理の高度化、マルチテナント化、**ネイティブデスクトップ通知アプリ（差別化C・Level2、Tauri）**
+7. **Phase 7（発展）**：カスタムフィールドの本格活用（差別化E）、ダッシュボード集計の可視化強化、権限管理の高度化、事務所ごとの契約プラン・課金機能、**ネイティブデスクトップ通知アプリ（差別化C・Level2、Tauri）**（※マルチテナントのスキーマ自体はPhase1で対応済み。ここでは課金・プラン管理等の"SaaS運営機能"を指す）
 
 ---
 
@@ -272,8 +312,11 @@ id / client_id(FK) / generated_by(FK→users.id) / period_start / period_end / p
 ### 未確定・要検証事項
 - 「社労士Tools」（tool.shlc.jp）の詳細な機能一覧は自動取得できていない。差別化機能D（計算アシスタント）を正式に要件化する前に、開発者自身がサイトを手動で確認するか、現役社労士へのヒアリングで具体的な計算ロジックの中身を確認すること
 - 社労夢・オフィスステーションが本当に「顧問先ごとの進捗ガントチャート機能」を持っていないかは、公開情報からの推測であり未確定。可能であれば無料トライアル等で一次確認を推奨
-- 価格モデル・課金体系（顧問先数に応じた従量制か、定額プランか）は未決定
-- マルチテナント化（複数事務所へのSaaS展開）のタイミングは未決定。v1は単一事務所前提
+- 価格モデル・課金体系（顧問先数に応じた従量制か、定額プランか）は未決定（`offices.contract_plan`を起点に設計する想定、7.6章参照）
+
+### 確定事項（2026-08-15追加）
+- ~~マルチテナント化のタイミングは未決定~~ → **確定**：v1から複数事務所対応。行レベル分離（`office_id`＋Global Scope）で実装する。詳細は7.5章（権限モデル）・7.6章（マルチテナント設計方針）を参照
+- owner/staffの権限マトリクスを確定（7.5章）
 
 ### 次にやってほしいこと（実装着手時の初手）
 1. Laravel Breeze（Inertia＋Vue3）でのプロジェクト初期化
