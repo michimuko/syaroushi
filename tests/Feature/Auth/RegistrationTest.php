@@ -8,6 +8,7 @@ test('registration screen can be rendered', function () {
 
 test('new users can register', function () {
     $response = $this->post('/register', [
+        'office_name' => 'テスト社労士事務所',
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'password',
@@ -16,4 +17,8 @@ test('new users can register', function () {
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));
+
+    $user = auth()->user();
+    expect($user->role)->toBe(App\Enums\UserRole::Owner);
+    expect($user->office->name)->toBe('テスト社労士事務所');
 });
