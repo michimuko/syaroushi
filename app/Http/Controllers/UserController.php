@@ -1,0 +1,118 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Enums\UserRole;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class UserController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * Userモデルはoffice_idのGlobal Scopeを持たないため（app/Models/User.php参照）、
+     * 必ずAuth::user()->office->users()経由でクエリし、他事務所のユーザーが
+     * 一覧に混ざらないようにする。
+     */
+    public function index(): Response
+    {
+        $this->authorize('viewAny', User::class);
+
+        $users = Auth::user()->office->users()
+            ->orderBy('role')
+            ->orderBy('name')
+            ->paginate(20);
+
+        return Inertia::render('Users/Index', [
+            'users' => $users,
+        ]);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(): Response
+    {
+        $this->authorize('create', User::class);
+
+        return Inertia::render('Users/Create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $this->authorize('create', User::class);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|lowercase|email|max:255|unique:users,email',
+            'role' => ['required', Rule::enum(UserRole::class)],
+            'password' => ['required', 'confirmed', 'string', 'min:8'],
+        ]);
+
+        // office_idはAssignsOfficeOnCreateがログイン中の事務所で自動付与する
+        User::create($validated);
+
+        return redirect()->route('users.index')->with('success', 'ユーザーを登録しました。');
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(User $user): Response
+    {
+        $this->authorize('update', $user);
+
+        return Inertia::render('Users/Edit', [
+            'targetUser' => $user->only(['id', 'name', 'email', 'role']),
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, User $user)
+    {
+        $this->authorize('update', $user);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'role' => ['required', Rule::enum(UserRole::class)],
+        ]);
+
+        if (
+            $user->isOwner()
+            && $validated['role'] === UserRole::Staff->value
+            && Auth::user()->office->users()->where('role', UserRole::Owner)->count() <= 1
+        ) {
+            throw ValidationException::withMessages([
+                'role' => '事務所に最低1名のオーナーが必要なため、降格できません。',
+            ]);
+        }
+
+        $user->update($validated);
+
+        return redirect()->route('users.index')->with('success', 'ユーザー情報を更新しました。');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(User $user)
+    {
+        $this->authorize('delete', $user);
+
+        $user->delete();
+
+        return redirect()->route('users.index')->with('success', 'ユーザーを削除しました。');
+    }
+}

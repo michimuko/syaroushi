@@ -90,6 +90,13 @@ watch(
                                 >
                                     手続き種別マスタ
                                 </NavLink>
+                                <NavLink
+                                    v-if="page.props.auth.user.role === 'owner'"
+                                    :href="route('users.index')"
+                                    :active="route().current('users.*')"
+                                >
+                                    ユーザー管理
+                                </NavLink>
                             </div>
                         </div>
 
@@ -222,6 +229,13 @@ watch(
                             :active="route().current('procedure-types.*')"
                         >
                             手続き種別マスタ
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            v-if="page.props.auth.user.role === 'owner'"
+                            :href="route('users.index')"
+                            :active="route().current('users.*')"
+                        >
+                            ユーザー管理
                         </ResponsiveNavLink>
                     </div>
 
