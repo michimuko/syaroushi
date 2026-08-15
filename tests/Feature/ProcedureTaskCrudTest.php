@@ -178,6 +178,107 @@ test('task creation requires client, procedure type, title, and due date', funct
     $response->assertSessionHasErrors(['client_id', 'procedure_type_id', 'title', 'due_date']);
 });
 
+test('an owner can view and update any task in their office', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $staff = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+    $task = ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'status' => 'not_started',
+    ]);
+
+    $this->actingAs($owner)->get(route('tasks.edit', $task))->assertOk();
+
+    $response = $this->actingAs($owner)->put(route('tasks.update', $task), [
+        'status' => 'in_progress',
+        'assigned_user_id' => $staff->id,
+        'notes' => 'ownerによる更新',
+    ]);
+
+    $response->assertRedirect(route('tasks.index'));
+
+    $task->refresh();
+    expect($task->status->value)->toBe('in_progress')
+        ->and($task->assigned_user_id)->toBe($staff->id)
+        ->and($task->notes)->toBe('ownerによる更新');
+});
+
+test('a staff member can update only their own assigned task', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)->create();
+    $otherStaff = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+
+    $ownTask = ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $staff->id,
+    ]);
+    $othersTask = ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $otherStaff->id,
+    ]);
+
+    $this->actingAs($staff)->put(route('tasks.update', $ownTask), [
+        'status' => 'in_progress',
+        'assigned_user_id' => $staff->id,
+        'notes' => '担当分の更新',
+    ])->assertRedirect(route('tasks.index'));
+    expect($ownTask->fresh()->status->value)->toBe('in_progress');
+
+    // 閲覧はできるが編集はできない（403）
+    $this->actingAs($staff)->get(route('tasks.edit', $othersTask))->assertOk();
+    $this->actingAs($staff)->put(route('tasks.update', $othersTask), [
+        'status' => 'in_progress',
+        'notes' => 'なりすまし更新試行',
+    ])->assertForbidden();
+    expect($othersTask->fresh()->status->value)->toBe('not_started');
+});
+
+test('completed_at is set when status becomes completed and cleared when reverted', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+    $task = ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'status' => 'submitted',
+    ]);
+
+    $this->actingAs($owner)->put(route('tasks.update', $task), [
+        'status' => 'completed',
+    ]);
+    expect($task->fresh()->completed_at)->not->toBeNull();
+
+    $this->actingAs($owner)->put(route('tasks.update', $task), [
+        'status' => 'in_progress',
+    ]);
+    expect($task->fresh()->completed_at)->toBeNull();
+});
+
+test('a task in another office returns 404 on edit and update', function () {
+    $office = Office::factory()->create();
+    $otherOffice = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $client = Client::factory()->for($otherOffice)->create();
+    $procedureType = ProcedureType::factory()->create();
+    $foreignTask = ProcedureTask::factory()->for($otherOffice)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+    ]);
+
+    $this->actingAs($user)->get(route('tasks.edit', $foreignTask))->assertNotFound();
+    $this->actingAs($user)->put(route('tasks.update', $foreignTask), [
+        'status' => 'completed',
+    ])->assertNotFound();
+});
+
 test('index query does not N+1 when loading relations', function () {
     $office = Office::factory()->create();
     $user = User::factory()->for($office)->create();

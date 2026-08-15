@@ -102,6 +102,50 @@ class ProcedureTaskController extends Controller
         return redirect()->route('tasks.index')->with('success', 'タスクを作成しました。');
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(ProcedureTask $task): Response
+    {
+        $this->authorize('view', $task);
+
+        $task->load(['client:id,name', 'procedureType:id,name,category']);
+
+        return Inertia::render('ProcedureTasks/Edit', [
+            'task' => $task,
+            'staffOptions' => $this->staffOptions(),
+            'canUpdate' => Auth::user()->can('update', $task),
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, ProcedureTask $task)
+    {
+        $this->authorize('update', $task);
+
+        $validated = $request->validate([
+            'status' => ['required', Rule::enum(TaskStatus::class)],
+            'assigned_user_id' => [
+                'nullable',
+                Rule::exists('users', 'id')->where('office_id', Auth::user()->office_id),
+            ],
+            'notes' => 'nullable|string|max:2000',
+        ]);
+
+        // 完了への遷移でcompleted_atを自動セット、完了からの後戻しではクリアする
+        if ($validated['status'] === TaskStatus::Completed->value && $task->status !== TaskStatus::Completed) {
+            $validated['completed_at'] = now();
+        } elseif ($validated['status'] !== TaskStatus::Completed->value && $task->status === TaskStatus::Completed) {
+            $validated['completed_at'] = null;
+        }
+
+        $task->update($validated);
+
+        return redirect()->route('tasks.index')->with('success', 'タスクを更新しました。');
+    }
+
     private function clientOptions(): Collection
     {
         return Auth::user()->office->clients()->select('id', 'name')->orderBy('name')->get();

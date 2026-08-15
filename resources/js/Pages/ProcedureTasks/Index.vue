@@ -199,6 +199,7 @@ const hasActiveFilters = () =>
                                     >
                                         担当者
                                     </th>
+                                    <th class="px-4 py-3" />
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 bg-white">
@@ -208,7 +209,12 @@ const hasActiveFilters = () =>
                                     class="hover:bg-gray-50"
                                 >
                                     <td class="px-4 py-3 font-medium text-gray-900">
-                                        {{ task.client?.name }}
+                                        <Link
+                                            :href="route('tasks.edit', task.id)"
+                                            class="hover:text-indigo-600"
+                                        >
+                                            {{ task.client?.name }}
+                                        </Link>
                                     </td>
                                     <td class="px-4 py-3 text-gray-600">
                                         {{ task.procedure_type?.name }}
@@ -237,10 +243,18 @@ const hasActiveFilters = () =>
                                             '未割当'
                                         }}
                                     </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <Link
+                                            :href="route('tasks.edit', task.id)"
+                                            class="text-sm text-indigo-600 hover:text-indigo-900"
+                                        >
+                                            詳細
+                                        </Link>
+                                    </td>
                                 </tr>
                                 <tr v-if="tasks.data.length === 0">
                                     <td
-                                        colspan="5"
+                                        colspan="6"
                                         class="px-4 py-12 text-center text-sm text-gray-500"
                                     >
                                         条件に一致するタスクがありません。
