@@ -29,5 +29,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(ProcedureTypeSeeder::class);
+        $this->call(PlatformAdminSeeder::class);
     }
 }
