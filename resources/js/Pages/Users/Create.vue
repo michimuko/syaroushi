@@ -32,14 +32,12 @@ const submit = () => {
             </h2>
         </template>
 
-        <div class="py-6">
-            <div class="mx-auto max-w-3xl sm:px-6 lg:px-8">
+        <div class="py-8">
+            <div class="mx-auto max-w-2xl sm:px-6 lg:px-8">
                 <div class="rounded-lg bg-white p-6 shadow-sm">
                     <form @submit.prevent="submit">
-                        <div
-                            class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-                        >
-                            <div>
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div class="sm:col-span-2">
                                 <InputLabel for="name">
                                     氏名
                                     <span class="text-red-600">*</span>
@@ -58,7 +56,7 @@ const submit = () => {
                                 />
                             </div>
 
-                            <div>
+                            <div class="sm:col-span-2">
                                 <InputLabel for="email">
                                     メールアドレス
                                     <span class="text-red-600">*</span>
@@ -77,7 +75,7 @@ const submit = () => {
                                 />
                             </div>
 
-                            <div>
+                            <div class="sm:col-span-2">
                                 <InputLabel for="role">
                                     権限
                                     <span class="text-red-600">*</span>
@@ -136,7 +134,7 @@ const submit = () => {
                         </div>
 
                         <div
-                            class="mt-5 flex items-center justify-end gap-3 border-t border-gray-100 pt-5"
+                            class="mt-6 flex items-center justify-end gap-3 border-t border-gray-100 pt-6"
                         >
                             <Link :href="route('users.index')">
                                 <SecondaryButton type="button">
