@@ -20,11 +20,14 @@ class ProcedureTaskFactory extends Factory
      */
     public function definition(): array
     {
+        $dueDate = $this->faker->dateTimeBetween('now', '+90 days');
+
         return [
             'client_id' => Client::factory(),
             'procedure_type_id' => ProcedureType::factory(),
             'title' => $this->faker->words(3, true),
-            'due_date' => $this->faker->dateTimeBetween('now', '+90 days'),
+            'due_date' => $dueDate,
+            'original_due_date' => $dueDate,
             'status' => TaskStatus::NotStarted,
             'assigned_user_id' => null,
             'completed_at' => null,
@@ -44,9 +47,14 @@ class ProcedureTaskFactory extends Factory
 
     public function overdue(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'due_date' => now()->subDays(3),
-            'status' => TaskStatus::InProgress,
-        ]);
+        return $this->state(function (array $attributes) {
+            $dueDate = now()->subDays(3);
+
+            return [
+                'due_date' => $dueDate,
+                'original_due_date' => $dueDate,
+                'status' => TaskStatus::InProgress,
+            ];
+        });
     }
 }

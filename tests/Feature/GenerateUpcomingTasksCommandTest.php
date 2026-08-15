@@ -70,6 +70,38 @@ it('does not create duplicate tasks when run twice', function () {
     CarbonImmutable::setTestNow();
 });
 
+it('does not regenerate a duplicate task after its due_date has been corrected', function () {
+    CarbonImmutable::setTestNow('2026-06-01');
+
+    $office = Office::factory()->create();
+    $client = Client::factory()->for($office)->create(['status' => ClientStatus::Active]);
+    $procedureType = ProcedureType::factory()->create([
+        'recurrence_type' => RecurrenceType::Yearly,
+        'recurrence_rule' => ['month' => 7, 'day' => 10],
+    ]);
+    ClientProcedureSubscription::factory()->create([
+        'office_id' => $office->id,
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'is_active' => true,
+    ]);
+
+    $this->artisan('procedures:generate-upcoming');
+
+    $task = ProcedureTask::query()->sole();
+    expect($task->original_due_date->toDateString())->toBe('2026-07-10');
+
+    // 事務所側が期限を訂正（due_dateのみ変更、original_due_dateは維持）
+    $task->update(['due_date' => '2026-07-17']);
+
+    $this->artisan('procedures:generate-upcoming');
+
+    expect(ProcedureTask::query()->count())->toBe(1);
+    expect($task->fresh()->due_date->toDateString())->toBe('2026-07-17');
+
+    CarbonImmutable::setTestNow();
+});
+
 it('skips inactive subscriptions, inactive clients, and inactive procedure types', function () {
     CarbonImmutable::setTestNow('2026-06-01');
 

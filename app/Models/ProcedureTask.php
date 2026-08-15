@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'procedure_type_id',
     'title',
     'due_date',
+    'original_due_date',
     'status',
     'assigned_user_id',
     'completed_at',
@@ -36,6 +37,7 @@ class ProcedureTask extends Model
     {
         return [
             'due_date' => 'date',
+            'original_due_date' => 'date',
             'status' => TaskStatus::class,
             'completed_at' => 'datetime',
             'custom_fields' => 'array',

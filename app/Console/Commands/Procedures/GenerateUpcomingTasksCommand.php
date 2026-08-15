@@ -37,15 +37,18 @@ class GenerateUpcomingTasksCommand extends Command
             $dueDates = $resolver->resolveDueDates($subscription->procedureType, $from, $until);
 
             foreach ($dueDates as $dueDate) {
+                // original_due_dateをキーに重複判定する。due_date自体はユーザーが後から訂正できるため、
+                // 訂正後に再度このバッチが走っても同じ期間のタスクが重複生成されないようにする
                 $task = ProcedureTask::query()->firstOrCreate(
                     [
                         'client_id' => $subscription->client_id,
                         'procedure_type_id' => $subscription->procedure_type_id,
-                        'due_date' => $dueDate->toDateString(),
+                        'original_due_date' => $dueDate->toDateString(),
                     ],
                     [
                         'office_id' => $subscription->office_id,
                         'title' => $subscription->procedureType->name,
+                        'due_date' => $dueDate->toDateString(),
                         'status' => TaskStatus::NotStarted,
                         'assigned_user_id' => $subscription->client->assigned_user_id,
                     ],
