@@ -19,16 +19,15 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Confirm Password" />
+        <Head title="パスワードの確認" />
 
-        <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-            This is a secure area of the application. Please confirm your
-            password before continuing.
+        <div class="mb-4 text-sm text-gray-600">
+            これはシステムの重要な操作を行う画面です。続行する前にパスワードを確認してください。
         </div>
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="password" value="Password" />
+                <InputLabel for="password" value="パスワード" />
                 <TextInput
                     id="password"
                     type="password"
@@ -47,7 +46,7 @@ const submit = () => {
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >
-                    Confirm
+                    確認する
                 </PrimaryButton>
             </div>
         </form>
