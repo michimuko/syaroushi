@@ -50,6 +50,14 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if (! Auth::user()->office->is_active) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'ご利用の事務所は現在ご利用いただけません。運営事務局へお問い合わせください。',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 
