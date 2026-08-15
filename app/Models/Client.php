@@ -47,4 +47,9 @@ class Client extends Model
     {
         return $this->hasMany(ClientProcedureSubscription::class);
     }
+
+    public function procedureTasks(): HasMany
+    {
+        return $this->hasMany(ProcedureTask::class);
+    }
 }
