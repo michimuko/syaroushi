@@ -74,9 +74,17 @@ function resetFilters() {
                 >
                     顧問先
                 </h2>
-                <Link :href="route('clients.create')">
-                    <PrimaryButton>新規登録</PrimaryButton>
-                </Link>
+                <div class="flex items-center gap-3">
+                    <a
+                        :href="route('clients.export', { format: 'xlsx' })"
+                        class="text-sm text-gray-600 underline hover:text-gray-900"
+                    >
+                        Excelエクスポート
+                    </a>
+                    <Link :href="route('clients.create')">
+                        <PrimaryButton>新規登録</PrimaryButton>
+                    </Link>
+                </div>
             </div>
         </template>
 
