@@ -37,7 +37,7 @@ watch(
 
         <!-- Sidebar -->
         <aside
-            class="fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 -translate-x-full transform flex-col border-r border-gray-200 bg-white transition-transform duration-200 ease-in-out sm:static sm:translate-x-0"
+            class="fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 -translate-x-full transform flex-col border-r border-gray-200 bg-white transition-transform duration-200 ease-in-out sm:translate-x-0"
             :class="{ 'translate-x-0': showingSidebar }"
         >
             <div
@@ -131,7 +131,7 @@ watch(
         </aside>
 
         <!-- Main column -->
-        <div class="flex min-w-0 flex-1 flex-col">
+        <div class="flex min-w-0 flex-1 flex-col sm:ml-64">
             <!-- Mobile top bar -->
             <div
                 class="flex h-14 shrink-0 items-center gap-3 border-b border-gray-100 bg-white px-4 sm:hidden"
