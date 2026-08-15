@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\UserRole;
+
 test('registration screen can be rendered', function () {
     $response = $this->get('/register');
 
@@ -19,6 +21,6 @@ test('new users can register', function () {
     $response->assertRedirect(route('dashboard', absolute: false));
 
     $user = auth()->user();
-    expect($user->role)->toBe(App\Enums\UserRole::Owner);
+    expect($user->role)->toBe(UserRole::Owner);
     expect($user->office->name)->toBe('テスト社労士事務所');
 });
