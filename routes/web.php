@@ -35,7 +35,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/procedure-types/{procedureType}/edit', [ProcedureTypeController::class, 'edit'])->name('procedure-types.edit');
     Route::put('/procedure-types/{procedureType}', [ProcedureTypeController::class, 'update'])->name('procedure-types.update');
 
-    Route::resource('tasks', ProcedureTaskController::class)->only(['index']);
+    Route::resource('tasks', ProcedureTaskController::class)->only(['index', 'create', 'store']);
 });
 
 require __DIR__.'/auth.php';

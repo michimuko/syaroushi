@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Enums\TaskStatus;
 use App\Models\ProcedureTask;
+use App\Models\ProcedureType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -46,9 +49,66 @@ class ProcedureTaskController extends Controller
                 'due_from' => $validated['due_from'] ?? '',
                 'due_to' => $validated['due_to'] ?? '',
             ],
-            'clientOptions' => Auth::user()->office->clients()->select('id', 'name')->orderBy('name')->get(),
-            'staffOptions' => Auth::user()->office->users()->select('id', 'name')->orderBy('name')->get(),
+            'clientOptions' => $this->clientOptions(),
+            'staffOptions' => $this->staffOptions(),
             'statusOptions' => array_map(fn (TaskStatus $status) => $status->value, TaskStatus::cases()),
         ]);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(): Response
+    {
+        $this->authorize('create', ProcedureTask::class);
+
+        return Inertia::render('ProcedureTasks/Create', [
+            'clientOptions' => $this->clientOptions(),
+            'staffOptions' => $this->staffOptions(),
+            'procedureTypeOptions' => ProcedureType::query()
+                ->where('is_active', true)
+                ->orderBy('category')
+                ->orderBy('name')
+                ->get(['id', 'name', 'category']),
+        ]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $this->authorize('create', ProcedureTask::class);
+
+        $validated = $request->validate([
+            'client_id' => [
+                'required',
+                Rule::exists('clients', 'id')->where('office_id', Auth::user()->office_id),
+            ],
+            'procedure_type_id' => 'required|exists:procedure_types,id',
+            'title' => 'required|string|max:255',
+            'due_date' => 'required|date',
+            'assigned_user_id' => [
+                'nullable',
+                Rule::exists('users', 'id')->where('office_id', Auth::user()->office_id),
+            ],
+            'notes' => 'nullable|string|max:2000',
+        ]);
+
+        $validated['status'] = TaskStatus::NotStarted;
+
+        ProcedureTask::create($validated);
+
+        return redirect()->route('tasks.index')->with('success', 'タスクを作成しました。');
+    }
+
+    private function clientOptions(): Collection
+    {
+        return Auth::user()->office->clients()->select('id', 'name')->orderBy('name')->get();
+    }
+
+    private function staffOptions(): Collection
+    {
+        return Auth::user()->office->users()->select('id', 'name')->orderBy('name')->get();
     }
 }

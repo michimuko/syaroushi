@@ -111,6 +111,73 @@ test('index screen requires authentication', function () {
     $response->assertRedirect(route('login'));
 });
 
+test('create screen can be rendered with client/staff/procedure type options', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    Client::factory()->for($office)->create();
+    ProcedureType::factory()->create(['is_active' => true]);
+    ProcedureType::factory()->create(['is_active' => false]);
+
+    $response = $this->actingAs($user)->get(route('tasks.create'));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('ProcedureTasks/Create')
+        ->has('clientOptions', 1)
+        ->has('procedureTypeOptions', 1)
+    );
+});
+
+test('a task can be created with valid data and defaults to not_started', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+
+    $response = $this->actingAs($user)->post(route('tasks.store'), [
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'title' => $procedureType->name,
+        'due_date' => '2026-10-10',
+        'assigned_user_id' => '',
+        'notes' => '',
+    ]);
+
+    $response->assertRedirect(route('tasks.index'));
+
+    $task = ProcedureTask::sole();
+    expect($task->status->value)->toBe('not_started')
+        ->and($task->office_id)->toBe($office->id)
+        ->and($task->due_date->toDateString())->toBe('2026-10-10');
+});
+
+test('a task cannot be created for a client belonging to another office', function () {
+    $office = Office::factory()->create();
+    $otherOffice = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $foreignClient = Client::factory()->for($otherOffice)->create();
+    $procedureType = ProcedureType::factory()->create();
+
+    $response = $this->actingAs($user)->post(route('tasks.store'), [
+        'client_id' => $foreignClient->id,
+        'procedure_type_id' => $procedureType->id,
+        'title' => 'テスト',
+        'due_date' => '2026-10-10',
+    ]);
+
+    $response->assertSessionHasErrors('client_id');
+    expect(ProcedureTask::count())->toBe(0);
+});
+
+test('task creation requires client, procedure type, title, and due date', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+
+    $response = $this->actingAs($user)->post(route('tasks.store'), []);
+
+    $response->assertSessionHasErrors(['client_id', 'procedure_type_id', 'title', 'due_date']);
+});
+
 test('index query does not N+1 when loading relations', function () {
     $office = Office::factory()->create();
     $user = User::factory()->for($office)->create();

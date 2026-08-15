@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TaskStatusBadge from '@/Components/TaskStatusBadge.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 
@@ -63,9 +64,16 @@ const hasActiveFilters = () =>
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800">
-                タスク一覧
-            </h2>
+            <div class="flex items-center justify-between">
+                <h2
+                    class="text-xl font-semibold leading-tight text-gray-800"
+                >
+                    タスク一覧
+                </h2>
+                <Link :href="route('tasks.create')">
+                    <PrimaryButton>新規作成</PrimaryButton>
+                </Link>
+            </div>
         </template>
 
         <div class="py-8">
