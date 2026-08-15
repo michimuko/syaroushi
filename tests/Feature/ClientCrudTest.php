@@ -141,3 +141,62 @@ test('create screen requires authentication', function () {
 
     $response->assertRedirect(route('login'));
 });
+
+test('edit screen can be rendered for a client in the same office', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+
+    $response = $this->actingAs($user)->get(route('clients.edit', $client));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('Clients/Edit')
+        ->where('client.id', $client->id)
+    );
+});
+
+test('a client can be updated with valid data', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create(['name' => '旧顧問先名']);
+
+    $response = $this->actingAs($user)->put(route('clients.update', $client), [
+        'name' => '新顧問先名',
+        'status' => 'inactive',
+    ]);
+
+    $response->assertRedirect(route('clients.index'));
+
+    expect($client->fresh()->name)->toBe('新顧問先名')
+        ->and($client->fresh()->status)->toBe(ClientStatus::Inactive);
+});
+
+test('a client in another office cannot be edited or updated (404)', function () {
+    $office = Office::factory()->create();
+    $otherOffice = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $foreignClient = Client::factory()->for($otherOffice)->create();
+
+    $this->actingAs($user)->get(route('clients.edit', $foreignClient))->assertNotFound();
+
+    $this->actingAs($user)->put(route('clients.update', $foreignClient), [
+        'name' => '改ざん試行',
+        'status' => 'active',
+    ])->assertNotFound();
+
+    expect($foreignClient->fresh()->name)->not->toBe('改ざん試行');
+});
+
+test('client update requires a name', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+
+    $response = $this->actingAs($user)->put(route('clients.update', $client), [
+        'name' => '',
+        'status' => 'active',
+    ]);
+
+    $response->assertSessionHasErrors('name');
+});
