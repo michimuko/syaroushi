@@ -240,6 +240,66 @@ function save() {
                     :documents="task.documents"
                     :can-manage="canUpdate"
                 />
+
+                <div class="mt-6 rounded-lg bg-white p-6 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-semibold text-gray-700">
+                            計算アシスタント
+                        </h3>
+                        <Link
+                            v-if="canUpdate"
+                            :href="
+                                route('calc-assistant.paid-leave', {
+                                    task_id: task.id,
+                                })
+                            "
+                            class="text-sm text-indigo-600 underline hover:text-indigo-800"
+                        >
+                            有給休暇の付与日数を計算する
+                        </Link>
+                    </div>
+
+                    <div
+                        v-if="task.calc_result?.type === 'annual_paid_leave'"
+                        class="mt-3"
+                    >
+                        <p class="text-xs text-gray-500">
+                            計算日時：{{ task.calc_result.calculated_at }}
+                        </p>
+                        <table
+                            class="mt-2 min-w-full divide-y divide-gray-200"
+                        >
+                            <thead>
+                                <tr
+                                    class="text-left text-xs font-semibold uppercase tracking-wider text-gray-500"
+                                >
+                                    <th class="py-2">基準日</th>
+                                    <th class="py-2">勤続</th>
+                                    <th class="py-2">付与日数</th>
+                                </tr>
+                            </thead>
+                            <tbody
+                                class="divide-y divide-gray-100 text-sm text-gray-700"
+                            >
+                                <tr
+                                    v-for="row in task.calc_result.schedule"
+                                    :key="row.grant_date"
+                                >
+                                    <td class="py-2">{{ row.grant_date }}</td>
+                                    <td class="py-2">
+                                        {{ row.service_label }}
+                                    </td>
+                                    <td class="py-2">
+                                        {{ row.days_granted }}日
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p v-else class="mt-2 text-xs text-gray-500">
+                        まだ計算結果は保存されていません。
+                    </p>
+                </div>
             </div>
         </div>
 

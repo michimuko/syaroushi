@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CalcAssistantController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ClientExportController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\ClientImportController;
 use App\Http\Controllers\ClientProcedureSubscriptionController;
 use App\Http\Controllers\ClientReportController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProcedureTaskCalcResultController;
 use App\Http\Controllers\ProcedureTaskController;
 use App\Http\Controllers\ProcedureTaskDocumentController;
 use App\Http\Controllers\ProcedureTaskExportController;
@@ -70,6 +72,11 @@ Route::middleware('auth:web')->group(function () {
 
     Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
     Route::get('/calendar/events', [CalendarController::class, 'events'])->name('calendar.events');
+
+    Route::get('/calc-assistant', [CalcAssistantController::class, 'index'])->name('calc-assistant.index');
+    Route::get('/calc-assistant/paid-leave', [CalcAssistantController::class, 'showPaidLeave'])->name('calc-assistant.paid-leave');
+    Route::post('/calc-assistant/paid-leave', [CalcAssistantController::class, 'calculatePaidLeave'])->name('calc-assistant.paid-leave.calculate');
+    Route::put('/tasks/{task}/calc-result', [ProcedureTaskCalcResultController::class, 'update'])->name('tasks.calc-result.update');
 
     Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
     Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy'])->name('push-subscriptions.destroy');

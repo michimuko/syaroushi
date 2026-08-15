@@ -82,6 +82,12 @@ watch(
                     カレンダー
                 </ResponsiveNavLink>
                 <ResponsiveNavLink
+                    :href="route('calc-assistant.index')"
+                    :active="route().current('calc-assistant.*')"
+                >
+                    計算アシスタント
+                </ResponsiveNavLink>
+                <ResponsiveNavLink
                     :href="route('procedure-types.index')"
                     :active="route().current('procedure-types.*')"
                 >
