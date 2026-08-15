@@ -1,14 +1,11 @@
 <script setup>
 import { ref, watch } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-import Dropdown from '@/Components/Dropdown.vue';
-import DropdownLink from '@/Components/DropdownLink.vue';
-import NavLink from '@/Components/NavLink.vue';
 import PushNotificationToggle from '@/Components/PushNotificationToggle.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 
-const showingNavigationDropdown = ref(false);
+const showingSidebar = ref(false);
 
 const page = usePage();
 const flashMessage = ref('');
@@ -30,279 +27,183 @@ watch(
 </script>
 
 <template>
-    <div>
-        <div class="min-h-screen bg-gray-100">
-            <nav class="border-b border-gray-100 bg-white">
-                <!-- Primary Navigation Menu -->
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div class="flex h-16 justify-between">
-                        <div class="flex">
-                            <!-- Logo -->
-                            <div class="flex shrink-0 items-center gap-2">
-                                <Link
-                                    :href="route('dashboard')"
-                                    class="flex items-center gap-2"
-                                >
-                                    <ApplicationLogo
-                                        class="block h-8 w-auto fill-current text-indigo-600"
-                                    />
-                                    <span
-                                        class="hidden text-base font-semibold text-gray-800 md:inline"
-                                    >
-                                        社労士業務進捗管理
-                                    </span>
-                                </Link>
-                            </div>
+    <div class="flex min-h-screen bg-gray-100">
+        <!-- Mobile backdrop -->
+        <div
+            v-if="showingSidebar"
+            class="fixed inset-0 z-30 bg-gray-900/50 sm:hidden"
+            @click="showingSidebar = false"
+        />
 
-                            <!-- Navigation Links -->
-                            <div
-                                class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
-                            >
-                                <NavLink
-                                    :href="route('dashboard')"
-                                    :active="route().current('dashboard')"
-                                >
-                                    ダッシュボード
-                                </NavLink>
-                                <NavLink
-                                    :href="route('clients.index')"
-                                    :active="route().current('clients.*')"
-                                >
-                                    顧問先
-                                </NavLink>
-                                <NavLink
-                                    :href="route('tasks.index')"
-                                    :active="route().current('tasks.*')"
-                                >
-                                    タスク
-                                </NavLink>
-                                <NavLink
-                                    :href="route('calendar.index')"
-                                    :active="route().current('calendar.*')"
-                                >
-                                    カレンダー
-                                </NavLink>
-                                <NavLink
-                                    :href="route('procedure-types.index')"
-                                    :active="
-                                        route().current('procedure-types.*')
-                                    "
-                                >
-                                    手続き種別マスタ
-                                </NavLink>
-                                <NavLink
-                                    v-if="page.props.auth.user.role === 'owner'"
-                                    :href="route('users.index')"
-                                    :active="route().current('users.*')"
-                                >
-                                    ユーザー管理
-                                </NavLink>
-                            </div>
-                        </div>
-
-                        <div class="hidden sm:ms-6 sm:flex sm:items-center">
-                            <PushNotificationToggle />
-
-                            <!-- Settings Dropdown -->
-                            <div class="relative ms-3">
-                                <Dropdown align="right" width="48">
-                                    <template #trigger>
-                                        <span class="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
-                                            >
-                                                {{ $page.props.auth.user.name }}
-
-                                                <svg
-                                                    class="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fill-rule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clip-rule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </template>
-
-                                    <template #content>
-                                        <DropdownLink
-                                            :href="route('profile.edit')"
-                                        >
-                                            プロフィール
-                                        </DropdownLink>
-                                        <DropdownLink
-                                            :href="route('logout')"
-                                            method="post"
-                                            as="button"
-                                        >
-                                            ログアウト
-                                        </DropdownLink>
-                                    </template>
-                                </Dropdown>
-                            </div>
-                        </div>
-
-                        <!-- Hamburger -->
-                        <div class="-me-2 flex items-center sm:hidden">
-                            <button
-                                @click="
-                                    showingNavigationDropdown =
-                                        !showingNavigationDropdown
-                                "
-                                class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
-                            >
-                                <svg
-                                    class="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        :class="{
-                                            hidden: showingNavigationDropdown,
-                                            'inline-flex':
-                                                !showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        :class="{
-                                            hidden: !showingNavigationDropdown,
-                                            'inline-flex':
-                                                showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Responsive Navigation Menu -->
-                <div
-                    :class="{
-                        block: showingNavigationDropdown,
-                        hidden: !showingNavigationDropdown,
-                    }"
-                    class="sm:hidden"
+        <!-- Sidebar -->
+        <aside
+            class="fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 -translate-x-full transform flex-col border-r border-gray-200 bg-white transition-transform duration-200 ease-in-out sm:static sm:translate-x-0"
+            :class="{ 'translate-x-0': showingSidebar }"
+        >
+            <div
+                class="flex h-16 shrink-0 items-center gap-2 border-b border-gray-100 px-4"
+            >
+                <Link
+                    :href="route('dashboard')"
+                    class="flex items-center gap-2"
                 >
-                    <div class="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            :href="route('dashboard')"
-                            :active="route().current('dashboard')"
-                        >
-                            ダッシュボード
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            :href="route('clients.index')"
-                            :active="route().current('clients.*')"
-                        >
-                            顧問先
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            :href="route('tasks.index')"
-                            :active="route().current('tasks.*')"
-                        >
-                            タスク
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            :href="route('calendar.index')"
-                            :active="route().current('calendar.*')"
-                        >
-                            カレンダー
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            :href="route('procedure-types.index')"
-                            :active="route().current('procedure-types.*')"
-                        >
-                            手続き種別マスタ
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            v-if="page.props.auth.user.role === 'owner'"
-                            :href="route('users.index')"
-                            :active="route().current('users.*')"
-                        >
-                            ユーザー管理
-                        </ResponsiveNavLink>
-                    </div>
+                    <ApplicationLogo
+                        class="h-8 w-auto shrink-0 fill-current text-indigo-600"
+                    />
+                    <span class="text-base font-semibold text-gray-800">
+                        社労士業務進捗管理
+                    </span>
+                </Link>
+            </div>
 
-                    <!-- Responsive Settings Options -->
-                    <div class="border-t border-gray-200 pb-1 pt-4">
-                        <div class="flex items-center justify-between px-4">
-                            <div>
-                                <div
-                                    class="text-base font-medium text-gray-800"
-                                >
-                                    {{ $page.props.auth.user.name }}
-                                </div>
-                                <div class="text-sm font-medium text-gray-500">
-                                    {{ $page.props.auth.user.email }}
-                                </div>
-                            </div>
-                            <PushNotificationToggle />
-                        </div>
-
-                        <div class="mt-3 space-y-1">
-                            <ResponsiveNavLink :href="route('profile.edit')">
-                                プロフィール
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                :href="route('logout')"
-                                method="post"
-                                as="button"
-                            >
-                                ログアウト
-                            </ResponsiveNavLink>
-                        </div>
-                    </div>
-                </div>
+            <nav class="flex-1 space-y-1 overflow-y-auto px-2 py-4">
+                <ResponsiveNavLink
+                    :href="route('dashboard')"
+                    :active="route().current('dashboard')"
+                >
+                    ダッシュボード
+                </ResponsiveNavLink>
+                <ResponsiveNavLink
+                    :href="route('clients.index')"
+                    :active="route().current('clients.*')"
+                >
+                    顧問先
+                </ResponsiveNavLink>
+                <ResponsiveNavLink
+                    :href="route('tasks.index')"
+                    :active="route().current('tasks.*')"
+                >
+                    タスク
+                </ResponsiveNavLink>
+                <ResponsiveNavLink
+                    :href="route('calendar.index')"
+                    :active="route().current('calendar.*')"
+                >
+                    カレンダー
+                </ResponsiveNavLink>
+                <ResponsiveNavLink
+                    :href="route('procedure-types.index')"
+                    :active="route().current('procedure-types.*')"
+                >
+                    手続き種別マスタ
+                </ResponsiveNavLink>
+                <ResponsiveNavLink
+                    v-if="page.props.auth.user.role === 'owner'"
+                    :href="route('users.index')"
+                    :active="route().current('users.*')"
+                >
+                    ユーザー管理
+                </ResponsiveNavLink>
             </nav>
 
-            <!-- Page Heading -->
-            <header
-                class="bg-white shadow"
-                v-if="$slots.header"
+            <div class="shrink-0 border-t border-gray-100 p-4">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                        <p
+                            class="truncate text-sm font-medium text-gray-800"
+                        >
+                            {{ page.props.auth.user.name }}
+                        </p>
+                        <p class="truncate text-xs text-gray-500">
+                            {{ page.props.auth.user.email }}
+                        </p>
+                    </div>
+                    <PushNotificationToggle />
+                </div>
+
+                <div class="mt-3 space-y-1">
+                    <Link
+                        :href="route('profile.edit')"
+                        class="block rounded-md px-2 py-1.5 text-sm text-gray-600 transition duration-150 ease-in-out hover:bg-gray-50 hover:text-gray-900"
+                    >
+                        プロフィール
+                    </Link>
+                    <Link
+                        :href="route('logout')"
+                        method="post"
+                        as="button"
+                        class="block w-full rounded-md px-2 py-1.5 text-start text-sm text-gray-600 transition duration-150 ease-in-out hover:bg-gray-50 hover:text-gray-900"
+                    >
+                        ログアウト
+                    </Link>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main column -->
+        <div class="flex min-w-0 flex-1 flex-col">
+            <!-- Mobile top bar -->
+            <div
+                class="flex h-14 shrink-0 items-center gap-3 border-b border-gray-100 bg-white px-4 sm:hidden"
             >
-                <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                <button
+                    type="button"
+                    aria-label="メニューを開閉する"
+                    @click="showingSidebar = !showingSidebar"
+                    class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
+                >
+                    <svg
+                        class="h-6 w-6"
+                        stroke="currentColor"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            :class="{
+                                hidden: showingSidebar,
+                                'inline-flex': !showingSidebar,
+                            }"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16"
+                        />
+                        <path
+                            :class="{
+                                hidden: !showingSidebar,
+                                'inline-flex': showingSidebar,
+                            }"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"
+                        />
+                    </svg>
+                </button>
+                <span class="text-sm font-semibold text-gray-800">
+                    社労士業務進捗管理
+                </span>
+            </div>
+
+            <!-- Page Heading -->
+            <header class="bg-white shadow" v-if="$slots.header">
+                <div class="px-4 py-6 sm:px-6 lg:px-8">
                     <slot name="header" />
                 </div>
             </header>
 
             <!-- Page Content -->
-            <main>
+            <main class="flex-1">
                 <slot />
             </main>
-
-            <!-- Flash Toast -->
-            <Transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="opacity-0 translate-y-2"
-                enter-to-class="opacity-100 translate-y-0"
-                leave-active-class="transition ease-in duration-150"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
-            >
-                <div
-                    v-if="flashMessage"
-                    class="fixed bottom-6 right-6 z-50 rounded-md bg-gray-900 px-4 py-3 text-sm text-white shadow-lg"
-                    role="status"
-                >
-                    {{ flashMessage }}
-                </div>
-            </Transition>
         </div>
+
+        <!-- Flash Toast -->
+        <Transition
+            enter-active-class="transition ease-out duration-200"
+            enter-from-class="opacity-0 translate-y-2"
+            enter-to-class="opacity-100 translate-y-0"
+            leave-active-class="transition ease-in duration-150"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+        >
+            <div
+                v-if="flashMessage"
+                class="fixed bottom-6 right-6 z-50 rounded-md bg-gray-900 px-4 py-3 text-sm text-white shadow-lg"
+                role="status"
+            >
+                {{ flashMessage }}
+            </div>
+        </Transition>
     </div>
 </template>
