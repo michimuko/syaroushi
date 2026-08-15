@@ -12,8 +12,10 @@ const tools = [
     },
     {
         name: '時間外労働時間・36協定上限チェック',
-        description: '準備中です。',
-        available: false,
+        description:
+            '月次の時間外・休日労働時間から、単月100時間未満、複数月平均80時間以内、年720時間以内、月45時間超は年6回までの上限を自動判定します。',
+        href: () => route('calc-assistant.overtime-limit'),
+        available: true,
     },
     {
         name: '勤務シフト表作成支援',

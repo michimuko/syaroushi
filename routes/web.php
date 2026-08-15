@@ -76,6 +76,8 @@ Route::middleware('auth:web')->group(function () {
     Route::get('/calc-assistant', [CalcAssistantController::class, 'index'])->name('calc-assistant.index');
     Route::get('/calc-assistant/paid-leave', [CalcAssistantController::class, 'showPaidLeave'])->name('calc-assistant.paid-leave');
     Route::post('/calc-assistant/paid-leave', [CalcAssistantController::class, 'calculatePaidLeave'])->name('calc-assistant.paid-leave.calculate');
+    Route::get('/calc-assistant/overtime-limit', [CalcAssistantController::class, 'showOvertimeLimit'])->name('calc-assistant.overtime-limit');
+    Route::post('/calc-assistant/overtime-limit', [CalcAssistantController::class, 'calculateOvertimeLimit'])->name('calc-assistant.overtime-limit.calculate');
     Route::put('/tasks/{task}/calc-result', [ProcedureTaskCalcResultController::class, 'update'])->name('tasks.calc-result.update');
 
     Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');

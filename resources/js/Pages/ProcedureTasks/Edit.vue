@@ -246,17 +246,28 @@ function save() {
                         <h3 class="text-sm font-semibold text-gray-700">
                             計算アシスタント
                         </h3>
-                        <Link
-                            v-if="canUpdate"
-                            :href="
-                                route('calc-assistant.paid-leave', {
-                                    task_id: task.id,
-                                })
-                            "
-                            class="text-sm text-indigo-600 underline hover:text-indigo-800"
-                        >
-                            有給休暇の付与日数を計算する
-                        </Link>
+                        <div v-if="canUpdate" class="flex items-center gap-3">
+                            <Link
+                                :href="
+                                    route('calc-assistant.paid-leave', {
+                                        task_id: task.id,
+                                    })
+                                "
+                                class="text-sm text-indigo-600 underline hover:text-indigo-800"
+                            >
+                                有給休暇の付与日数を計算する
+                            </Link>
+                            <Link
+                                :href="
+                                    route('calc-assistant.overtime-limit', {
+                                        task_id: task.id,
+                                    })
+                                "
+                                class="text-sm text-indigo-600 underline hover:text-indigo-800"
+                            >
+                                36協定上限をチェックする
+                            </Link>
+                        </div>
                     </div>
 
                     <div
@@ -282,7 +293,7 @@ function save() {
                                 class="divide-y divide-gray-100 text-sm text-gray-700"
                             >
                                 <tr
-                                    v-for="row in task.calc_result.schedule"
+                                    v-for="row in task.calc_result.result"
                                     :key="row.grant_date"
                                 >
                                     <td class="py-2">{{ row.grant_date }}</td>
@@ -296,6 +307,46 @@ function save() {
                             </tbody>
                         </table>
                     </div>
+
+                    <div
+                        v-else-if="task.calc_result?.type === 'overtime_limit_check'"
+                        class="mt-3"
+                    >
+                        <p class="text-xs text-gray-500">
+                            計算日時：{{ task.calc_result.calculated_at }}
+                        </p>
+                        <p class="mt-1 text-sm">
+                            月45時間超：{{
+                                task.calc_result.result.summary
+                                    .months_exceeding_45_count
+                            }}ヶ月／6ヶ月まで
+                            <span
+                                v-if="
+                                    !task.calc_result.result.summary
+                                        .months_exceeding_45_within_allowance
+                                "
+                                class="ml-1 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-700"
+                            >
+                                上限超過
+                            </span>
+                        </p>
+                        <p class="mt-1 text-sm">
+                            年間時間外合計：{{
+                                task.calc_result.result.summary
+                                    .annual_overtime_hours
+                            }}時間／720時間
+                            <span
+                                v-if="
+                                    !task.calc_result.result.summary
+                                        .annual_overtime_within_720
+                                "
+                                class="ml-1 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-700"
+                            >
+                                上限超過
+                            </span>
+                        </p>
+                    </div>
+
                     <p v-else class="mt-2 text-xs text-gray-500">
                         まだ計算結果は保存されていません。
                     </p>

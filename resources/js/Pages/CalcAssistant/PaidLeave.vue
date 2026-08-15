@@ -28,7 +28,7 @@ const submit = () => {
 const saveForm = useForm({
     type: 'annual_paid_leave',
     input: {},
-    schedule: [],
+    result: [],
 });
 
 const saveToTask = () => {
@@ -36,7 +36,7 @@ const saveToTask = () => {
         hire_date: props.result.hire_date,
         weekly_scheduled_days: props.result.weekly_scheduled_days,
     };
-    saveForm.schedule = props.result.schedule;
+    saveForm.result = props.result.schedule;
     saveForm.put(route('tasks.calc-result.update', props.task.id), {
         preserveScroll: true,
     });

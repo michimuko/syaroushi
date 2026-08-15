@@ -19,14 +19,14 @@ class ProcedureTaskCalcResultController extends Controller
         $validated = $request->validate([
             'type' => 'required|string|max:100',
             'input' => 'required|array',
-            'schedule' => 'required|array',
+            'result' => 'required|array',
         ]);
 
         $task->update([
             'calc_result' => [
                 'type' => $validated['type'],
                 'input' => $validated['input'],
-                'schedule' => $validated['schedule'],
+                'result' => $validated['result'],
                 'calculated_at' => now()->toDateTimeString(),
             ],
         ]);
