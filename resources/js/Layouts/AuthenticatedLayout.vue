@@ -70,6 +70,12 @@ watch(
                                     タスク
                                 </NavLink>
                                 <NavLink
+                                    :href="route('calendar.index')"
+                                    :active="route().current('calendar.*')"
+                                >
+                                    カレンダー
+                                </NavLink>
+                                <NavLink
                                     :href="route('procedure-types.index')"
                                     :active="
                                         route().current('procedure-types.*')
@@ -195,6 +201,12 @@ watch(
                             :active="route().current('tasks.*')"
                         >
                             タスク
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('calendar.index')"
+                            :active="route().current('calendar.*')"
+                        >
+                            カレンダー
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             :href="route('procedure-types.index')"
