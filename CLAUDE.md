@@ -8,7 +8,7 @@
 
 詳細な企画背景・市場調査・DB設計・ロードマップは **[docs/sharoushi-tool-project-brief.md](docs/sharoushi-tool-project-brief.md)** を参照（フルコンテキスト）。
 
-現在のステータス：**Phase 5一部完了**（2026-08-16）。DB設計・権限モデル・マルチテナント方針・個人情報保護要件は確定済み（企画書7章・11章）。Phase 1〜4（認証・顧問先/タスクCRUD・カレンダー・自動生成バッチ・メール/Web Push通知）に加え、Phase 5のうちS3(MinIO)切り替え・`procedure_task_documents`書類チェックリスト・署名付きURL・保存期限管理（`retention_years`/`retention_until`＋`documents:notify-retention-expiry`バッチ）・`document_access_logs`まで実装済み。Phase 5の残タスクは（1）自由入力欄（`custom_fields`/`notes`）へのマイナンバーらしき文字列の検知警告（企画書7.7章）、（2）Excel移行アシスタント（差別化A）の2点。
+現在のステータス：**Phase 5完了**（2026-08-16）。DB設計・権限モデル・マルチテナント方針・個人情報保護要件は確定済み（企画書7章・11章）。Phase 1〜4（認証・顧問先/タスクCRUD・カレンダー・自動生成バッチ・メール/Web Push通知）に加え、Phase 5のS3(MinIO)切り替え・`procedure_task_documents`書類チェックリスト・署名付きURL・保存期限管理（`retention_years`/`retention_until`＋`documents:notify-retention-expiry`バッチ）・`document_access_logs`・自由入力欄（`custom_fields`/`notes`）へのマイナンバーらしき文字列検知警告（企画書7.7章）・Excel移行アシスタント（差別化A、顧問先/手続きタスクのインポートウィザード＋CSV/xlsxエクスポート、`app/Services/Import/`、owner限定）まで実装済み。
 
 企画書11章に記載の残る未確定事項（価格モデルの具体数値、計算アシスタント機能Dの正式仕様など）はPhase6〜7着手時に詰める。
 
