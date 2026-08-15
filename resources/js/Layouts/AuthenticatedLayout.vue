@@ -63,6 +63,14 @@ watch(
                                 >
                                     顧問先
                                 </NavLink>
+                                <NavLink
+                                    :href="route('procedure-types.index')"
+                                    :active="
+                                        route().current('procedure-types.*')
+                                    "
+                                >
+                                    手続き種別マスタ
+                                </NavLink>
                             </div>
                         </div>
 
@@ -175,6 +183,12 @@ watch(
                             :active="route().current('clients.*')"
                         >
                             顧問先
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('procedure-types.index')"
+                            :active="route().current('procedure-types.*')"
+                        >
+                            手続き種別マスタ
                         </ResponsiveNavLink>
                     </div>
 
