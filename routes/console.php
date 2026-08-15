@@ -12,3 +12,4 @@ Artisan::command('inspire', function () {
 Schedule::command('procedures:generate-upcoming')->daily();
 Schedule::command('procedures:send-reminders')->daily();
 Schedule::command('documents:notify-retention-expiry')->daily();
+Schedule::command('imports:cleanup-stale-files')->daily();
