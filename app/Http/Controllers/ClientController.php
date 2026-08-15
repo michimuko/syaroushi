@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\ClientStatus;
 use App\Models\Client;
+use App\Models\ProcedureType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -79,6 +80,14 @@ class ClientController extends Controller
         return Inertia::render('Clients/Edit', [
             'client' => $client,
             'staffOptions' => Auth::user()->office->users()->select('id', 'name')->orderBy('name')->get(),
+            'procedureTypes' => ProcedureType::query()
+                ->where('is_active', true)
+                ->orderBy('category')
+                ->orderBy('name')
+                ->get(['id', 'name', 'category']),
+            'subscribedProcedureTypeIds' => $client->procedureSubscriptions()
+                ->where('is_active', true)
+                ->pluck('procedure_type_id'),
         ]);
     }
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ClientProcedureSubscriptionController;
 use App\Http\Controllers\ProcedureTypeController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -26,6 +27,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('clients', ClientController::class);
+    Route::put('/clients/{client}/procedure-subscriptions', [ClientProcedureSubscriptionController::class, 'update'])
+        ->name('clients.procedure-subscriptions.update');
 
     Route::get('/procedure-types', [ProcedureTypeController::class, 'index'])->name('procedure-types.index');
     Route::get('/procedure-types/{procedureType}/edit', [ProcedureTypeController::class, 'edit'])->name('procedure-types.edit');

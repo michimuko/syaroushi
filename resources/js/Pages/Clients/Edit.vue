@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -10,6 +11,8 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 const props = defineProps({
     client: Object,
     staffOptions: Array,
+    procedureTypes: Array,
+    subscribedProcedureTypeIds: Array,
 });
 
 const form = useForm({
@@ -28,6 +31,25 @@ const form = useForm({
 
 const submit = () => {
     form.put(route('clients.update', props.client.id));
+};
+
+const procedureTypesByCategory = computed(() => {
+    const groups = {};
+    for (const procedureType of props.procedureTypes) {
+        (groups[procedureType.category] ??= []).push(procedureType);
+    }
+    return groups;
+});
+
+const subscriptionForm = useForm({
+    procedure_type_ids: [...props.subscribedProcedureTypeIds],
+});
+
+const submitSubscriptions = () => {
+    subscriptionForm.put(
+        route('clients.procedure-subscriptions.update', props.client.id),
+        { preserveScroll: true },
+    );
 };
 </script>
 
@@ -237,6 +259,72 @@ const submit = () => {
                                     保存する
                                 </PrimaryButton>
                             </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 対象手続き（購読設定） -->
+                <div class="mt-6 rounded-lg bg-white p-6 shadow-sm">
+                    <h3 class="text-sm font-semibold text-gray-700">
+                        対象手続き
+                    </h3>
+                    <p class="mt-1 text-xs text-gray-500">
+                        この顧問先に適用する法定手続きを選択してください。
+                    </p>
+
+                    <form
+                        @submit.prevent="submitSubscriptions"
+                        class="mt-4 space-y-5"
+                    >
+                        <div
+                            v-for="(items, category) in procedureTypesByCategory"
+                            :key="category"
+                        >
+                            <h4
+                                class="text-xs font-semibold uppercase tracking-wider text-gray-500"
+                            >
+                                {{ category }}
+                            </h4>
+                            <div
+                                class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2"
+                            >
+                                <label
+                                    v-for="procedureType in items"
+                                    :key="procedureType.id"
+                                    class="flex items-center gap-2"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        :value="procedureType.id"
+                                        v-model="
+                                            subscriptionForm.procedure_type_ids
+                                        "
+                                        class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                    />
+                                    <span class="text-sm text-gray-700">{{
+                                        procedureType.name
+                                    }}</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <InputError
+                            :message="
+                                subscriptionForm.errors.procedure_type_ids
+                            "
+                        />
+
+                        <div
+                            class="flex items-center justify-end border-t border-gray-100 pt-4"
+                        >
+                            <PrimaryButton
+                                :class="{
+                                    'opacity-25': subscriptionForm.processing,
+                                }"
+                                :disabled="subscriptionForm.processing"
+                            >
+                                対象手続きを保存する
+                            </PrimaryButton>
                         </div>
                     </form>
                 </div>
