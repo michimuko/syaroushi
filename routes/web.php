@@ -5,6 +5,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ClientExportController;
 use App\Http\Controllers\ClientImportController;
 use App\Http\Controllers\ClientProcedureSubscriptionController;
+use App\Http\Controllers\ClientReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProcedureTaskController;
 use App\Http\Controllers\ProcedureTaskDocumentController;
@@ -45,6 +46,10 @@ Route::middleware('auth:web')->group(function () {
     Route::resource('users', UserController::class)->except(['show']);
     Route::put('/clients/{client}/procedure-subscriptions', [ClientProcedureSubscriptionController::class, 'update'])
         ->name('clients.procedure-subscriptions.update');
+
+    Route::get('/clients/{client}/reports', [ClientReportController::class, 'index'])->name('clients.reports.index');
+    Route::post('/clients/{client}/reports', [ClientReportController::class, 'store'])->name('clients.reports.store');
+    Route::get('/clients/{client}/reports/{report}/download', [ClientReportController::class, 'download'])->name('clients.reports.download');
 
     Route::get('/procedure-types', [ProcedureTypeController::class, 'index'])->name('procedure-types.index');
     Route::get('/procedure-types/{procedureType}/edit', [ProcedureTypeController::class, 'edit'])->name('procedure-types.edit');

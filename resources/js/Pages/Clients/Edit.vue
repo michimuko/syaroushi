@@ -62,9 +62,17 @@ const submitSubscriptions = () => {
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800">
-                {{ client.name }}の編集
-            </h2>
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold leading-tight text-gray-800">
+                    {{ client.name }}の編集
+                </h2>
+                <Link
+                    :href="route('clients.reports.index', client.id)"
+                    class="text-sm text-gray-600 underline hover:text-gray-900"
+                >
+                    進捗レポート
+                </Link>
+            </div>
         </template>
 
         <div class="py-8">

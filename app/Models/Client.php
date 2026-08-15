@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ClientStatus;
 use App\Models\Concerns\BelongsToOffice;
+use Carbon\CarbonImmutable;
 use Database\Factories\ClientFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -51,5 +52,21 @@ class Client extends Model
     public function procedureTasks(): HasMany
     {
         return $this->hasMany(ProcedureTask::class);
+    }
+
+    public function reports(): HasMany
+    {
+        return $this->hasMany(ClientReport::class);
+    }
+
+    /**
+     * 進捗レポート（企画書5-B）向けに、期限日が指定期間内の手続きタスクを取得する。
+     */
+    public function tasksDueBetween(CarbonImmutable $periodStart, CarbonImmutable $periodEnd)
+    {
+        return $this->procedureTasks()
+            ->whereBetween('due_date', [$periodStart->toDateString(), $periodEnd->toDateString()])
+            ->orderBy('due_date')
+            ->get();
     }
 }
