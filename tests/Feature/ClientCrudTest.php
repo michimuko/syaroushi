@@ -71,3 +71,73 @@ test('index query does not N+1 when loading assigned users', function () {
 
     expect($queryCount)->toBeLessThan(10);
 });
+
+test('create screen can be rendered with staff options from the same office', function () {
+    $office = Office::factory()->create();
+    $otherOffice = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    User::factory()->for($otherOffice)->create();
+
+    $response = $this->actingAs($user)->get(route('clients.create'));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('Clients/Create')
+        ->has('staffOptions', 1)
+    );
+});
+
+test('a client can be created with valid data', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+
+    $response = $this->actingAs($user)->post(route('clients.store'), [
+        'name' => '新規株式会社',
+        'representative_name' => '山田太郎',
+        'phone' => '03-1234-5678',
+        'email' => 'contact@example.com',
+        'status' => 'active',
+        'assigned_user_id' => '',
+        'notes' => '',
+    ]);
+
+    $response->assertRedirect(route('clients.index'));
+
+    $client = Client::sole();
+    expect($client->name)->toBe('新規株式会社')
+        ->and($client->office_id)->toBe($office->id);
+});
+
+test('client creation requires a name', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+
+    $response = $this->actingAs($user)->post(route('clients.store'), [
+        'name' => '',
+        'status' => 'active',
+    ]);
+
+    $response->assertSessionHasErrors('name');
+    expect(Client::count())->toBe(0);
+});
+
+test('a client cannot be created with an assigned_user_id from another office', function () {
+    $office = Office::factory()->create();
+    $otherOffice = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $foreignStaff = User::factory()->for($otherOffice)->create();
+
+    $response = $this->actingAs($user)->post(route('clients.store'), [
+        'name' => '不正割当テスト',
+        'status' => 'active',
+        'assigned_user_id' => $foreignStaff->id,
+    ]);
+
+    $response->assertSessionHasErrors('assigned_user_id');
+});
+
+test('create screen requires authentication', function () {
+    $response = $this->get(route('clients.create'));
+
+    $response->assertRedirect(route('login'));
+});
