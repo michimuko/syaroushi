@@ -59,11 +59,11 @@ const submit = () => {
             </h2>
         </template>
 
-        <div class="py-8">
+        <div class="py-6">
             <div class="mx-auto max-w-2xl sm:px-6 lg:px-8">
                 <div class="rounded-lg bg-white p-6 shadow-sm">
                     <form @submit.prevent="submit">
-                        <div class="grid grid-cols-1 gap-4">
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
                                 <InputLabel for="client_id">
                                     顧問先
@@ -187,7 +187,7 @@ const submit = () => {
                                 />
                             </div>
 
-                            <div>
+                            <div class="sm:col-span-2">
                                 <InputLabel for="notes">メモ</InputLabel>
                                 <textarea
                                     id="notes"
@@ -203,7 +203,7 @@ const submit = () => {
                         </div>
 
                         <div
-                            class="mt-6 flex items-center justify-end gap-3 border-t border-gray-100 pt-6"
+                            class="mt-5 flex items-center justify-end gap-3 border-t border-gray-100 pt-5"
                         >
                             <Link :href="route('tasks.index')">
                                 <SecondaryButton type="button">

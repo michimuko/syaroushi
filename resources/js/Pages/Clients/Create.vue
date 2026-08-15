@@ -38,8 +38,8 @@ const submit = () => {
             </h2>
         </template>
 
-        <div class="py-8">
-            <div class="mx-auto max-w-3xl sm:px-6 lg:px-8">
+        <div class="py-6">
+            <div class="mx-auto max-w-4xl sm:px-6 lg:px-8">
                 <div class="rounded-lg bg-white p-6 shadow-sm">
                     <form @submit.prevent="submit">
                         <!-- 基本情報 -->
@@ -48,8 +48,10 @@ const submit = () => {
                         >
                             基本情報
                         </h3>
-                        <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div class="sm:col-span-2">
+                        <div
+                            class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                        >
+                            <div>
                                 <InputLabel for="name">
                                     顧問先名
                                     <span class="text-red-600">*</span>
@@ -103,11 +105,13 @@ const submit = () => {
 
                         <!-- 連絡先 -->
                         <h3
-                            class="mt-6 border-t border-gray-100 pt-6 text-sm font-semibold text-gray-700"
+                            class="mt-5 border-t border-gray-100 pt-5 text-sm font-semibold text-gray-700"
                         >
                             連絡先
                         </h3>
-                        <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div
+                            class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                        >
                             <div>
                                 <InputLabel for="phone">電話番号</InputLabel>
                                 <TextInput
@@ -136,7 +140,7 @@ const submit = () => {
                                 />
                             </div>
 
-                            <div class="sm:col-span-2">
+                            <div>
                                 <InputLabel for="address">住所</InputLabel>
                                 <TextInput
                                     id="address"
@@ -153,11 +157,13 @@ const submit = () => {
 
                         <!-- 管理情報 -->
                         <h3
-                            class="mt-6 border-t border-gray-100 pt-6 text-sm font-semibold text-gray-700"
+                            class="mt-5 border-t border-gray-100 pt-5 text-sm font-semibold text-gray-700"
                         >
                             管理情報
                         </h3>
-                        <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div
+                            class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                        >
                             <div>
                                 <InputLabel for="status">ステータス</InputLabel>
                                 <select
@@ -198,12 +204,12 @@ const submit = () => {
                                 />
                             </div>
 
-                            <div class="sm:col-span-2">
+                            <div class="sm:col-span-2 lg:col-span-1">
                                 <InputLabel for="notes">メモ</InputLabel>
                                 <textarea
                                     id="notes"
                                     v-model="form.notes"
-                                    rows="4"
+                                    rows="3"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 />
                                 <InputError
@@ -214,7 +220,7 @@ const submit = () => {
                         </div>
 
                         <div
-                            class="mt-6 flex items-center justify-end gap-3 border-t border-gray-100 pt-6"
+                            class="mt-5 flex items-center justify-end gap-3 border-t border-gray-100 pt-5"
                         >
                             <Link :href="route('clients.index')">
                                 <SecondaryButton type="button">

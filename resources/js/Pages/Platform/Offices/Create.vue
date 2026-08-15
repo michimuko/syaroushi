@@ -31,15 +31,17 @@ const submit = () => {
             </h2>
         </template>
 
-        <div class="py-8">
-            <div class="mx-auto max-w-2xl sm:px-6 lg:px-8">
+        <div class="py-6">
+            <div class="mx-auto max-w-3xl sm:px-6 lg:px-8">
                 <div class="rounded-lg bg-white p-6 shadow-sm">
                     <form @submit.prevent="submit">
                         <h3 class="text-sm font-semibold text-gray-700">
                             事務所情報
                         </h3>
-                        <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div class="sm:col-span-2">
+                        <div
+                            class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2"
+                        >
+                            <div>
                                 <InputLabel for="office_name">
                                     事務所名
                                     <span class="text-red-600">*</span>
@@ -58,7 +60,7 @@ const submit = () => {
                                 />
                             </div>
 
-                            <div class="sm:col-span-2">
+                            <div>
                                 <InputLabel for="contract_plan">
                                     契約プラン
                                 </InputLabel>
@@ -76,12 +78,14 @@ const submit = () => {
                         </div>
 
                         <h3
-                            class="mt-6 border-t border-gray-100 pt-6 text-sm font-semibold text-gray-700"
+                            class="mt-5 border-t border-gray-100 pt-5 text-sm font-semibold text-gray-700"
                         >
                             最初のオーナーアカウント
                         </h3>
-                        <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div class="sm:col-span-2">
+                        <div
+                            class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+                        >
+                            <div class="lg:col-span-2">
                                 <InputLabel for="owner_name">
                                     氏名
                                     <span class="text-red-600">*</span>
@@ -99,7 +103,7 @@ const submit = () => {
                                 />
                             </div>
 
-                            <div class="sm:col-span-2">
+                            <div class="lg:col-span-2">
                                 <InputLabel for="owner_email">
                                     メールアドレス
                                     <span class="text-red-600">*</span>
@@ -117,7 +121,7 @@ const submit = () => {
                                 />
                             </div>
 
-                            <div>
+                            <div class="lg:col-span-2">
                                 <InputLabel for="owner_password">
                                     パスワード
                                     <span class="text-red-600">*</span>
@@ -136,7 +140,7 @@ const submit = () => {
                                 />
                             </div>
 
-                            <div>
+                            <div class="lg:col-span-2">
                                 <InputLabel for="owner_password_confirmation">
                                     パスワード（確認用）
                                     <span class="text-red-600">*</span>
@@ -159,7 +163,7 @@ const submit = () => {
                         </div>
 
                         <div
-                            class="mt-6 flex items-center justify-end gap-3 border-t border-gray-100 pt-6"
+                            class="mt-5 flex items-center justify-end gap-3 border-t border-gray-100 pt-5"
                         >
                             <Link :href="route('platform.offices.index')">
                                 <SecondaryButton type="button">
