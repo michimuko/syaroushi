@@ -4,6 +4,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
+import PushNotificationToggle from '@/Components/PushNotificationToggle.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 
@@ -87,6 +88,8 @@ watch(
                         </div>
 
                         <div class="hidden sm:ms-6 sm:flex sm:items-center">
+                            <PushNotificationToggle />
+
                             <!-- Settings Dropdown -->
                             <div class="relative ms-3">
                                 <Dropdown align="right" width="48">
@@ -220,15 +223,18 @@ watch(
                     <div
                         class="border-t border-gray-200 pb-1 pt-4 dark:border-gray-600"
                     >
-                        <div class="px-4">
-                            <div
-                                class="text-base font-medium text-gray-800 dark:text-gray-200"
-                            >
-                                {{ $page.props.auth.user.name }}
+                        <div class="flex items-center justify-between px-4">
+                            <div>
+                                <div
+                                    class="text-base font-medium text-gray-800 dark:text-gray-200"
+                                >
+                                    {{ $page.props.auth.user.name }}
+                                </div>
+                                <div class="text-sm font-medium text-gray-500">
+                                    {{ $page.props.auth.user.email }}
+                                </div>
                             </div>
-                            <div class="text-sm font-medium text-gray-500">
-                                {{ $page.props.auth.user.email }}
-                            </div>
+                            <PushNotificationToggle />
                         </div>
 
                         <div class="mt-3 space-y-1">

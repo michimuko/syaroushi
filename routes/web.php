@@ -6,6 +6,7 @@ use App\Http\Controllers\ClientProcedureSubscriptionController;
 use App\Http\Controllers\ProcedureTaskController;
 use App\Http\Controllers\ProcedureTypeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PushSubscriptionController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -40,6 +41,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
     Route::get('/calendar/events', [CalendarController::class, 'events'])->name('calendar.events');
+
+    Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
+    Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy'])->name('push-subscriptions.destroy');
 });
 
 require __DIR__.'/auth.php';

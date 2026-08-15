@@ -6,6 +6,8 @@ use App\Models\ProcedureTask;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class ProcedureTaskDueReminder extends Notification
 {
@@ -21,7 +23,13 @@ class ProcedureTaskDueReminder extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        $channels = ['mail'];
+
+        if ($notifiable->pushSubscriptions()->exists()) {
+            $channels[] = WebPushChannel::class;
+        }
+
+        return $channels;
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -36,5 +44,18 @@ class ProcedureTaskDueReminder extends Notification
             ->line("手続き：{$task->title}")
             ->line('期限日：'.$task->due_date->toDateString())
             ->action('タスクを確認する', route('tasks.edit', $task));
+    }
+
+    public function toWebPush(object $notifiable, self $notification): WebPushMessage
+    {
+        $task = $this->procedureTask;
+        $url = route('tasks.edit', $task);
+
+        return (new WebPushMessage)
+            ->title("【期限まであと{$this->leadDays}日】{$task->title}")
+            ->body("{$task->client->name}：期限日 {$task->due_date->toDateString()}")
+            ->action('確認する', 'view')
+            ->data(['url' => $url])
+            ->tag("procedure-task-{$task->id}");
     }
 }

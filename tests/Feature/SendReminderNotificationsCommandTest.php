@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\NotificationChannel;
 use App\Enums\TaskStatus;
 use App\Models\Client;
 use App\Models\ClientProcedureSubscription;
@@ -149,4 +150,26 @@ it('skips completed tasks', function () {
     $this->artisan('procedures:send-reminders');
 
     Notification::assertNothingSent();
+});
+
+it('logs both mail and webpush channels when the recipient has a push subscription', function () {
+    Notification::fake();
+
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)->create();
+    $staff->updatePushSubscription('https://fcm.googleapis.com/fcm/send/xyz', 'key', 'token');
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create(['default_lead_days' => [90, 30, 7]]);
+    ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $staff->id,
+        'due_date' => CarbonImmutable::today()->addDays(7),
+    ]);
+
+    $this->artisan('procedures:send-reminders');
+
+    expect(NotificationLog::query()->count())->toBe(2)
+        ->and(NotificationLog::query()->where('channel', NotificationChannel::Email)->count())->toBe(1)
+        ->and(NotificationLog::query()->where('channel', NotificationChannel::WebPush)->count())->toBe(1);
 });

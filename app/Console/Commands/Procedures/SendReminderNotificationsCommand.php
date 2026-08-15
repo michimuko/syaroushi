@@ -15,6 +15,7 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
+use NotificationChannels\WebPush\WebPushChannel;
 
 #[Signature('procedures:send-reminders')]
 #[Description('期限までの日数が通知ルールに一致するタスクにメール通知を送る（企画書8章）')]
@@ -48,7 +49,10 @@ class SendReminderNotificationsCommand extends Command
                     continue;
                 }
 
-                $recipient->notify(new ProcedureTaskDueReminder($task, $leadDays));
+                $notification = new ProcedureTaskDueReminder($task, $leadDays);
+                $usesWebPush = in_array(WebPushChannel::class, $notification->via($recipient), true);
+
+                $recipient->notify($notification);
 
                 NotificationLog::create([
                     'office_id' => $task->office_id,
@@ -58,6 +62,17 @@ class SendReminderNotificationsCommand extends Command
                     'lead_days' => $leadDays,
                     'sent_at' => now(),
                 ]);
+
+                if ($usesWebPush) {
+                    NotificationLog::create([
+                        'office_id' => $task->office_id,
+                        'procedure_task_id' => $task->id,
+                        'recipient_user_id' => $recipient->id,
+                        'channel' => NotificationChannel::WebPush,
+                        'lead_days' => $leadDays,
+                        'sent_at' => now(),
+                    ]);
+                }
 
                 $sentCount++;
             }
