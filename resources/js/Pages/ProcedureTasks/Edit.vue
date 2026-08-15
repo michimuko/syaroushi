@@ -15,6 +15,7 @@ const props = defineProps({
     task: Object,
     staffOptions: Array,
     canUpdate: Boolean,
+    returnTo: String,
 });
 
 const statusLabels = {
@@ -30,7 +31,10 @@ const form = useForm({
     due_date: props.task.due_date?.slice(0, 10) ?? '',
     assigned_user_id: props.task.assigned_user_id ?? '',
     notes: props.task.notes ?? '',
+    return_to: props.returnTo ?? null,
 });
+
+const backLabel = props.returnTo === '/calendar' ? 'カレンダーに戻る' : '一覧に戻る';
 
 const originalDueDate = props.task.original_due_date?.slice(0, 10) ?? null;
 const isDueDateCorrected =
@@ -207,10 +211,10 @@ function save() {
                             class="flex items-center justify-between border-t border-gray-100 pt-4"
                         >
                             <Link
-                                :href="route('tasks.index')"
+                                :href="returnTo ?? route('tasks.index')"
                                 class="text-sm text-gray-500 underline hover:text-gray-700"
                             >
-                                一覧に戻る
+                                {{ backLabel }}
                             </Link>
 
                             <PrimaryButton

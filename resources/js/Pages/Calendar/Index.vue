@@ -35,7 +35,9 @@ const calendarOptions = {
         }
     },
     eventClick: (info) => {
-        router.visit(route('tasks.edit', info.event.id));
+        router.visit(
+            `${route('tasks.edit', info.event.id)}?return_to=${encodeURIComponent('/calendar')}`,
+        );
     },
 };
 </script>

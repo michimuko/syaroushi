@@ -191,6 +191,49 @@ test('inline status update ignores a return_to pointing outside the tasks list',
     $response->assertRedirect(route('tasks.index'));
 });
 
+test('inline status update rejects a protocol-relative return_to', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+    $task = ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $staff->id,
+        'status' => 'not_started',
+    ]);
+
+    $response = $this->actingAs($staff)->put(route('tasks.update', $task), [
+        'status' => 'in_progress',
+        'return_to' => '//evil.example.com/phishing',
+    ]);
+
+    $response->assertRedirect(route('tasks.index'));
+});
+
+test('editing from the calendar returns to the calendar after saving', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+    $task = ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $staff->id,
+        'status' => 'not_started',
+    ]);
+
+    $editResponse = $this->actingAs($staff)->get(route('tasks.edit', $task).'?return_to='.urlencode('/calendar'));
+    $editResponse->assertInertia(fn ($page) => $page->where('returnTo', '/calendar'));
+
+    $updateResponse = $this->actingAs($staff)->put(route('tasks.update', $task), [
+        'status' => 'in_progress',
+        'return_to' => '/calendar',
+    ]);
+
+    $updateResponse->assertRedirect('/calendar');
+});
+
 test('updating only status via the inline editor does not clear assigned_user_id or notes', function () {
     $office = Office::factory()->create();
     $staff = User::factory()->for($office)->create();

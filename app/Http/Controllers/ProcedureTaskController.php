@@ -113,7 +113,7 @@ class ProcedureTaskController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(ProcedureTask $task): Response
+    public function edit(Request $request, ProcedureTask $task): Response
     {
         $this->authorize('view', $task);
 
@@ -123,6 +123,7 @@ class ProcedureTaskController extends Controller
             'task' => $task,
             'staffOptions' => $this->staffOptions(),
             'canUpdate' => Auth::user()->can('update', $task),
+            'returnTo' => $this->sanitizeReturnTo($request->query('return_to')),
         ]);
     }
 
@@ -144,7 +145,7 @@ class ProcedureTaskController extends Controller
             'return_to' => 'nullable|string',
         ]);
 
-        $returnTo = Arr::pull($validated, 'return_to');
+        $returnTo = $this->sanitizeReturnTo(Arr::pull($validated, 'return_to'));
 
         // 完了への遷移でcompleted_atを自動セット、完了からの後戻しではクリアする
         if ($validated['status'] === TaskStatus::Completed->value && $task->status !== TaskStatus::Completed) {
@@ -155,12 +156,20 @@ class ProcedureTaskController extends Controller
 
         $task->update($validated);
 
-        // 一覧からのインライン更新時は、フィルタ条件を保ったまま同じ一覧に戻す
-        $redirectUrl = $returnTo && str_starts_with($returnTo, '/tasks')
-            ? $returnTo
-            : route('tasks.index');
+        // 一覧やカレンダーなど、遷移元の画面に戻す（フィルタ条件・表示月等を保ったまま）
+        return redirect($returnTo ?? route('tasks.index'))->with('success', 'タスクを更新しました。');
+    }
 
-        return redirect($redirectUrl)->with('success', 'タスクを更新しました。');
+    /**
+     * 遷移元URLとして安全に使えるか検証する（同一オリジンの相対パスのみ許可し、外部サイトへのリダイレクトを防ぐ）。
+     */
+    private function sanitizeReturnTo(?string $path): ?string
+    {
+        if (! $path || ! str_starts_with($path, '/') || str_starts_with($path, '//')) {
+            return null;
+        }
+
+        return $path;
     }
 
     private function clientOptions(): Collection
