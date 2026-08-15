@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ClientProcedureSubscriptionController;
+use App\Http\Controllers\ProcedureTaskController;
 use App\Http\Controllers\ProcedureTypeController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -33,6 +34,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/procedure-types', [ProcedureTypeController::class, 'index'])->name('procedure-types.index');
     Route::get('/procedure-types/{procedureType}/edit', [ProcedureTypeController::class, 'edit'])->name('procedure-types.edit');
     Route::put('/procedure-types/{procedureType}', [ProcedureTypeController::class, 'update'])->name('procedure-types.update');
+
+    Route::resource('tasks', ProcedureTaskController::class)->only(['index']);
 });
 
 require __DIR__.'/auth.php';

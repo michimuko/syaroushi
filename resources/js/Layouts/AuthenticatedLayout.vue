@@ -64,6 +64,12 @@ watch(
                                     顧問先
                                 </NavLink>
                                 <NavLink
+                                    :href="route('tasks.index')"
+                                    :active="route().current('tasks.*')"
+                                >
+                                    タスク
+                                </NavLink>
+                                <NavLink
                                     :href="route('procedure-types.index')"
                                     :active="
                                         route().current('procedure-types.*')
@@ -183,6 +189,12 @@ watch(
                             :active="route().current('clients.*')"
                         >
                             顧問先
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('tasks.index')"
+                            :active="route().current('tasks.*')"
+                        >
+                            タスク
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             :href="route('procedure-types.index')"

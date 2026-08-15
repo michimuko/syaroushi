@@ -6,6 +6,7 @@ use App\Enums\TaskStatus;
 use App\Models\Concerns\BelongsToOffice;
 use Database\Factories\ProcedureTaskFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,6 +29,8 @@ class ProcedureTask extends Model
     /** @use HasFactory<ProcedureTaskFactory> */
     use BelongsToOffice, HasFactory;
 
+    protected $appends = ['is_overdue'];
+
     protected function casts(): array
     {
         return [
@@ -37,6 +40,13 @@ class ProcedureTask extends Model
             'custom_fields' => 'array',
             'calc_result' => 'array',
         ];
+    }
+
+    protected function isOverdue(): Attribute
+    {
+        return Attribute::get(
+            fn () => $this->status !== TaskStatus::Completed && $this->due_date->isPast(),
+        );
     }
 
     public function client(): BelongsTo
