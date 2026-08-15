@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 // 企画書8章：主要バッチ処理（毎日実行）
 Schedule::command('procedures:generate-upcoming')->daily();
 Schedule::command('procedures:send-reminders')->daily();
+Schedule::command('documents:notify-retention-expiry')->daily();

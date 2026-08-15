@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'file_path',
     'retention_years',
     'retention_until',
+    'retention_notified_at',
 ])]
 class ProcedureTaskDocument extends Model
 {
@@ -33,6 +34,7 @@ class ProcedureTaskDocument extends Model
             'is_collected' => 'boolean',
             'collected_at' => 'datetime',
             'retention_until' => 'date',
+            'retention_notified_at' => 'datetime',
         ];
     }
 
