@@ -8,9 +8,9 @@
 
 詳細な企画背景・市場調査・DB設計・ロードマップは **[docs/sharoushi-tool-project-brief.md](docs/sharoushi-tool-project-brief.md)** を参照（フルコンテキスト）。
 
-現在のステータス：**Phase 5完了**（2026-08-16）。DB設計・権限モデル・マルチテナント方針・個人情報保護要件は確定済み（企画書7章・11章）。Phase 1〜4（認証・顧問先/タスクCRUD・カレンダー・自動生成バッチ・メール/Web Push通知）に加え、Phase 5のS3(MinIO)切り替え・`procedure_task_documents`書類チェックリスト・署名付きURL・保存期限管理（`retention_years`/`retention_until`＋`documents:notify-retention-expiry`バッチ）・`document_access_logs`・自由入力欄（`custom_fields`/`notes`）へのマイナンバーらしき文字列検知警告（企画書7.7章）・Excel移行アシスタント（差別化A、顧問先/手続きタスクのインポートウィザード＋CSV/xlsxエクスポート、`app/Services/Import/`、owner限定）まで実装済み。
+現在のステータス：**Phase 6完了**（2026-08-15）。DB設計・権限モデル・マルチテナント方針・個人情報保護要件は確定済み（企画書7章・11章）。Phase 1〜4（認証・顧問先/タスクCRUD・カレンダー・自動生成バッチ・メール/Web Push通知）、Phase 5（S3(MinIO)切り替え・`procedure_task_documents`書類チェックリスト・署名付きURL・保存期限管理・`document_access_logs`・自由入力欄へのマイナンバー検知警告・Excel移行アシスタント）に加え、Phase 6の**顧問先向け進捗レポートPDF自動生成**（差別化B、`ClientReport`／`app/Services/ClientReportPdfGenerator.php`、日本語フォント埋め込み対応）と**計算アシスタント**（差別化D、`app/Services/CalcAssistant/`：年次有給休暇の付与日数計算・時間外労働時間/36協定上限チェック・勤務シフト表作成支援の3機能、タスク詳細から呼び出し`procedure_tasks.calc_result`に保存可能）まで実装済み。
 
-企画書11章に記載の残る未確定事項（価格モデルの具体数値、計算アシスタント機能Dの正式仕様など）はPhase6〜7着手時に詰める。
+企画書11章に記載の残る未確定事項（価格モデルの具体数値など）はPhase7着手時に詰める。Phase7（カスタムフィールドの本格活用、ダッシュボード集計強化、権限管理の高度化、課金機能等）は未着手。
 
 ## 技術スタック
 
