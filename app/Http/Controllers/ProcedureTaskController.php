@@ -96,6 +96,7 @@ class ProcedureTaskController extends Controller
         ]);
 
         $validated['status'] = TaskStatus::NotStarted;
+        $validated['original_due_date'] = $validated['due_date'];
 
         ProcedureTask::create($validated);
 
@@ -127,6 +128,7 @@ class ProcedureTaskController extends Controller
 
         $validated = $request->validate([
             'status' => ['required', Rule::enum(TaskStatus::class)],
+            'due_date' => 'sometimes|required|date',
             'assigned_user_id' => [
                 'nullable',
                 Rule::exists('users', 'id')->where('office_id', Auth::user()->office_id),

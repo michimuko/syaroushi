@@ -27,9 +27,14 @@ const statusLabels = {
 
 const form = useForm({
     status: props.task.status,
+    due_date: props.task.due_date?.slice(0, 10) ?? '',
     assigned_user_id: props.task.assigned_user_id ?? '',
     notes: props.task.notes ?? '',
 });
+
+const originalDueDate = props.task.original_due_date?.slice(0, 10) ?? null;
+const isDueDateCorrected =
+    originalDueDate !== null && originalDueDate !== props.task.due_date?.slice(0, 10);
 
 const confirmingRevert = ref(false);
 
@@ -109,6 +114,30 @@ function save() {
                     </p>
 
                     <form @submit.prevent="submit" class="mt-6 space-y-4">
+                        <div>
+                            <InputLabel for="due_date">期限日</InputLabel>
+                            <input
+                                id="due_date"
+                                v-model="form.due_date"
+                                type="date"
+                                :disabled="!canUpdate"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-50 disabled:text-gray-500"
+                            />
+                            <p
+                                v-if="isDueDateCorrected"
+                                class="mt-1 text-xs text-gray-500"
+                            >
+                                自動生成時点の期限：{{ originalDueDate }}（訂正済み）
+                            </p>
+                            <p v-else class="mt-1 text-xs text-gray-500">
+                                クライアントから正しい期限が確認できた場合など、訂正が必要なときのみ変更してください。
+                            </p>
+                            <InputError
+                                class="mt-1"
+                                :message="form.errors.due_date"
+                            />
+                        </div>
+
                         <div>
                             <InputLabel for="status">ステータス</InputLabel>
                             <select

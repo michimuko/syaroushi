@@ -240,6 +240,72 @@ test('a staff member can update only their own assigned task', function () {
     expect($othersTask->fresh()->status->value)->toBe('not_started');
 });
 
+test('an assigned staff member can correct a task\'s due date while original_due_date stays unchanged', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+    $task = ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $staff->id,
+        'due_date' => '2026-07-10',
+        'original_due_date' => '2026-07-10',
+    ]);
+
+    $response = $this->actingAs($staff)->put(route('tasks.update', $task), [
+        'status' => 'in_progress',
+        'due_date' => '2026-07-17',
+        'assigned_user_id' => $staff->id,
+        'notes' => '雇用日の訂正に伴い期限を修正',
+    ]);
+
+    $response->assertRedirect(route('tasks.index'));
+
+    $task->refresh();
+    expect($task->due_date->toDateString())->toBe('2026-07-17')
+        ->and($task->original_due_date->toDateString())->toBe('2026-07-10');
+});
+
+test('due date is required and must be a valid date when present', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+    $task = ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+    ]);
+
+    $response = $this->actingAs($owner)->put(route('tasks.update', $task), [
+        'status' => 'in_progress',
+        'due_date' => 'not-a-date',
+    ]);
+
+    $response->assertSessionHasErrors('due_date');
+});
+
+test('a staff member cannot correct the due date of a task assigned to someone else', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)->create();
+    $otherStaff = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+    $othersTask = ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $otherStaff->id,
+        'due_date' => '2026-07-10',
+    ]);
+
+    $this->actingAs($staff)->put(route('tasks.update', $othersTask), [
+        'status' => 'in_progress',
+        'due_date' => '2026-08-01',
+    ])->assertForbidden();
+
+    expect($othersTask->fresh()->due_date->toDateString())->toBe('2026-07-10');
+});
+
 test('completed_at is set when status becomes completed and cleared when reverted', function () {
     $office = Office::factory()->create();
     $owner = User::factory()->for($office)->owner()->create();
