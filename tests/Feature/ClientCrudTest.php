@@ -3,6 +3,7 @@
 use App\Enums\ClientStatus;
 use App\Models\Client;
 use App\Models\Office;
+use App\Models\Scopes\OfficeScope;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -199,4 +200,38 @@ test('client update requires a name', function () {
     ]);
 
     $response->assertSessionHasErrors('name');
+});
+
+test('an owner can delete a client in their own office', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $client = Client::factory()->for($office)->create();
+
+    $response = $this->actingAs($owner)->delete(route('clients.destroy', $client));
+
+    $response->assertRedirect(route('clients.index'));
+    expect(Client::find($client->id))->toBeNull();
+});
+
+test('a staff member cannot delete a client (403)', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)->create(); // role defaults to staff
+    $client = Client::factory()->for($office)->create();
+
+    $response = $this->actingAs($staff)->delete(route('clients.destroy', $client));
+
+    $response->assertForbidden();
+    expect(Client::find($client->id))->not->toBeNull();
+});
+
+test('an owner cannot delete a client belonging to another office (404)', function () {
+    $office = Office::factory()->create();
+    $otherOffice = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $foreignClient = Client::factory()->for($otherOffice)->create();
+
+    $response = $this->actingAs($owner)->delete(route('clients.destroy', $foreignClient));
+
+    $response->assertNotFound();
+    expect(Client::withoutGlobalScope(OfficeScope::class)->find($foreignClient->id))->not->toBeNull();
 });

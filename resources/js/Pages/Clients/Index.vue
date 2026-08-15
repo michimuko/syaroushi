@@ -1,17 +1,41 @@
 <script setup>
 import { ref, watch } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import DangerButton from '@/Components/DangerButton.vue';
+import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
     clients: Object,
     filters: Object,
 });
 
+const page = usePage();
+const isOwner = () => page.props.auth.user.role === 'owner';
+
 const search = ref(props.filters.search);
 const status = ref(props.filters.status);
+
+const confirmingDeletion = ref(null);
+const deleteForm = useForm({});
+
+function confirmDelete(client) {
+    confirmingDeletion.value = client;
+}
+
+function closeDeleteModal() {
+    confirmingDeletion.value = null;
+}
+
+function destroyClient() {
+    deleteForm.delete(route('clients.destroy', confirmingDeletion.value.id), {
+        preserveScroll: true,
+        onSuccess: () => closeDeleteModal(),
+    });
+}
 
 let searchDebounce = null;
 
@@ -152,7 +176,9 @@ function resetFilters() {
                                     <td class="px-4 py-3">
                                         <StatusBadge :status="client.status" />
                                     </td>
-                                    <td class="px-4 py-3 text-right">
+                                    <td
+                                        class="space-x-3 px-4 py-3 text-right"
+                                    >
                                         <Link
                                             :href="
                                                 route(
@@ -164,6 +190,14 @@ function resetFilters() {
                                         >
                                             編集
                                         </Link>
+                                        <button
+                                            v-if="isOwner()"
+                                            type="button"
+                                            class="text-sm text-red-600 hover:text-red-900"
+                                            @click="confirmDelete(client)"
+                                        >
+                                            削除
+                                        </button>
                                     </td>
                                 </tr>
                                 <tr v-if="clients.data.length === 0">
@@ -208,5 +242,31 @@ function resetFilters() {
                 </div>
             </div>
         </div>
+
+        <Modal :show="confirmingDeletion !== null" @close="closeDeleteModal">
+            <div class="p-6" v-if="confirmingDeletion">
+                <h2 class="text-lg font-medium text-gray-900">
+                    顧問先「{{ confirmingDeletion.name }}」を削除しますか？
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-600">
+                    この操作は取り消せません。関連する情報も参照できなくなります。
+                </p>
+
+                <div class="mt-6 flex justify-end gap-3">
+                    <SecondaryButton @click="closeDeleteModal">
+                        キャンセル
+                    </SecondaryButton>
+
+                    <DangerButton
+                        :class="{ 'opacity-25': deleteForm.processing }"
+                        :disabled="deleteForm.processing"
+                        @click="destroyClient"
+                    >
+                        削除する
+                    </DangerButton>
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>
