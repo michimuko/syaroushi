@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ProcedureTask;
 use App\Services\CalcAssistant\AnnualPaidLeaveCalculator;
 use App\Services\CalcAssistant\OvertimeLimitChecker;
+use App\Services\CalcAssistant\ShiftScheduleChecker;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,8 +14,7 @@ use Inertia\Response;
 
 /**
  * 計算アシスタント（企画書5-D）。現場の自作ツール由来の計算ロジックをアプリ内に統合する差別化モジュール。
- * v1では年次有給休暇の付与日数計算、時間外労働時間・36協定上限チェックを実装。
- * シフト表作成支援は今後追加予定。
+ * 年次有給休暇の付与日数計算、時間外労働時間・36協定上限チェック、勤務シフト表作成支援を実装。
  */
 class CalcAssistantController extends Controller
 {
@@ -85,6 +85,36 @@ class CalcAssistantController extends Controller
             'task' => $this->taskContext($validated['task_id'] ?? null),
             'result' => $checker->check($months),
             'input' => ['months' => $months],
+        ]);
+    }
+
+    public function showShiftSchedule(Request $request): Response
+    {
+        return Inertia::render('CalcAssistant/ShiftSchedule', [
+            'task' => $this->taskContext($request->query('task_id')),
+            'result' => null,
+            'input' => null,
+        ]);
+    }
+
+    public function calculateShiftSchedule(Request $request, ShiftScheduleChecker $checker): Response
+    {
+        $validated = $request->validate([
+            'shifts' => 'required|array|min:1|max:400',
+            'shifts.*.date' => 'required|date',
+            'shifts.*.hours' => 'required|numeric|min:0|max:24',
+            'task_id' => 'nullable|integer',
+        ]);
+
+        $shifts = array_map(fn (array $s) => [
+            'date' => $s['date'],
+            'hours' => (float) $s['hours'],
+        ], $validated['shifts']);
+
+        return Inertia::render('CalcAssistant/ShiftSchedule', [
+            'task' => $this->taskContext($validated['task_id'] ?? null),
+            'result' => $checker->check($shifts),
+            'input' => ['shifts' => $shifts],
         ]);
     }
 

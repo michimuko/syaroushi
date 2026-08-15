@@ -267,6 +267,16 @@ function save() {
                             >
                                 36協定上限をチェックする
                             </Link>
+                            <Link
+                                :href="
+                                    route('calc-assistant.shift-schedule', {
+                                        task_id: task.id,
+                                    })
+                                "
+                                class="text-sm text-indigo-600 underline hover:text-indigo-800"
+                            >
+                                シフト表の上限をチェックする
+                            </Link>
                         </div>
                     </div>
 
@@ -339,6 +349,41 @@ function save() {
                                 v-if="
                                     !task.calc_result.result.summary
                                         .annual_overtime_within_720
+                                "
+                                class="ml-1 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-700"
+                            >
+                                上限超過
+                            </span>
+                        </p>
+                    </div>
+
+                    <div
+                        v-else-if="task.calc_result?.type === 'shift_schedule_check'"
+                        class="mt-3"
+                    >
+                        <p class="text-xs text-gray-500">
+                            計算日時：{{ task.calc_result.calculated_at }}
+                        </p>
+                        <p class="mt-1 text-sm">
+                            対象期間の労働日数：{{
+                                task.calc_result.result.summary.total_work_days
+                            }}日／280日
+                            <span
+                                v-if="task.calc_result.result.summary.exceeds_280_days"
+                                class="ml-1 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-700"
+                            >
+                                上限超過
+                            </span>
+                        </p>
+                        <p class="mt-1 text-sm">
+                            最大連続勤務日数：{{
+                                task.calc_result.result.summary
+                                    .max_consecutive_work_days
+                            }}日／6日まで
+                            <span
+                                v-if="
+                                    task.calc_result.result.summary
+                                        .exceeds_consecutive_limit
                                 "
                                 class="ml-1 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-700"
                             >

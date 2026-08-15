@@ -121,6 +121,7 @@ it('requires authentication to use the calc assistant', function () {
     $this->post(route('calc-assistant.paid-leave.calculate'), ['hire_date' => '2024-04-01'])
         ->assertRedirect(route('login'));
     $this->get(route('calc-assistant.overtime-limit'))->assertRedirect(route('login'));
+    $this->get(route('calc-assistant.shift-schedule'))->assertRedirect(route('login'));
 });
 
 it('checks overtime hours against the 36 agreement limits and echoes the task context', function () {
@@ -187,6 +188,73 @@ it('saves an overtime-limit check result to the task calc_result column', functi
     $task->refresh();
     expect($task->calc_result['type'])->toBe('overtime_limit_check')
         ->and($task->calc_result['result']['summary']['months_exceeding_45_count'])->toBe(1);
+});
+
+it('checks a shift schedule against the 1-year variable working hour limits and echoes the task context', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+    $task = ProcedureTask::factory()->for($client)->for($procedureType)->create([
+        'office_id' => $office->id,
+        'assigned_user_id' => $owner->id,
+        'title' => 'シフトチェックタスク',
+    ]);
+
+    $response = $this->actingAs($owner)->post(route('calc-assistant.shift-schedule.calculate'), [
+        'shifts' => [
+            ['date' => '2026-04-06', 'hours' => 11],
+            ['date' => '2026-04-07', 'hours' => 8],
+        ],
+        'task_id' => $task->id,
+    ]);
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('CalcAssistant/ShiftSchedule')
+        ->has('result.days', 2)
+        ->where('result.days.0.exceeds_daily_limit', true)
+        ->where('result.summary.total_work_days', 2)
+        ->where('task.id', $task->id)
+        ->where('task.title', 'シフトチェックタスク')
+    );
+});
+
+it('rejects shift-schedule input missing required fields', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+
+    $this->actingAs($owner)
+        ->post(route('calc-assistant.shift-schedule.calculate'), [
+            'shifts' => [['date' => '2026-04-06']],
+        ])
+        ->assertSessionHasErrors('shifts.0.hours');
+});
+
+it('saves a shift-schedule check result to the task calc_result column', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+    $task = ProcedureTask::factory()->for($client)->for($procedureType)->create([
+        'office_id' => $office->id,
+        'assigned_user_id' => $owner->id,
+    ]);
+
+    $response = $this->actingAs($owner)->put(route('tasks.calc-result.update', $task->id), [
+        'type' => 'shift_schedule_check',
+        'input' => ['shifts' => [['date' => '2026-04-06', 'hours' => 8]]],
+        'result' => [
+            'days' => [['date' => '2026-04-06', 'hours' => 8, 'exceeds_daily_limit' => false, 'consecutive_work_days' => 1, 'exceeds_consecutive_limit' => false]],
+            'weeks' => [['week_start' => '2026-04-06', 'total_hours' => 8, 'exceeds_weekly_limit' => false]],
+            'summary' => ['total_work_days' => 1, 'exceeds_280_days' => false, 'max_consecutive_work_days' => 1, 'exceeds_consecutive_limit' => false, 'any_daily_violation' => false, 'any_weekly_violation' => false],
+        ],
+    ]);
+
+    $response->assertRedirect();
+    $task->refresh();
+    expect($task->calc_result['type'])->toBe('shift_schedule_check')
+        ->and($task->calc_result['result']['summary']['total_work_days'])->toBe(1);
 });
 
 it('prevents saving a calc result to a task belonging to another office', function () {

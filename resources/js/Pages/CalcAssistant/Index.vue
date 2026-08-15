@@ -19,8 +19,10 @@ const tools = [
     },
     {
         name: '勤務シフト表作成支援',
-        description: '準備中です。',
-        available: false,
+        description:
+            '1年単位の変形労働時間制向けに、日々のシフト表から1日10時間・週52時間・連続6日・年280日の上限逸脱をチェックします。',
+        href: () => route('calc-assistant.shift-schedule'),
+        available: true,
     },
 ];
 </script>

@@ -78,6 +78,8 @@ Route::middleware('auth:web')->group(function () {
     Route::post('/calc-assistant/paid-leave', [CalcAssistantController::class, 'calculatePaidLeave'])->name('calc-assistant.paid-leave.calculate');
     Route::get('/calc-assistant/overtime-limit', [CalcAssistantController::class, 'showOvertimeLimit'])->name('calc-assistant.overtime-limit');
     Route::post('/calc-assistant/overtime-limit', [CalcAssistantController::class, 'calculateOvertimeLimit'])->name('calc-assistant.overtime-limit.calculate');
+    Route::get('/calc-assistant/shift-schedule', [CalcAssistantController::class, 'showShiftSchedule'])->name('calc-assistant.shift-schedule');
+    Route::post('/calc-assistant/shift-schedule', [CalcAssistantController::class, 'calculateShiftSchedule'])->name('calc-assistant.shift-schedule.calculate');
     Route::put('/tasks/{task}/calc-result', [ProcedureTaskCalcResultController::class, 'update'])->name('tasks.calc-result.update');
 
     Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
