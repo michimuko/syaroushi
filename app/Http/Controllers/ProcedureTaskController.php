@@ -109,7 +109,7 @@ class ProcedureTaskController extends Controller
     {
         $this->authorize('view', $task);
 
-        $task->load(['client:id,name', 'procedureType:id,name,category']);
+        $task->load(['client:id,name', 'procedureType:id,name,category', 'documents']);
 
         return Inertia::render('ProcedureTasks/Edit', [
             'task' => $task,

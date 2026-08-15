@@ -6,6 +6,7 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import ProcedureTaskDocumentChecklist from '@/Components/ProcedureTaskDocumentChecklist.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TaskStatusBadge from '@/Components/TaskStatusBadge.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
@@ -193,6 +194,12 @@ function save() {
                         </div>
                     </form>
                 </div>
+
+                <ProcedureTaskDocumentChecklist
+                    :task="task"
+                    :documents="task.documents"
+                    :can-manage="canUpdate"
+                />
             </div>
         </div>
 

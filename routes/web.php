@@ -5,6 +5,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ClientProcedureSubscriptionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProcedureTaskController;
+use App\Http\Controllers\ProcedureTaskDocumentController;
 use App\Http\Controllers\ProcedureTypeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PushSubscriptionController;
@@ -41,6 +42,12 @@ Route::middleware('auth:web')->group(function () {
     Route::put('/procedure-types/{procedureType}', [ProcedureTypeController::class, 'update'])->name('procedure-types.update');
 
     Route::resource('tasks', ProcedureTaskController::class)->only(['index', 'create', 'store', 'edit', 'update']);
+
+    Route::post('/tasks/{task}/documents', [ProcedureTaskDocumentController::class, 'store'])->name('tasks.documents.store');
+    Route::post('/tasks/{task}/documents/{document}/file', [ProcedureTaskDocumentController::class, 'uploadFile'])->name('tasks.documents.upload');
+    Route::patch('/tasks/{task}/documents/{document}', [ProcedureTaskDocumentController::class, 'update'])->name('tasks.documents.update');
+    Route::delete('/tasks/{task}/documents/{document}', [ProcedureTaskDocumentController::class, 'destroy'])->name('tasks.documents.destroy');
+    Route::get('/tasks/{task}/documents/{document}/download', [ProcedureTaskDocumentController::class, 'download'])->name('tasks.documents.download');
 
     Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
     Route::get('/calendar/events', [CalendarController::class, 'events'])->name('calendar.events');
