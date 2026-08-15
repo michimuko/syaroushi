@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'office_id',
@@ -38,5 +39,10 @@ class ProcedureTaskDocument extends Model
     public function procedureTask(): BelongsTo
     {
         return $this->belongsTo(ProcedureTask::class);
+    }
+
+    public function accessLogs(): HasMany
+    {
+        return $this->hasMany(DocumentAccessLog::class);
     }
 }

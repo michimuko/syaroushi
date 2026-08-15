@@ -1,6 +1,8 @@
 <?php
 
+use App\Enums\DocumentAccessAction;
 use App\Models\Client;
+use App\Models\DocumentAccessLog;
 use App\Models\Office;
 use App\Models\ProcedureTask;
 use App\Models\ProcedureTaskDocument;
@@ -164,6 +166,28 @@ test('downloading redirects to a temporary signed url and requires a stored file
 
     $this->actingAs($owner)->get(route('tasks.documents.download', [$task, $collected]))
         ->assertRedirect('https://example.test/signed-url');
+
+    $log = DocumentAccessLog::sole();
+    expect($log->procedure_task_document_id)->toBe($collected->id)
+        ->and($log->user_id)->toBe($owner->id)
+        ->and($log->office_id)->toBe($office->id)
+        ->and($log->action)->toBe(DocumentAccessAction::Download);
+});
+
+test('each download creates its own access log entry', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $task = makeTaskForDocuments($office);
+    $document = ProcedureTaskDocument::factory()->collected()->for($task, 'procedureTask')->for($office)->create();
+
+    $this->mock(DocumentStorage::class, function ($mock) {
+        $mock->shouldReceive('temporaryUrl')->twice()->andReturn('https://example.test/signed-url');
+    });
+
+    $this->actingAs($owner)->get(route('tasks.documents.download', [$task, $document]));
+    $this->actingAs($owner)->get(route('tasks.documents.download', [$task, $document]));
+
+    expect(DocumentAccessLog::where('procedure_task_document_id', $document->id)->count())->toBe(2);
 });
 
 test('a document belonging to a different task in the same office is not accessible via the wrong task url', function () {

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\DocumentAccessAction;
 use App\Models\ProcedureTask;
 use App\Models\ProcedureTaskDocument;
 use App\Services\DocumentStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProcedureTaskDocumentController extends Controller
 {
@@ -92,6 +94,12 @@ class ProcedureTaskDocumentController extends Controller
         $this->authorize('view', $document);
 
         abort_if(! $document->file_path, 404);
+
+        $document->accessLogs()->create([
+            'user_id' => Auth::id(),
+            'action' => DocumentAccessAction::Download,
+            'accessed_at' => now(),
+        ]);
 
         return redirect()->away($documentStorage->temporaryUrl($document->file_path));
     }
