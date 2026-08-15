@@ -135,9 +135,17 @@ function cancelRevert() {
                 >
                     タスク一覧
                 </h2>
-                <Link :href="route('tasks.create')">
-                    <PrimaryButton>新規作成</PrimaryButton>
-                </Link>
+                <div class="flex items-center gap-3">
+                    <a
+                        :href="route('tasks.export', { format: 'xlsx' })"
+                        class="text-sm text-gray-600 underline hover:text-gray-900"
+                    >
+                        Excelエクスポート
+                    </a>
+                    <Link :href="route('tasks.create')">
+                        <PrimaryButton>新規作成</PrimaryButton>
+                    </Link>
+                </div>
             </div>
         </template>
 

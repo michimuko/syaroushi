@@ -8,6 +8,7 @@ use App\Http\Controllers\ClientProcedureSubscriptionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProcedureTaskController;
 use App\Http\Controllers\ProcedureTaskDocumentController;
+use App\Http\Controllers\ProcedureTaskExportController;
 use App\Http\Controllers\ProcedureTypeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PushSubscriptionController;
@@ -48,6 +49,7 @@ Route::middleware('auth:web')->group(function () {
     Route::get('/procedure-types/{procedureType}/edit', [ProcedureTypeController::class, 'edit'])->name('procedure-types.edit');
     Route::put('/procedure-types/{procedureType}', [ProcedureTypeController::class, 'update'])->name('procedure-types.update');
 
+    Route::get('/tasks/export', [ProcedureTaskExportController::class, 'index'])->name('tasks.export');
     Route::resource('tasks', ProcedureTaskController::class)->only(['index', 'create', 'store', 'edit', 'update']);
 
     Route::post('/tasks/{task}/documents', [ProcedureTaskDocumentController::class, 'store'])->name('tasks.documents.store');
