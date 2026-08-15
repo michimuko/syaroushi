@@ -3,6 +3,7 @@
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ClientExportController;
+use App\Http\Controllers\ClientImportController;
 use App\Http\Controllers\ClientProcedureSubscriptionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProcedureTaskController;
@@ -34,6 +35,10 @@ Route::middleware('auth:web')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/clients/export', [ClientExportController::class, 'index'])->name('clients.export');
+    Route::get('/clients/import', [ClientImportController::class, 'create'])->name('clients.import.create');
+    Route::post('/clients/import/preview', [ClientImportController::class, 'preview'])->name('clients.import.preview');
+    Route::post('/clients/import/validate', [ClientImportController::class, 'validateMapping'])->name('clients.import.validate');
+    Route::post('/clients/import/commit', [ClientImportController::class, 'commit'])->name('clients.import.commit');
     Route::resource('clients', ClientController::class);
     Route::resource('users', UserController::class)->except(['show']);
     Route::put('/clients/{client}/procedure-subscriptions', [ClientProcedureSubscriptionController::class, 'update'])

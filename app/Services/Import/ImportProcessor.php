@@ -30,10 +30,10 @@ interface ImportProcessor
 
     /**
      * マッピング済み行を検証する。氏名等による外部キーの名前解決もここで行い、
-     * 解決結果（DBへそのまま渡せる形）をresolvedへ格納する。
+     * 解決結果（DBへそのまま渡せる形）をresolvedへ、確認画面表示用の人間可読な値をdisplayへ格納する。
      *
      * @param  array<string, mixed>  $mapped
-     * @return array{errors: array<int, string>, warnings: array<int, string>, resolved: array<string, mixed>}
+     * @return array{errors: array<int, string>, warnings: array<int, string>, resolved: array<string, mixed>, display: array<int, array{label: string, value: string}>}
      */
     public function validateRow(array $mapped, Office $office): array;
 

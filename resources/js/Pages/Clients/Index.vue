@@ -81,6 +81,13 @@ function resetFilters() {
                     >
                         Excelエクスポート
                     </a>
+                    <Link
+                        v-if="isOwner()"
+                        :href="route('clients.import.create')"
+                        class="text-sm text-gray-600 underline hover:text-gray-900"
+                    >
+                        Excelインポート
+                    </Link>
                     <Link :href="route('clients.create')">
                         <PrimaryButton>新規登録</PrimaryButton>
                     </Link>
