@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProcedureTaskController;
 use App\Http\Controllers\ProcedureTaskDocumentController;
 use App\Http\Controllers\ProcedureTaskExportController;
+use App\Http\Controllers\ProcedureTaskImportController;
 use App\Http\Controllers\ProcedureTypeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PushSubscriptionController;
@@ -50,6 +51,10 @@ Route::middleware('auth:web')->group(function () {
     Route::put('/procedure-types/{procedureType}', [ProcedureTypeController::class, 'update'])->name('procedure-types.update');
 
     Route::get('/tasks/export', [ProcedureTaskExportController::class, 'index'])->name('tasks.export');
+    Route::get('/tasks/import', [ProcedureTaskImportController::class, 'create'])->name('tasks.import.create');
+    Route::post('/tasks/import/preview', [ProcedureTaskImportController::class, 'preview'])->name('tasks.import.preview');
+    Route::post('/tasks/import/validate', [ProcedureTaskImportController::class, 'validateMapping'])->name('tasks.import.validate');
+    Route::post('/tasks/import/commit', [ProcedureTaskImportController::class, 'commit'])->name('tasks.import.commit');
     Route::resource('tasks', ProcedureTaskController::class)->only(['index', 'create', 'store', 'edit', 'update']);
 
     Route::post('/tasks/{task}/documents', [ProcedureTaskDocumentController::class, 'store'])->name('tasks.documents.store');

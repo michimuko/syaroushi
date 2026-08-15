@@ -6,7 +6,7 @@ import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TaskStatusBadge from '@/Components/TaskStatusBadge.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
     tasks: Object,
@@ -15,6 +15,9 @@ const props = defineProps({
     staffOptions: Array,
     statusOptions: Array,
 });
+
+const page = usePage();
+const isOwner = () => page.props.auth.user.role === 'owner';
 
 const statusLabels = {
     not_started: '未着手',
@@ -142,6 +145,13 @@ function cancelRevert() {
                     >
                         Excelエクスポート
                     </a>
+                    <Link
+                        v-if="isOwner()"
+                        :href="route('tasks.import.create')"
+                        class="text-sm text-gray-600 underline hover:text-gray-900"
+                    >
+                        Excelインポート
+                    </Link>
                     <Link :href="route('tasks.create')">
                         <PrimaryButton>新規作成</PrimaryButton>
                     </Link>

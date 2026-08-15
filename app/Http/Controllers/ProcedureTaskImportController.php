@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Import\ClientImportProcessor;
 use App\Services\Import\ImportReportBuilder;
 use App\Services\Import\ImportWizardService;
+use App\Services\Import\ProcedureTaskImportProcessor;
 use App\Services\Import\SpreadsheetReader;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,16 +14,16 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * 顧問先のExcelインポートウィザード（アップロード→マッピング→確認→確定、企画書6章）。
+ * 手続きタスクのExcelインポートウィザード（アップロード→マッピング→確認→確定、企画書6章）。
  * 実行はowner限定（企画書7章権限表、Gate::manage-imports）。
  */
-class ClientImportController extends Controller
+class ProcedureTaskImportController extends Controller
 {
     public function __construct(
         private readonly ImportWizardService $wizard,
         private readonly SpreadsheetReader $reader,
         private readonly ImportReportBuilder $reportBuilder,
-        private readonly ClientImportProcessor $processor,
+        private readonly ProcedureTaskImportProcessor $processor,
     ) {}
 
     public function create(): Response
@@ -31,9 +31,9 @@ class ClientImportController extends Controller
         $this->authorize('manage-imports');
 
         return Inertia::render('Imports/Upload', [
-            'title' => '顧問先のExcelインポート',
-            'uploadRoute' => route('clients.import.preview'),
-            'backRoute' => route('clients.index'),
+            'title' => '手続きタスクのExcelインポート',
+            'uploadRoute' => route('tasks.import.preview'),
+            'backRoute' => route('tasks.index'),
         ]);
     }
 
@@ -51,13 +51,13 @@ class ClientImportController extends Controller
         $preview = $this->reader->readHeaderAndPreview($path);
 
         return Inertia::render('Imports/Mapping', [
-            'title' => '顧問先のExcelインポート',
+            'title' => '手続きタスクのExcelインポート',
             'token' => $token,
             'headers' => $preview['headers'],
             'previewRows' => $preview['rows'],
             'targetFields' => $this->processor->fields(),
-            'validateRoute' => route('clients.import.validate'),
-            'backRoute' => route('clients.import.create'),
+            'validateRoute' => route('tasks.import.validate'),
+            'backRoute' => route('tasks.import.create'),
         ]);
     }
 
@@ -78,13 +78,13 @@ class ClientImportController extends Controller
         $report = $this->reportBuilder->build($this->processor, $path, $mapping, $office);
 
         return Inertia::render('Imports/Review', [
-            'title' => '顧問先のExcelインポート',
+            'title' => '手続きタスクのExcelインポート',
             'token' => $validated['token'],
             'mapping' => $validated['mapping'],
             'summary' => $report['summary'],
             'rows' => $report['rows'],
-            'commitRoute' => route('clients.import.commit'),
-            'backRoute' => route('clients.import.create'),
+            'commitRoute' => route('tasks.import.commit'),
+            'backRoute' => route('tasks.import.create'),
         ]);
     }
 
@@ -118,11 +118,11 @@ class ClientImportController extends Controller
         $this->wizard->deleteTempFile($office->id, $validated['token']);
 
         $skippedCount = count($report['rows']) - $createdCount;
-        $message = "{$createdCount}件の顧問先を取り込みました。";
+        $message = "{$createdCount}件の手続きタスクを取り込みました。";
         if ($skippedCount > 0) {
             $message .= "（{$skippedCount}件はエラーのためスキップしました）";
         }
 
-        return redirect()->route('clients.index')->with('success', $message);
+        return redirect()->route('tasks.index')->with('success', $message);
     }
 }
