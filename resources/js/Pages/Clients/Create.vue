@@ -1,11 +1,14 @@
 <script setup>
+import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
+import MyNumberWarning from '@/Components/MyNumberWarning.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { containsMyNumberLikeString } from '@/Composables/useMyNumberDetection';
 
 defineProps({
     staffOptions: Array,
@@ -22,6 +25,8 @@ const form = useForm({
     assigned_user_id: '',
     notes: '',
 });
+
+const notesHasMyNumber = computed(() => containsMyNumberLikeString(form.notes));
 
 const submit = () => {
     form.post(route('clients.store'));
@@ -209,6 +214,10 @@ const submit = () => {
                                 <InputError
                                     class="mt-1"
                                     :message="form.errors.notes"
+                                />
+                                <MyNumberWarning
+                                    class="mt-1"
+                                    :show="notesHasMyNumber"
                                 />
                             </div>
                         </div>

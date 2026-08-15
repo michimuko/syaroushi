@@ -3,10 +3,12 @@ import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
+import MyNumberWarning from '@/Components/MyNumberWarning.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { containsMyNumberLikeString } from '@/Composables/useMyNumberDetection';
 
 const props = defineProps({
     client: Object,
@@ -32,6 +34,8 @@ const form = useForm({
 const submit = () => {
     form.put(route('clients.update', props.client.id));
 };
+
+const notesHasMyNumber = computed(() => containsMyNumberLikeString(form.notes));
 
 const procedureTypesByCategory = computed(() => {
     const groups = {};
@@ -232,6 +236,10 @@ const submitSubscriptions = () => {
                                 <InputError
                                     class="mt-1"
                                     :message="form.errors.notes"
+                                />
+                                <MyNumberWarning
+                                    class="mt-1"
+                                    :show="notesHasMyNumber"
                                 />
                             </div>
                         </div>

@@ -1,15 +1,17 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import Modal from '@/Components/Modal.vue';
+import MyNumberWarning from '@/Components/MyNumberWarning.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import ProcedureTaskDocumentChecklist from '@/Components/ProcedureTaskDocumentChecklist.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TaskStatusBadge from '@/Components/TaskStatusBadge.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { containsMyNumberLikeString } from '@/Composables/useMyNumberDetection';
 
 const props = defineProps({
     task: Object,
@@ -41,6 +43,7 @@ const isDueDateCorrected =
     originalDueDate !== null && originalDueDate !== props.task.due_date?.slice(0, 10);
 
 const confirmingRevert = ref(false);
+const notesHasMyNumber = computed(() => containsMyNumberLikeString(form.notes));
 
 function submit() {
     const isRevertingFromCompleted =
@@ -204,6 +207,10 @@ function save() {
                             <InputError
                                 class="mt-1"
                                 :message="form.errors.notes"
+                            />
+                            <MyNumberWarning
+                                class="mt-1"
+                                :show="notesHasMyNumber"
                             />
                         </div>
 
