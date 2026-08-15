@@ -105,6 +105,117 @@ test('is_overdue is true only for non-completed tasks past their due date', func
     );
 });
 
+test('index screen exposes can_update per task based on assignment', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $staff = User::factory()->for($office)->create();
+    $otherStaff = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+
+    $ownTask = ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $staff->id,
+        'due_date' => '2026-07-01',
+    ]);
+    $othersTask = ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $otherStaff->id,
+        'due_date' => '2026-07-02',
+    ]);
+    // false判定の行より後ろにも真の行を置き、Collection::each()がfalseで打ち切られないことを確認する
+    $ownSecondTask = ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $staff->id,
+        'due_date' => '2026-07-03',
+    ]);
+
+    $this->actingAs($owner)->get(route('tasks.index'))->assertInertia(fn ($page) => $page
+        ->where('tasks.data.0.can_update', true)
+        ->where('tasks.data.1.can_update', true)
+        ->where('tasks.data.2.can_update', true)
+    );
+
+    $this->actingAs($staff)->get(route('tasks.index'))->assertInertia(fn ($page) => $page
+        ->where('tasks.data.0.id', $ownTask->id)
+        ->where('tasks.data.0.can_update', true)
+        ->where('tasks.data.1.id', $othersTask->id)
+        ->where('tasks.data.1.can_update', false)
+        ->where('tasks.data.2.id', $ownSecondTask->id)
+        ->where('tasks.data.2.can_update', true)
+    );
+});
+
+test('inline status update redirects back to the given tasks list URL to preserve filters', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+    $task = ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $staff->id,
+        'status' => 'not_started',
+    ]);
+
+    $filteredUrl = '/tasks?status=in_progress&client_id='.$client->id;
+
+    $response = $this->actingAs($staff)->put(route('tasks.update', $task), [
+        'status' => 'in_progress',
+        'return_to' => $filteredUrl,
+    ]);
+
+    $response->assertRedirect($filteredUrl);
+});
+
+test('inline status update ignores a return_to pointing outside the tasks list', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+    $task = ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $staff->id,
+        'status' => 'not_started',
+    ]);
+
+    $response = $this->actingAs($staff)->put(route('tasks.update', $task), [
+        'status' => 'in_progress',
+        'return_to' => 'https://evil.example.com/phishing',
+    ]);
+
+    $response->assertRedirect(route('tasks.index'));
+});
+
+test('updating only status via the inline editor does not clear assigned_user_id or notes', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+    $task = ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $staff->id,
+        'notes' => '既存のメモ',
+        'status' => 'not_started',
+    ]);
+
+    $response = $this->actingAs($staff)->put(route('tasks.update', $task), [
+        'status' => 'in_progress',
+    ]);
+
+    $response->assertRedirect(route('tasks.index'));
+
+    $task->refresh();
+    expect($task->status->value)->toBe('in_progress')
+        ->and($task->assigned_user_id)->toBe($staff->id)
+        ->and($task->notes)->toBe('既存のメモ');
+});
+
 test('index screen requires authentication', function () {
     $response = $this->get(route('tasks.index'));
 

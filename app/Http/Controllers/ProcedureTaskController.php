@@ -6,6 +6,7 @@ use App\Enums\TaskStatus;
 use App\Models\ProcedureTask;
 use App\Models\ProcedureType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -39,6 +40,12 @@ class ProcedureTaskController extends Controller
             ->orderBy('due_date')
             ->paginate(20)
             ->withQueryString();
+
+        // Collection::each()はコールバックがfalseを返すと反復を打ち切るため、
+        // 代入式（真偽値を返す）をそのままアロー関数にしない
+        $tasks->getCollection()->each(function (ProcedureTask $task) {
+            $task->can_update = Auth::user()->can('update', $task);
+        });
 
         return Inertia::render('ProcedureTasks/Index', [
             'tasks' => $tasks,
@@ -134,7 +141,10 @@ class ProcedureTaskController extends Controller
                 Rule::exists('users', 'id')->where('office_id', Auth::user()->office_id),
             ],
             'notes' => 'nullable|string|max:2000',
+            'return_to' => 'nullable|string',
         ]);
+
+        $returnTo = Arr::pull($validated, 'return_to');
 
         // 完了への遷移でcompleted_atを自動セット、完了からの後戻しではクリアする
         if ($validated['status'] === TaskStatus::Completed->value && $task->status !== TaskStatus::Completed) {
@@ -145,7 +155,12 @@ class ProcedureTaskController extends Controller
 
         $task->update($validated);
 
-        return redirect()->route('tasks.index')->with('success', 'タスクを更新しました。');
+        // 一覧からのインライン更新時は、フィルタ条件を保ったまま同じ一覧に戻す
+        $redirectUrl = $returnTo && str_starts_with($returnTo, '/tasks')
+            ? $returnTo
+            : route('tasks.index');
+
+        return redirect($redirectUrl)->with('success', 'タスクを更新しました。');
     }
 
     private function clientOptions(): Collection

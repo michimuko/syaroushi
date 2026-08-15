@@ -1,7 +1,10 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import DangerButton from '@/Components/DangerButton.vue';
+import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TaskStatusBadge from '@/Components/TaskStatusBadge.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 
@@ -57,6 +60,68 @@ const hasActiveFilters = () =>
     assignedUserId.value ||
     dueFrom.value ||
     dueTo.value;
+
+const localStatus = reactive({});
+watch(
+    () => props.tasks.data,
+    (data) => {
+        data.forEach((task) => {
+            localStatus[task.id] = task.status;
+        });
+    },
+    { immediate: true },
+);
+
+const revertingTask = ref(null);
+const processingStatusIds = reactive(new Set());
+
+function goToEdit(task) {
+    router.visit(route('tasks.edit', task.id));
+}
+
+function handleStatusChange(task, newStatus) {
+    localStatus[task.id] = newStatus;
+
+    if (task.status === 'completed' && newStatus !== 'completed') {
+        revertingTask.value = { task, newStatus };
+        return;
+    }
+
+    submitStatus(task, newStatus);
+}
+
+function submitStatus(task, newStatus) {
+    revertingTask.value = null;
+    processingStatusIds.add(task.id);
+    router.put(
+        route('tasks.update', task.id),
+        {
+            status: newStatus,
+            return_to: window.location.pathname + window.location.search,
+        },
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onError: () => {
+                localStatus[task.id] = task.status;
+            },
+            onFinish: () => {
+                processingStatusIds.delete(task.id);
+            },
+        },
+    );
+}
+
+function confirmRevert() {
+    submitStatus(revertingTask.value.task, revertingTask.value.newStatus);
+}
+
+function cancelRevert() {
+    if (revertingTask.value) {
+        localStatus[revertingTask.value.task.id] = revertingTask.value.task.status;
+    }
+    revertingTask.value = null;
+}
 </script>
 
 <template>
@@ -206,15 +271,11 @@ const hasActiveFilters = () =>
                                 <tr
                                     v-for="task in tasks.data"
                                     :key="task.id"
-                                    class="hover:bg-gray-50"
+                                    class="cursor-pointer hover:bg-gray-50"
+                                    @click="goToEdit(task)"
                                 >
                                     <td class="px-4 py-3 font-medium text-gray-900">
-                                        <Link
-                                            :href="route('tasks.edit', task.id)"
-                                            class="hover:text-indigo-600"
-                                        >
-                                            {{ task.client?.name }}
-                                        </Link>
+                                        {{ task.client?.name }}
                                     </td>
                                     <td class="px-4 py-3 text-gray-600">
                                         {{ task.procedure_type?.name }}
@@ -231,9 +292,42 @@ const hasActiveFilters = () =>
                                         <span v-if="task.is_overdue"
                                             >（期限超過）</span
                                         >
+                                        <div
+                                            v-if="
+                                                task.original_due_date &&
+                                                task.original_due_date.slice(0, 10) !==
+                                                    task.due_date?.slice(0, 10)
+                                            "
+                                            class="text-xs font-normal text-gray-400"
+                                        >
+                                            元の期限：{{
+                                                task.original_due_date.slice(0, 10)
+                                            }}
+                                        </div>
                                     </td>
-                                    <td class="px-4 py-3">
+                                    <td class="px-4 py-3" @click.stop>
+                                        <select
+                                            v-if="task.can_update"
+                                            :value="localStatus[task.id]"
+                                            :disabled="processingStatusIds.has(task.id)"
+                                            class="rounded-md border-gray-300 py-1 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-50 disabled:text-gray-400"
+                                            @change="
+                                                handleStatusChange(
+                                                    task,
+                                                    $event.target.value,
+                                                )
+                                            "
+                                        >
+                                            <option
+                                                v-for="(label, value) in statusLabels"
+                                                :key="value"
+                                                :value="value"
+                                            >
+                                                {{ label }}
+                                            </option>
+                                        </select>
                                         <TaskStatusBadge
+                                            v-else
                                             :status="task.status"
                                         />
                                     </td>
@@ -243,13 +337,8 @@ const hasActiveFilters = () =>
                                             '未割当'
                                         }}
                                     </td>
-                                    <td class="px-4 py-3 text-right">
-                                        <Link
-                                            :href="route('tasks.edit', task.id)"
-                                            class="text-sm text-indigo-600 hover:text-indigo-900"
-                                        >
-                                            詳細
-                                        </Link>
+                                    <td class="px-4 py-3 text-right text-gray-300">
+                                        ›
                                     </td>
                                 </tr>
                                 <tr v-if="tasks.data.length === 0">
@@ -295,5 +384,29 @@ const hasActiveFilters = () =>
                 </div>
             </div>
         </div>
+
+        <Modal :show="revertingTask !== null" @close="cancelRevert">
+            <div v-if="revertingTask" class="p-6">
+                <h2 class="text-lg font-medium text-gray-900">
+                    「{{ revertingTask.task.client?.name }}」の「{{
+                        revertingTask.task.procedure_type?.name
+                    }}」を「完了」から「{{
+                        statusLabels[revertingTask.newStatus]
+                    }}」に戻しますか？
+                </h2>
+                <p class="mt-1 text-sm text-gray-600">
+                    完了済みタスクのステータスを後戻しします。この操作は取り消せません。
+                </p>
+
+                <div class="mt-6 flex justify-end gap-3">
+                    <SecondaryButton @click="cancelRevert">
+                        キャンセル
+                    </SecondaryButton>
+                    <DangerButton @click="confirmRevert">
+                        後戻しする
+                    </DangerButton>
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>
