@@ -100,6 +100,13 @@ watch(
                 >
                     ユーザー管理
                 </ResponsiveNavLink>
+                <ResponsiveNavLink
+                    v-if="page.props.auth.user.role === 'owner'"
+                    :href="route('settings.custom-fields.index')"
+                    :active="route().current('settings.custom-fields.*')"
+                >
+                    カスタムフィールド設定
+                </ResponsiveNavLink>
             </nav>
 
             <div class="shrink-0 border-t border-gray-100 p-4">

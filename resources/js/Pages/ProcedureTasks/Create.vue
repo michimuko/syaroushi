@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import CustomFieldInputs from '@/Components/CustomFieldInputs.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import MyNumberWarning from '@/Components/MyNumberWarning.vue';
@@ -9,11 +10,13 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { containsMyNumberLikeString } from '@/Composables/useMyNumberDetection';
+import { initialCustomFieldValues } from '@/Composables/useCustomFieldValues';
 
 const props = defineProps({
     clientOptions: Array,
     staffOptions: Array,
     procedureTypeOptions: Array,
+    customFieldDefinitions: Array,
 });
 
 const form = useForm({
@@ -23,6 +26,7 @@ const form = useForm({
     due_date: '',
     assigned_user_id: '',
     notes: '',
+    custom_fields: initialCustomFieldValues(props.customFieldDefinitions),
 });
 
 const notesHasMyNumber = computed(() => containsMyNumberLikeString(form.notes));
@@ -209,6 +213,12 @@ const submit = () => {
                                 />
                             </div>
                         </div>
+
+                        <CustomFieldInputs
+                            v-model="form.custom_fields"
+                            :definitions="customFieldDefinitions"
+                            :errors="form.errors"
+                        />
 
                         <div
                             class="mt-6 flex items-center justify-end gap-3 border-t border-gray-100 pt-6"

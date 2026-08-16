@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import CustomFieldInputs from '@/Components/CustomFieldInputs.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -12,12 +13,14 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TaskStatusBadge from '@/Components/TaskStatusBadge.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { containsMyNumberLikeString } from '@/Composables/useMyNumberDetection';
+import { initialCustomFieldValues } from '@/Composables/useCustomFieldValues';
 
 const props = defineProps({
     task: Object,
     staffOptions: Array,
     canUpdate: Boolean,
     returnTo: String,
+    customFieldDefinitions: Array,
 });
 
 const statusLabels = {
@@ -34,6 +37,10 @@ const form = useForm({
     assigned_user_id: props.task.assigned_user_id ?? '',
     notes: props.task.notes ?? '',
     return_to: props.returnTo ?? null,
+    custom_fields: initialCustomFieldValues(
+        props.customFieldDefinitions,
+        props.task.custom_fields,
+    ),
 });
 
 const backLabel = props.returnTo === '/calendar' ? 'カレンダーに戻る' : '一覧に戻る';
@@ -213,6 +220,13 @@ function save() {
                                 :show="notesHasMyNumber"
                             />
                         </div>
+
+                        <CustomFieldInputs
+                            v-model="form.custom_fields"
+                            :definitions="customFieldDefinitions"
+                            :errors="form.errors"
+                            :disabled="!canUpdate"
+                        />
 
                         <div
                             class="flex items-center justify-between border-t border-gray-100 pt-4"

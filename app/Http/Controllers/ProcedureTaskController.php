@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CustomFieldTarget;
 use App\Enums\TaskStatus;
+use App\Models\CustomFieldDefinition;
 use App\Models\ProcedureTask;
 use App\Models\ProcedureType;
+use App\Services\CustomFieldValueValidator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -77,6 +80,7 @@ class ProcedureTaskController extends Controller
                 ->orderBy('category')
                 ->orderBy('name')
                 ->get(['id', 'name', 'category']),
+            'customFieldDefinitions' => $this->customFieldDefinitions(),
         ]);
     }
 
@@ -87,7 +91,7 @@ class ProcedureTaskController extends Controller
     {
         $this->authorize('create', ProcedureTask::class);
 
-        $validated = $request->validate([
+        $rules = [
             'client_id' => [
                 'required',
                 Rule::exists('clients', 'id')->where('office_id', Auth::user()->office_id),
@@ -100,7 +104,10 @@ class ProcedureTaskController extends Controller
                 Rule::exists('users', 'id')->where('office_id', Auth::user()->office_id),
             ],
             'notes' => 'nullable|string|max:2000',
-        ]);
+        ];
+        $rules = array_merge($rules, app(CustomFieldValueValidator::class)->rules($this->customFieldDefinitions()));
+
+        $validated = $request->validate($rules);
 
         $validated['status'] = TaskStatus::NotStarted;
         $validated['original_due_date'] = $validated['due_date'];
@@ -124,6 +131,7 @@ class ProcedureTaskController extends Controller
             'staffOptions' => $this->staffOptions(),
             'canUpdate' => Auth::user()->can('update', $task),
             'returnTo' => $this->sanitizeReturnTo($request->query('return_to')),
+            'customFieldDefinitions' => $this->customFieldDefinitions(),
         ]);
     }
 
@@ -134,7 +142,7 @@ class ProcedureTaskController extends Controller
     {
         $this->authorize('update', $task);
 
-        $validated = $request->validate([
+        $rules = [
             'status' => ['required', Rule::enum(TaskStatus::class)],
             'due_date' => 'sometimes|required|date',
             'assigned_user_id' => [
@@ -143,7 +151,10 @@ class ProcedureTaskController extends Controller
             ],
             'notes' => 'nullable|string|max:2000',
             'return_to' => 'nullable|string',
-        ]);
+        ];
+        $rules = array_merge($rules, app(CustomFieldValueValidator::class)->rules($this->customFieldDefinitions()));
+
+        $validated = $request->validate($rules);
 
         $returnTo = $this->sanitizeReturnTo(Arr::pull($validated, 'return_to'));
 
@@ -180,5 +191,16 @@ class ProcedureTaskController extends Controller
     private function staffOptions(): Collection
     {
         return Auth::user()->office->users()->select('id', 'name')->orderBy('name')->get();
+    }
+
+    /**
+     * @return Collection<int, CustomFieldDefinition>
+     */
+    private function customFieldDefinitions(): Collection
+    {
+        return CustomFieldDefinition::query()
+            ->where('target', CustomFieldTarget::ProcedureTask)
+            ->orderBy('id')
+            ->get();
     }
 }

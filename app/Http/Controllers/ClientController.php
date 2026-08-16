@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ClientStatus;
+use App\Enums\CustomFieldTarget;
 use App\Models\Client;
+use App\Models\CustomFieldDefinition;
 use App\Models\ProcedureType;
+use App\Services\CustomFieldValueValidator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -53,6 +57,7 @@ class ClientController extends Controller
 
         return Inertia::render('Clients/Create', [
             'staffOptions' => Auth::user()->office->users()->select('id', 'name')->orderBy('name')->get(),
+            'customFieldDefinitions' => $this->customFieldDefinitions(),
         ]);
     }
 
@@ -88,6 +93,7 @@ class ClientController extends Controller
             'subscribedProcedureTypeIds' => $client->procedureSubscriptions()
                 ->where('is_active', true)
                 ->pluck('procedure_type_id'),
+            'customFieldDefinitions' => $this->customFieldDefinitions(),
         ]);
     }
 
@@ -122,7 +128,7 @@ class ClientController extends Controller
      */
     private function validateClient(Request $request): array
     {
-        return $request->validate([
+        $rules = [
             'name' => 'required|string|max:255',
             'representative_name' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:255',
@@ -135,6 +141,21 @@ class ClientController extends Controller
                 Rule::exists('users', 'id')->where('office_id', Auth::user()->office_id),
             ],
             'notes' => 'nullable|string|max:2000',
-        ]);
+        ];
+
+        $rules = array_merge($rules, app(CustomFieldValueValidator::class)->rules($this->customFieldDefinitions()));
+
+        return $request->validate($rules);
+    }
+
+    /**
+     * @return Collection<int, CustomFieldDefinition>
+     */
+    private function customFieldDefinitions(): Collection
+    {
+        return CustomFieldDefinition::query()
+            ->where('target', CustomFieldTarget::Client)
+            ->orderBy('id')
+            ->get();
     }
 }

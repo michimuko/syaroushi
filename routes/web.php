@@ -7,6 +7,7 @@ use App\Http\Controllers\ClientExportController;
 use App\Http\Controllers\ClientImportController;
 use App\Http\Controllers\ClientProcedureSubscriptionController;
 use App\Http\Controllers\ClientReportController;
+use App\Http\Controllers\CustomFieldDefinitionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProcedureTaskCalcResultController;
 use App\Http\Controllers\ProcedureTaskController;
@@ -84,6 +85,11 @@ Route::middleware('auth:web')->group(function () {
 
     Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
     Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy'])->name('push-subscriptions.destroy');
+
+    Route::get('/settings/custom-fields', [CustomFieldDefinitionController::class, 'index'])->name('settings.custom-fields.index');
+    Route::post('/settings/custom-fields', [CustomFieldDefinitionController::class, 'store'])->name('settings.custom-fields.store');
+    Route::put('/settings/custom-fields/{customFieldDefinition}', [CustomFieldDefinitionController::class, 'update'])->name('settings.custom-fields.update');
+    Route::delete('/settings/custom-fields/{customFieldDefinition}', [CustomFieldDefinitionController::class, 'destroy'])->name('settings.custom-fields.destroy');
 });
 
 require __DIR__.'/auth.php';

@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import CustomFieldInputs from '@/Components/CustomFieldInputs.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import MyNumberWarning from '@/Components/MyNumberWarning.vue';
@@ -9,12 +10,14 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { containsMyNumberLikeString } from '@/Composables/useMyNumberDetection';
+import { initialCustomFieldValues } from '@/Composables/useCustomFieldValues';
 
 const props = defineProps({
     client: Object,
     staffOptions: Array,
     procedureTypes: Array,
     subscribedProcedureTypeIds: Array,
+    customFieldDefinitions: Array,
 });
 
 const form = useForm({
@@ -29,6 +32,10 @@ const form = useForm({
     status: props.client.status,
     assigned_user_id: props.client.assigned_user_id ?? '',
     notes: props.client.notes ?? '',
+    custom_fields: initialCustomFieldValues(
+        props.customFieldDefinitions,
+        props.client.custom_fields,
+    ),
 });
 
 const submit = () => {
@@ -251,6 +258,12 @@ const submitSubscriptions = () => {
                                 />
                             </div>
                         </div>
+
+                        <CustomFieldInputs
+                            v-model="form.custom_fields"
+                            :definitions="customFieldDefinitions"
+                            :errors="form.errors"
+                        />
 
                         <div
                             class="mt-6 flex items-center justify-between border-t border-gray-100 pt-6"
