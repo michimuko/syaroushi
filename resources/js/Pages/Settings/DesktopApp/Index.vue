@@ -9,10 +9,49 @@ import { Head, useForm, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
     token: Object,
+    release: Object,
 });
 
 const page = usePage();
 const issuedToken = computed(() => page.props.flash?.desktopAppToken);
+
+const osOptions = [
+    { key: 'windows', label: 'Windows', hint: '.msi' },
+    { key: 'macos', label: 'Mac', hint: '.dmg' },
+    { key: 'linux', label: 'Linux', hint: '.AppImage' },
+];
+
+// ダウンロードボタンを並べる順番の先頭に、利用者のOSを推定して出す（誤クリック防止のための案内であり、
+// 判定を誤っても他OS用のボタンも常に表示するので実害はない）。
+const detectedOs = (() => {
+    if (typeof navigator === 'undefined') {
+        return null;
+    }
+    const ua = navigator.userAgent;
+    if (/Windows/i.test(ua)) return 'windows';
+    if (/Mac OS X|Macintosh/i.test(ua)) return 'macos';
+    if (/Linux/i.test(ua)) return 'linux';
+    return null;
+})();
+
+const orderedOsOptions = computed(() => {
+    if (!detectedOs) {
+        return osOptions;
+    }
+    return [...osOptions].sort((a, b) =>
+        a.key === detectedOs ? -1 : b.key === detectedOs ? 1 : 0,
+    );
+});
+
+function assetFor(osKey) {
+    return props.release?.assets?.[osKey] ?? null;
+}
+
+function formatSize(bytes) {
+    if (!bytes) return '';
+    const mb = bytes / 1024 / 1024;
+    return `${mb.toFixed(1)} MB`;
+}
 
 const issueForm = useForm({});
 const revokeForm = useForm({});
@@ -53,8 +92,78 @@ function revokeToken() {
             <div class="mx-auto max-w-3xl space-y-6 sm:px-6 lg:px-8">
                 <p class="text-sm text-gray-500">
                     OS標準の通知センターに直接プッシュする常駐型デスクトップアプリ（Tauri製）を利用するには、
-                    ここで発行するAPIトークンをアプリの初回起動時に設定してください。トークンは本人の通知のみ取得できます。
+                    下記からインストーラーをダウンロードして実行し、続けてAPIトークンをアプリの初回起動時に設定してください。トークンは本人の通知のみ取得できます。
                 </p>
+
+                <div class="rounded-lg bg-white p-6 shadow-sm">
+                    <h3 class="mb-1 text-sm font-semibold text-gray-700">
+                        1. アプリをダウンロードしてインストールする
+                    </h3>
+
+                    <template v-if="release">
+                        <p class="mb-4 text-xs text-gray-500">
+                            最新バージョン：{{ release.version }}
+                        </p>
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                            <a
+                                v-for="option in orderedOsOptions"
+                                :key="option.key"
+                                :href="
+                                    assetFor(option.key)
+                                        ? route('settings.desktop-app.download', option.key)
+                                        : undefined
+                                "
+                                class="rounded-md border px-4 py-3 text-center"
+                                :class="
+                                    assetFor(option.key)
+                                        ? option.key === detectedOs
+                                            ? 'border-indigo-600 bg-indigo-50 hover:bg-indigo-100'
+                                            : 'border-gray-200 hover:bg-gray-50'
+                                        : 'cursor-not-allowed border-gray-100 text-gray-300'
+                                "
+                            >
+                                <span
+                                    v-if="option.key === detectedOs"
+                                    class="mb-1 block text-xs font-semibold text-indigo-600"
+                                >
+                                    お使いのPC向け
+                                </span>
+                                <span class="block text-sm font-semibold text-gray-800">
+                                    {{ option.label }}用をダウンロード
+                                </span>
+                                <span class="mt-0.5 block text-xs text-gray-400">
+                                    <template v-if="assetFor(option.key)">
+                                        {{ option.hint }}・{{
+                                            formatSize(assetFor(option.key).size)
+                                        }}
+                                    </template>
+                                    <template v-else> 準備中 </template>
+                                </span>
+                            </a>
+                        </div>
+                        <p class="mt-3 text-xs text-gray-500">
+                            ダウンロードしたインストーラーを実行するだけでセットアップは完了します（Rustや開発ツールのインストールは不要です）。
+                        </p>
+                    </template>
+                    <div
+                        v-else
+                        class="rounded-md border border-dashed border-gray-200 bg-gray-50 p-4"
+                    >
+                        <p class="text-sm font-medium text-gray-700">
+                            インストーラーは現在準備中です
+                        </p>
+                        <p class="mt-1 text-sm text-gray-500">
+                            配布の準備が整い次第、この画面からダウンロードできるようになります。準備が整うまでは、下記の手順2・3は行わなくても構いません（先にトークンだけ発行しておくことも可能です）。
+                        </p>
+                    </div>
+                </div>
+
+                <h3 class="mb-1 mt-2 text-sm font-semibold text-gray-700">
+                    2. アプリにAPIトークンを設定する
+                    <span v-if="!release" class="ml-1 text-xs font-normal text-gray-400"
+                        >（アプリのダウンロードが可能になってからで構いません）</span
+                    >
+                </h3>
 
                 <div
                     v-if="issuedToken"
@@ -73,7 +182,7 @@ function revokeToken() {
 
                 <div class="rounded-lg bg-white p-6 shadow-sm">
                     <h3 class="mb-4 text-sm font-semibold text-gray-700">
-                        トークンの状態
+                        3. トークンの状態
                     </h3>
 
                     <div v-if="token" class="space-y-4">

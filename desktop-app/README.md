@@ -23,7 +23,26 @@ npm install
 npm run tauri dev
 ```
 
-## ビルド
+## 配布（利用者向け）
+
+利用者（社労士事務所のスタッフ）は自分でビルドする必要はない。Webアプリの
+「設定 &gt; デスクトップ通知アプリ」（`/settings/desktop-app`）から、OS向けのビルド済み
+インストーラーをダウンロードしてそのまま実行するだけでインストールできる。
+
+インストーラーの実体は `.github/workflows/desktop-app-release.yml` がタグpush
+（`desktop-app-v*`）をトリガーに `tauri-apps/tauri-action` でWindows/macOS/Linux向けに
+自動ビルドし、GitHub Releasesへ公開している。このリポジトリはprivateのため、Laravel側
+（`App\Services\DesktopAppReleaseService` / `DesktopAppDownloadController`）がサーバーの
+GitHubトークン（`GITHUB_TOKEN`環境変数）を使って最新リリースのアセット一覧取得・
+ダウンロードの中継を行う。
+
+新しいバージョンをリリースする手順：
+
+1. `desktop-app/package.json` と `desktop-app/src-tauri/tauri.conf.json` の `version` を更新する
+2. `git tag desktop-app-v0.2.0 && git push origin desktop-app-v0.2.0`
+3. Actionsの完了後、Webアプリの設定画面に反映される（最大10分キャッシュ、`DesktopAppReleaseService`）
+
+## 開発者向けビルド
 
 ```bash
 npm install

@@ -10,6 +10,7 @@ use App\Http\Controllers\ClientProcedureSubscriptionController;
 use App\Http\Controllers\ClientReportController;
 use App\Http\Controllers\CustomFieldDefinitionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DesktopAppDownloadController;
 use App\Http\Controllers\DesktopAppTokenController;
 use App\Http\Controllers\ProcedureTaskCalcResultController;
 use App\Http\Controllers\ProcedureTaskController;
@@ -98,6 +99,7 @@ Route::middleware('auth:web')->group(function () {
     Route::get('/settings/desktop-app', [DesktopAppTokenController::class, 'index'])->name('settings.desktop-app.index');
     Route::post('/settings/desktop-app/token', [DesktopAppTokenController::class, 'store'])->name('settings.desktop-app.token.store');
     Route::delete('/settings/desktop-app/token', [DesktopAppTokenController::class, 'destroy'])->name('settings.desktop-app.token.destroy');
+    Route::get('/settings/desktop-app/download/{os}', [DesktopAppDownloadController::class, 'download'])->name('settings.desktop-app.download');
 });
 
 require __DIR__.'/auth.php';

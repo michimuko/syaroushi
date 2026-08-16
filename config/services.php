@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'github' => [
+        // デスクトップ通知アプリのインストーラーをGitHub Releasesから配布するために使う。
+        // リポジトリがprivateのため、一覧取得・ダウンロードともにトークンでの認証が必要。
+        // Fine-grained PATを、対象リポジトリの Contents: Read-only 権限のみで発行すること。
+        'token' => env('GITHUB_TOKEN'),
+        'desktop_app_repo' => env('GITHUB_DESKTOP_APP_REPO', 'michimuko/syaroushi'),
+    ],
+
 ];

@@ -7,6 +7,19 @@ it('requires authentication', function () {
     $this->get(route('settings.desktop-app.index'))->assertRedirect(route('login'));
 });
 
+it('renders with a null release when GitHub is not configured', function () {
+    config(['services.github.token' => null]);
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+
+    $response = $this->actingAs($user)->get(route('settings.desktop-app.index'));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('Settings/DesktopApp/Index')
+        ->where('release', null));
+});
+
 it('issues a token with the desktop-notifications ability and flashes the plaintext once', function () {
     $office = Office::factory()->create();
     $user = User::factory()->for($office)->create();
