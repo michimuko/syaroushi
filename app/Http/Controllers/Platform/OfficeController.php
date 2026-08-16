@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Platform;
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\BillingSetting;
 use App\Models\Office;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -62,6 +63,7 @@ class OfficeController extends Controller
             $office = Office::create([
                 'name' => $validated['office_name'],
                 'contract_plan' => $validated['contract_plan'] ?? null,
+                'trial_ends_at' => now()->addDays(BillingSetting::current()->trial_days),
             ]);
 
             User::create([
@@ -95,6 +97,7 @@ class OfficeController extends Controller
             'name' => 'required|string|max:255',
             'contract_plan' => 'nullable|string|max:255',
             'is_active' => 'required|boolean',
+            'trial_ends_at' => 'nullable|date',
         ]);
 
         $office->update($validated);

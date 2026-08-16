@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CalcAssistantController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ClientController;
@@ -90,6 +91,8 @@ Route::middleware('auth:web')->group(function () {
     Route::post('/settings/custom-fields', [CustomFieldDefinitionController::class, 'store'])->name('settings.custom-fields.store');
     Route::put('/settings/custom-fields/{customFieldDefinition}', [CustomFieldDefinitionController::class, 'update'])->name('settings.custom-fields.update');
     Route::delete('/settings/custom-fields/{customFieldDefinition}', [CustomFieldDefinitionController::class, 'destroy'])->name('settings.custom-fields.destroy');
+
+    Route::get('/settings/billing', [BillingController::class, 'index'])->name('settings.billing.index');
 });
 
 require __DIR__.'/auth.php';

@@ -13,3 +13,6 @@ Schedule::command('procedures:generate-upcoming')->daily();
 Schedule::command('procedures:send-reminders')->daily();
 Schedule::command('documents:notify-retention-expiry')->daily();
 Schedule::command('imports:cleanup-stale-files')->daily();
+
+// 企画書11章：前月分の請求記録を月初に生成
+Schedule::command('billing:generate-invoices')->monthlyOn(1, '01:00');

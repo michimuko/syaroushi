@@ -112,6 +112,13 @@ watch(
                 >
                     カスタムフィールド設定
                 </ResponsiveNavLink>
+                <ResponsiveNavLink
+                    v-if="page.props.auth.user.role === 'owner'"
+                    :href="route('settings.billing.index')"
+                    :active="route().current('settings.billing.*')"
+                >
+                    契約・請求
+                </ResponsiveNavLink>
             </nav>
 
             <div class="shrink-0 border-t border-gray-100 p-4">

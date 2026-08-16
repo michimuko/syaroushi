@@ -50,6 +50,11 @@ defineProps({
                                     >
                                         利用状況
                                     </th>
+                                    <th
+                                        class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                                    >
+                                        トライアル終了日
+                                    </th>
                                     <th class="px-4 py-3" />
                                 </tr>
                             </thead>
@@ -94,6 +99,16 @@ defineProps({
                                             }}
                                         </span>
                                     </td>
+                                    <td class="px-4 py-3 text-gray-600">
+                                        {{
+                                            office.trial_ends_at
+                                                ? office.trial_ends_at.slice(
+                                                      0,
+                                                      10,
+                                                  )
+                                                : '-'
+                                        }}
+                                    </td>
                                     <td class="px-4 py-3 text-right">
                                         <Link
                                             :href="
@@ -110,7 +125,7 @@ defineProps({
                                 </tr>
                                 <tr v-if="offices.data.length === 0">
                                     <td
-                                        colspan="5"
+                                        colspan="6"
                                         class="px-4 py-12 text-center text-sm text-gray-500"
                                     >
                                         契約中の事務所がありません。

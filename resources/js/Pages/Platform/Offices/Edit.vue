@@ -16,6 +16,9 @@ const form = useForm({
     name: props.office.name,
     contract_plan: props.office.contract_plan ?? '',
     is_active: props.office.is_active,
+    trial_ends_at: props.office.trial_ends_at
+        ? props.office.trial_ends_at.slice(0, 10)
+        : '',
 });
 
 const submit = () => {
@@ -70,6 +73,25 @@ const submit = () => {
                                 <InputError
                                     class="mt-1"
                                     :message="form.errors.contract_plan"
+                                />
+                            </div>
+
+                            <div class="sm:col-span-2">
+                                <InputLabel for="trial_ends_at">
+                                    トライアル終了日
+                                </InputLabel>
+                                <TextInput
+                                    id="trial_ends_at"
+                                    type="date"
+                                    class="mt-1 block w-full"
+                                    v-model="form.trial_ends_at"
+                                />
+                                <p class="mt-1 text-xs text-gray-500">
+                                    空欄にするとトライアル期間なし（即時課金対象）になります。この日以降、月初のバッチで請求記録が生成されます。
+                                </p>
+                                <InputError
+                                    class="mt-1"
+                                    :message="form.errors.trial_ends_at"
                                 />
                             </div>
                         </div>
