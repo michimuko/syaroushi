@@ -144,6 +144,12 @@ watch(
                         プロフィール
                     </Link>
                     <Link
+                        :href="route('settings.desktop-app.index')"
+                        class="block rounded-md px-2 py-1.5 text-sm text-gray-600 transition duration-150 ease-in-out hover:bg-gray-50 hover:text-gray-900"
+                    >
+                        デスクトップ通知アプリ
+                    </Link>
+                    <Link
                         :href="route('logout')"
                         method="post"
                         as="button"

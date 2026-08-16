@@ -10,6 +10,7 @@ use App\Http\Controllers\ClientProcedureSubscriptionController;
 use App\Http\Controllers\ClientReportController;
 use App\Http\Controllers\CustomFieldDefinitionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DesktopAppTokenController;
 use App\Http\Controllers\ProcedureTaskCalcResultController;
 use App\Http\Controllers\ProcedureTaskController;
 use App\Http\Controllers\ProcedureTaskDocumentController;
@@ -93,6 +94,10 @@ Route::middleware('auth:web')->group(function () {
     Route::delete('/settings/custom-fields/{customFieldDefinition}', [CustomFieldDefinitionController::class, 'destroy'])->name('settings.custom-fields.destroy');
 
     Route::get('/settings/billing', [BillingController::class, 'index'])->name('settings.billing.index');
+
+    Route::get('/settings/desktop-app', [DesktopAppTokenController::class, 'index'])->name('settings.desktop-app.index');
+    Route::post('/settings/desktop-app/token', [DesktopAppTokenController::class, 'store'])->name('settings.desktop-app.token.store');
+    Route::delete('/settings/desktop-app/token', [DesktopAppTokenController::class, 'destroy'])->name('settings.desktop-app.token.destroy');
 });
 
 require __DIR__.'/auth.php';

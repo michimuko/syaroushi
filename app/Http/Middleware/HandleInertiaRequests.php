@@ -39,6 +39,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
+                'desktopAppToken' => fn () => $request->session()->get('desktopAppToken'),
             ],
             'vapidPublicKey' => config('webpush.vapid.public_key'),
         ];

@@ -8,4 +8,5 @@ enum NotificationChannel: string
     case Slack = 'slack';
     case Line = 'line';
     case WebPush = 'webpush';
+    case Desktop = 'desktop';
 }
