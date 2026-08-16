@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Client;
+use App\Models\CustomFieldDefinition;
 use App\Models\Office;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -217,6 +218,90 @@ it('imports a row with a warning (my number-like notes) but still creates the re
     ]);
 
     expect(Client::sole()->notes)->toContain('1234-5678-9012');
+});
+
+it('exposes the office\'s custom field definitions as mappable target fields', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    CustomFieldDefinition::factory()->for($office)->create(['label' => '管理番号']);
+    $file = buildClientImportXlsx(['name'], [['アルファ商事']]);
+
+    $response = $this->actingAs($owner)->post(route('clients.import.preview'), ['file' => $file]);
+
+    $props = clientImportInertiaProps($response);
+    $labels = array_column($props['targetFields'], 'label');
+    expect($labels)->toContain('管理番号（カスタムフィールド）');
+});
+
+it('imports a custom field value mapped from a spreadsheet column', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $text = CustomFieldDefinition::factory()->for($office)->create(['label' => '管理番号', 'field_type' => 'text']);
+    $checkbox = CustomFieldDefinition::factory()->for($office)->create(['label' => '要注意', 'field_type' => 'checkbox']);
+
+    $file = buildClientImportXlsx(
+        ['顧問先名', '管理番号', '要注意'],
+        [['アルファ商事', 'A-001', 'はい']],
+    );
+
+    $preview = $this->actingAs($owner)->post(route('clients.import.preview'), ['file' => $file]);
+    $token = clientImportInertiaProps($preview)['token'];
+    $mapping = [0 => 'name', 1 => "custom_field_{$text->id}", 2 => "custom_field_{$checkbox->id}"];
+
+    $this->actingAs($owner)->post(route('clients.import.validate'), [
+        'token' => $token,
+        'mapping' => $mapping,
+    ])->assertInertia(fn ($page) => $page->where('summary.valid', 1));
+
+    $this->actingAs($owner)->post(route('clients.import.commit'), [
+        'token' => $token,
+        'mapping' => $mapping,
+    ]);
+
+    $client = Client::sole();
+    expect($client->custom_fields[$text->id])->toBe('A-001')
+        ->and($client->custom_fields[$checkbox->id])->toBeTrue();
+});
+
+it('rejects a row whose custom field value is invalid for its type', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $select = CustomFieldDefinition::factory()->for($office)->select()->create(['label' => '業界']);
+
+    $file = buildClientImportXlsx(
+        ['顧問先名', '業界'],
+        [['アルファ商事', '未定義の選択肢']],
+    );
+
+    $preview = $this->actingAs($owner)->post(route('clients.import.preview'), ['file' => $file]);
+    $token = clientImportInertiaProps($preview)['token'];
+    $mapping = [0 => 'name', 1 => "custom_field_{$select->id}"];
+
+    $this->actingAs($owner)->post(route('clients.import.validate'), [
+        'token' => $token,
+        'mapping' => $mapping,
+    ])->assertInertia(fn ($page) => $page->where('summary.invalid', 1));
+
+    $this->actingAs($owner)->post(route('clients.import.commit'), [
+        'token' => $token,
+        'mapping' => $mapping,
+    ]);
+
+    expect(Client::count())->toBe(0);
+});
+
+it('does not offer another office\'s custom field definitions as mapping targets (tenant isolation)', function () {
+    $office = Office::factory()->create();
+    $otherOffice = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    CustomFieldDefinition::factory()->for($otherOffice)->create(['label' => '他事務所の項目']);
+    $file = buildClientImportXlsx(['name'], [['アルファ商事']]);
+
+    $response = $this->actingAs($owner)->post(route('clients.import.preview'), ['file' => $file]);
+
+    $props = clientImportInertiaProps($response);
+    $labels = array_column($props['targetFields'], 'label');
+    expect($labels)->not->toContain('他事務所の項目（カスタムフィールド）');
 });
 
 it('deletes the temp file after a successful commit', function () {

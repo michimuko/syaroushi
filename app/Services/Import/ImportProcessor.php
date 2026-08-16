@@ -12,11 +12,11 @@ use Illuminate\Database\Eloquent\Model;
 interface ImportProcessor
 {
     /**
-     * マッピング先として選べるシステム項目一覧。
+     * マッピング先として選べるシステム項目一覧（事務所ごとのカスタムフィールド定義を含む）。
      *
      * @return array<int, array{key: string, label: string, required: bool}>
      */
-    public function fields(): array;
+    public function fields(Office $office): array;
 
     /**
      * 生の行データ（列インデックス => セル値）を、列マッピング（列インデックス => フィールドkey）で

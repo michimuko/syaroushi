@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Client;
+use App\Models\CustomFieldDefinition;
 use App\Models\Office;
 use App\Models\ProcedureTask;
 use App\Models\ProcedureType;
@@ -204,4 +205,55 @@ it('imports a row with a my number-like notes warning but still creates the task
     ]);
 
     expect(ProcedureTask::sole()->notes)->toContain('1234-5678-9012');
+});
+
+it('imports a procedure_task-target custom field value mapped from a spreadsheet column', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    Client::factory()->for($office)->create(['name' => 'アルファ商事']);
+    ProcedureType::factory()->create(['name' => '算定基礎届']);
+    $number = CustomFieldDefinition::factory()->for($office)->forProcedureTask()->create(['label' => '作業時間', 'field_type' => 'number']);
+
+    $file = buildTaskImportXlsx(
+        ['顧問先名', '手続き種別名', 'タイトル', '期限日', '作業時間'],
+        [['アルファ商事', '算定基礎届', 'タイトル', '2026-09-01', '3.5']],
+    );
+
+    $preview = $this->actingAs($owner)->post(route('tasks.import.preview'), ['file' => $file]);
+    $token = taskImportInertiaProps($preview)['token'];
+    $mapping = [0 => 'client_name', 1 => 'procedure_type_name', 2 => 'title', 3 => 'due_date', 4 => "custom_field_{$number->id}"];
+
+    $this->actingAs($owner)->post(route('tasks.import.validate'), [
+        'token' => $token,
+        'mapping' => $mapping,
+    ])->assertInertia(fn ($page) => $page->where('summary.valid', 1));
+
+    $this->actingAs($owner)->post(route('tasks.import.commit'), [
+        'token' => $token,
+        'mapping' => $mapping,
+    ]);
+
+    expect(ProcedureTask::sole()->custom_fields[$number->id])->toBe('3.5');
+});
+
+it('rejects a task row whose custom field value fails type validation', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    Client::factory()->for($office)->create(['name' => 'アルファ商事']);
+    ProcedureType::factory()->create(['name' => '算定基礎届']);
+    $number = CustomFieldDefinition::factory()->for($office)->forProcedureTask()->create(['label' => '作業時間', 'field_type' => 'number']);
+
+    $file = buildTaskImportXlsx(
+        ['顧問先名', '手続き種別名', 'タイトル', '期限日', '作業時間'],
+        [['アルファ商事', '算定基礎届', 'タイトル', '2026-09-01', '数値ではない']],
+    );
+
+    $preview = $this->actingAs($owner)->post(route('tasks.import.preview'), ['file' => $file]);
+    $token = taskImportInertiaProps($preview)['token'];
+    $mapping = [0 => 'client_name', 1 => 'procedure_type_name', 2 => 'title', 3 => 'due_date', 4 => "custom_field_{$number->id}"];
+
+    $this->actingAs($owner)->post(route('tasks.import.validate'), [
+        'token' => $token,
+        'mapping' => $mapping,
+    ])->assertInertia(fn ($page) => $page->where('summary.invalid', 1));
 });

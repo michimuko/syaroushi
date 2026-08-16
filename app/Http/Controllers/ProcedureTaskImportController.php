@@ -55,7 +55,7 @@ class ProcedureTaskImportController extends Controller
             'token' => $token,
             'headers' => $preview['headers'],
             'previewRows' => $preview['rows'],
-            'targetFields' => $this->processor->fields(),
+            'targetFields' => $this->processor->fields(Auth::user()->office),
             'validateRoute' => route('tasks.import.validate'),
             'backRoute' => route('tasks.import.create'),
         ]);

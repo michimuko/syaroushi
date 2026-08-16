@@ -55,7 +55,7 @@ class ClientImportController extends Controller
             'token' => $token,
             'headers' => $preview['headers'],
             'previewRows' => $preview['rows'],
-            'targetFields' => $this->processor->fields(),
+            'targetFields' => $this->processor->fields(Auth::user()->office),
             'validateRoute' => route('clients.import.validate'),
             'backRoute' => route('clients.import.create'),
         ]);

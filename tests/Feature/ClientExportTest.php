@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Client;
+use App\Models\CustomFieldDefinition;
 use App\Models\Office;
 use App\Models\User;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -67,4 +68,36 @@ it('requires authentication', function () {
     $response = $this->get(route('clients.export'));
 
     $response->assertRedirect(route('login'));
+});
+
+it('appends custom field columns and formats a checkbox value as TRUE/FALSE', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $text = CustomFieldDefinition::factory()->for($office)->create(['label' => '管理番号', 'field_type' => 'text']);
+    $checkbox = CustomFieldDefinition::factory()->for($office)->create(['label' => '要注意', 'field_type' => 'checkbox']);
+    Client::factory()->for($office)->create([
+        'name' => 'カスタム項目対象',
+        'custom_fields' => [$text->id => 'A-001', $checkbox->id => true],
+    ]);
+
+    $response = $this->actingAs($user)->get(route('clients.export', ['format' => 'xlsx']));
+
+    $sheet = readExportedSheet($response->baseResponse, 'xlsx');
+
+    expect($sheet->getCell('J1')->getValue())->toBe('管理番号')
+        ->and($sheet->getCell('K1')->getValue())->toBe('要注意')
+        ->and($sheet->getCell('J2')->getValue())->toBe('A-001')
+        ->and($sheet->getCell('K2')->getValue())->toBe('TRUE');
+});
+
+it('does not add custom field columns when the office has none defined', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    Client::factory()->for($office)->create(['name' => '通常の顧問先']);
+
+    $response = $this->actingAs($user)->get(route('clients.export', ['format' => 'xlsx']));
+
+    $sheet = readExportedSheet($response->baseResponse, 'xlsx');
+
+    expect($sheet->getCell('J1')->getValue())->toBeNull();
 });

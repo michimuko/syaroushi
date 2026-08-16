@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Client;
+use App\Models\CustomFieldDefinition;
 use App\Models\Office;
 use App\Models\ProcedureTask;
 use App\Models\ProcedureType;
@@ -95,4 +96,24 @@ it('requires authentication', function () {
     $response = $this->get(route('tasks.export'));
 
     $response->assertRedirect(route('login'));
+});
+
+it('appends procedure_task-target custom field columns', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+    $select = CustomFieldDefinition::factory()->for($office)->forProcedureTask()->select()->create(['label' => '緊急度']);
+    ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'custom_fields' => [$select->id => 'A'],
+    ]);
+
+    $response = $this->actingAs($user)->get(route('tasks.export', ['format' => 'xlsx']));
+
+    $sheet = readExportedTaskSheet($response->baseResponse, 'xlsx');
+
+    expect($sheet->getCell('H1')->getValue())->toBe('緊急度')
+        ->and($sheet->getCell('H2')->getValue())->toBe('A');
 });

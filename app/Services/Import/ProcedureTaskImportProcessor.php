@@ -2,6 +2,7 @@
 
 namespace App\Services\Import;
 
+use App\Enums\CustomFieldTarget;
 use App\Enums\TaskStatus;
 use App\Models\Client;
 use App\Models\Office;
@@ -17,7 +18,9 @@ use Throwable;
  */
 class ProcedureTaskImportProcessor implements ImportProcessor
 {
-    public function fields(): array
+    use ResolvesCustomFieldsForImport;
+
+    public function fields(Office $office): array
     {
         return [
             ['key' => 'client_name', 'label' => '顧問先名（事務所内の顧問先名と完全一致）', 'required' => true],
@@ -27,6 +30,7 @@ class ProcedureTaskImportProcessor implements ImportProcessor
             ['key' => 'status', 'label' => 'ステータス（未着手/進行中/書類収集済/提出済/完了）', 'required' => false],
             ['key' => 'assigned_user_name', 'label' => '担当者名（事務所内スタッフの氏名と完全一致）', 'required' => false],
             ['key' => 'notes', 'label' => 'メモ', 'required' => false],
+            ...$this->customFieldMappingFields($this->customFieldDefinitions($office, CustomFieldTarget::ProcedureTask)),
         ];
     }
 
@@ -150,6 +154,14 @@ class ProcedureTaskImportProcessor implements ImportProcessor
             ['label' => '担当者', 'value' => $assignedUserName],
             ['label' => 'メモ', 'value' => (string) ($notes ?? '')],
         ];
+
+        $customFields = $this->resolveCustomFields(
+            $this->customFieldDefinitions($office, CustomFieldTarget::ProcedureTask),
+            $mapped,
+        );
+        $errors = [...$errors, ...$customFields['errors']];
+        $display = [...$display, ...$customFields['display']];
+        $resolved['custom_fields'] = $customFields['values'];
 
         return ['errors' => $errors, 'warnings' => $warnings, 'resolved' => $resolved, 'display' => $display];
     }
