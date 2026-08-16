@@ -49,6 +49,7 @@ const submit = () => {
                                     type="text"
                                     class="mt-1 block w-full"
                                     v-model="form.office_name"
+                                    placeholder="例：〇〇社会保険労務士事務所"
                                     required
                                     autofocus
                                 />
@@ -67,6 +68,7 @@ const submit = () => {
                                     type="text"
                                     class="mt-1 block w-full"
                                     v-model="form.contract_plan"
+                                    placeholder="例：スタンダードプラン"
                                 />
                                 <InputError
                                     class="mt-1"
@@ -91,6 +93,7 @@ const submit = () => {
                                     type="text"
                                     class="mt-1 block w-full"
                                     v-model="form.owner_name"
+                                    placeholder="例：山田 太郎"
                                     required
                                 />
                                 <InputError
@@ -109,6 +112,7 @@ const submit = () => {
                                     type="email"
                                     class="mt-1 block w-full"
                                     v-model="form.owner_email"
+                                    placeholder="例：taro@example.co.jp"
                                     required
                                 />
                                 <InputError
@@ -127,6 +131,7 @@ const submit = () => {
                                     type="password"
                                     class="mt-1 block w-full"
                                     v-model="form.owner_password"
+                                    placeholder="8文字以上の半角英数字"
                                     required
                                     autocomplete="new-password"
                                 />
@@ -146,6 +151,7 @@ const submit = () => {
                                     type="password"
                                     class="mt-1 block w-full"
                                     v-model="form.owner_password_confirmation"
+                                    placeholder="確認のためもう一度入力してください"
                                     required
                                     autocomplete="new-password"
                                 />

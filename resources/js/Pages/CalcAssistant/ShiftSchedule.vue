@@ -126,6 +126,7 @@ function weekdayLabel(dateStr) {
                                             step="0.5"
                                             min="0"
                                             max="24"
+                                            placeholder="8"
                                             class="block w-24 rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         />
                                     </td>

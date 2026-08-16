@@ -122,6 +122,7 @@ const badgeClass = (violated) =>
                                             type="number"
                                             step="0.1"
                                             min="0"
+                                            placeholder="0"
                                             class="block w-24 rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         />
                                     </td>
@@ -131,6 +132,7 @@ const badgeClass = (violated) =>
                                             type="number"
                                             step="0.1"
                                             min="0"
+                                            placeholder="0"
                                             class="block w-24 rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         />
                                     </td>

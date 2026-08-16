@@ -165,6 +165,7 @@ function destroyField() {
                         :id="`add-label-${target}`"
                         class="mt-1 block w-full"
                         v-model="addForm.label"
+                        placeholder="例：管理番号"
                         required
                     />
                     <InputError class="mt-1" :message="addForm.errors.label" />
@@ -194,7 +195,7 @@ function destroyField() {
                     :key="index"
                     class="mt-1 flex items-center gap-2"
                 >
-                    <TextInput class="block w-48" v-model="addForm.options[index]" />
+                    <TextInput class="block w-48" v-model="addForm.options[index]" placeholder="例：Aプラン" />
                     <button
                         type="button"
                         class="text-xs text-gray-400 hover:text-red-600"
@@ -238,6 +239,7 @@ function destroyField() {
                     id="edit-label"
                     class="mt-1 block w-full"
                     v-model="editForm.label"
+                    placeholder="例：管理番号"
                     required
                 />
                 <InputError class="mt-1" :message="editForm.errors.label" />
@@ -250,7 +252,7 @@ function destroyField() {
                     :key="index"
                     class="mt-1 flex items-center gap-2"
                 >
-                    <TextInput class="block w-48" v-model="editForm.options[index]" />
+                    <TextInput class="block w-48" v-model="editForm.options[index]" placeholder="例：Aプラン" />
                     <button
                         type="button"
                         class="text-xs text-gray-400 hover:text-red-600"

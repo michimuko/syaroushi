@@ -68,6 +68,7 @@ const submit = () => {
                                     type="text"
                                     class="mt-1 block w-full"
                                     v-model="form.name"
+                                    placeholder="例：株式会社〇〇商事"
                                     required
                                     autofocus
                                 />
@@ -86,6 +87,7 @@ const submit = () => {
                                     type="text"
                                     class="mt-1 block w-full"
                                     v-model="form.representative_name"
+                                    placeholder="例：山田 太郎"
                                 />
                                 <InputError
                                     class="mt-1"
@@ -124,6 +126,7 @@ const submit = () => {
                                     type="text"
                                     class="mt-1 block w-full"
                                     v-model="form.phone"
+                                    placeholder="例：03-1234-5678"
                                 />
                                 <InputError
                                     class="mt-1"
@@ -138,6 +141,7 @@ const submit = () => {
                                     type="email"
                                     class="mt-1 block w-full"
                                     v-model="form.email"
+                                    placeholder="例：info@example.co.jp"
                                 />
                                 <InputError
                                     class="mt-1"
@@ -152,6 +156,7 @@ const submit = () => {
                                     type="text"
                                     class="mt-1 block w-full"
                                     v-model="form.address"
+                                    placeholder="例：東京都千代田区〇〇1-2-3"
                                 />
                                 <InputError
                                     class="mt-1"
@@ -214,6 +219,7 @@ const submit = () => {
                                     v-model="form.notes"
                                     rows="4"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    placeholder="対応履歴や留意事項などを入力してください（マイナンバーなど重要な個人情報は入力しないでください）"
                                 />
                                 <InputError
                                     class="mt-1"

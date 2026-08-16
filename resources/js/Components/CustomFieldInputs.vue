@@ -42,6 +42,7 @@ const values = defineModel({ type: Object, required: true });
                     class="mt-1 block w-full disabled:bg-gray-50 disabled:text-gray-500"
                     v-model="values[definition.id]"
                     :disabled="disabled"
+                    :placeholder="`${definition.label}を入力`"
                 />
                 <input
                     v-else-if="definition.field_type === 'number'"
@@ -49,6 +50,7 @@ const values = defineModel({ type: Object, required: true });
                     type="number"
                     v-model="values[definition.id]"
                     :disabled="disabled"
+                    :placeholder="`${definition.label}を半角数字で入力`"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-50 disabled:text-gray-500"
                 />
                 <input

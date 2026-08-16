@@ -66,6 +66,7 @@ const submit = () => {
                                     type="text"
                                     class="mt-1 block w-full"
                                     v-model="form.name"
+                                    placeholder="例：山田 花子"
                                     required
                                     autofocus
                                 />
@@ -85,6 +86,7 @@ const submit = () => {
                                     type="email"
                                     class="mt-1 block w-full"
                                     v-model="form.email"
+                                    placeholder="例：hanako@example.co.jp"
                                     required
                                     autocomplete="username"
                                 />

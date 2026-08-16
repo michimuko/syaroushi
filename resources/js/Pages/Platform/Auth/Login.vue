@@ -35,6 +35,7 @@ const submit = () => {
                     type="email"
                     class="mt-1 block w-full"
                     v-model="form.email"
+                    placeholder="運営者アカウントのメールアドレス"
                     required
                     autofocus
                     autocomplete="username"

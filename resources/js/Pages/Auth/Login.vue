@@ -46,6 +46,7 @@ const submit = () => {
                     type="email"
                     class="mt-1 block w-full"
                     v-model="form.email"
+                    placeholder="例：taro@example.co.jp"
                     required
                     autofocus
                     autocomplete="username"

@@ -51,6 +51,7 @@ const submit = () => {
                                     type="text"
                                     class="mt-1 block w-full"
                                     v-model="form.name"
+                                    placeholder="例：〇〇社会保険労務士事務所"
                                     required
                                     autofocus
                                 />
@@ -69,6 +70,7 @@ const submit = () => {
                                     type="text"
                                     class="mt-1 block w-full"
                                     v-model="form.contract_plan"
+                                    placeholder="例：スタンダードプラン"
                                 />
                                 <InputError
                                     class="mt-1"

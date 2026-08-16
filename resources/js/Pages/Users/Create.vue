@@ -66,6 +66,7 @@ const submit = () => {
                                     type="text"
                                     class="mt-1 block w-full"
                                     v-model="form.name"
+                                    placeholder="例：山田 花子"
                                     required
                                     autofocus
                                 />
@@ -85,6 +86,7 @@ const submit = () => {
                                     type="email"
                                     class="mt-1 block w-full"
                                     v-model="form.email"
+                                    placeholder="例：hanako@example.co.jp"
                                     required
                                     autocomplete="username"
                                 />
@@ -154,6 +156,7 @@ const submit = () => {
                                     type="password"
                                     class="mt-1 block w-full"
                                     v-model="form.password"
+                                    placeholder="8文字以上の半角英数字"
                                     required
                                     autocomplete="new-password"
                                 />
@@ -173,6 +176,7 @@ const submit = () => {
                                     type="password"
                                     class="mt-1 block w-full"
                                     v-model="form.password_confirmation"
+                                    placeholder="確認のためもう一度入力してください"
                                     required
                                     autocomplete="new-password"
                                 />

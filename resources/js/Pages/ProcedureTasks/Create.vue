@@ -145,6 +145,7 @@ const submit = () => {
                                     type="text"
                                     class="mt-1 block w-full"
                                     v-model="form.title"
+                                    placeholder="例：算定基礎届の提出"
                                     required
                                 />
                                 <InputError
@@ -202,6 +203,7 @@ const submit = () => {
                                     v-model="form.notes"
                                     rows="3"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    placeholder="対応履歴や留意事項などを入力してください（マイナンバーなど重要な個人情報は入力しないでください）"
                                 />
                                 <InputError
                                     class="mt-1"

@@ -60,6 +60,7 @@ const submit = () => {
                     type="password"
                     class="mt-1 block w-full"
                     v-model="form.password"
+                    placeholder="8文字以上の半角英数字"
                     required
                     autocomplete="new-password"
                 />
@@ -78,6 +79,7 @@ const submit = () => {
                     type="password"
                     class="mt-1 block w-full"
                     v-model="form.password_confirmation"
+                    placeholder="確認のためもう一度入力してください"
                     required
                     autocomplete="new-password"
                 />

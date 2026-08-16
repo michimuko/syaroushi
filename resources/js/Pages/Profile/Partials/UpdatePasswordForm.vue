@@ -55,6 +55,7 @@ const updatePassword = () => {
                     v-model="form.current_password"
                     type="password"
                     class="mt-1 block w-full"
+                    placeholder="現在ログインに使用しているパスワード"
                     autocomplete="current-password"
                 />
 
@@ -73,6 +74,7 @@ const updatePassword = () => {
                     v-model="form.password"
                     type="password"
                     class="mt-1 block w-full"
+                    placeholder="8文字以上の半角英数字"
                     autocomplete="new-password"
                 />
 
@@ -90,6 +92,7 @@ const updatePassword = () => {
                     v-model="form.password_confirmation"
                     type="password"
                     class="mt-1 block w-full"
+                    placeholder="確認のためもう一度入力してください"
                     autocomplete="new-password"
                 />
 

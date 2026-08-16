@@ -53,6 +53,7 @@ const submit = () => {
                                     min="0"
                                     class="mt-1 block w-full"
                                     v-model.number="form.unit_price_per_client"
+                                    placeholder="例：500"
                                     required
                                     autofocus
                                 />
@@ -73,6 +74,7 @@ const submit = () => {
                                     min="0"
                                     class="mt-1 block w-full"
                                     v-model.number="form.trial_days"
+                                    placeholder="例：30"
                                     required
                                 />
                                 <p class="mt-1 text-xs text-gray-500">

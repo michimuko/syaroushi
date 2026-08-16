@@ -61,6 +61,7 @@ const submit = () => {
                                     type="text"
                                     class="mt-1 block w-full"
                                     v-model="form.name"
+                                    placeholder="例：算定基礎届（定時決定）"
                                     required
                                     autofocus
                                 />
@@ -80,6 +81,7 @@ const submit = () => {
                                     type="text"
                                     class="mt-1 block w-full"
                                     v-model="form.category"
+                                    placeholder="例：社会保険"
                                     required
                                 />
                                 <InputError
@@ -140,6 +142,7 @@ const submit = () => {
                                     v-model="form.description"
                                     rows="3"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    placeholder="この手続きの概要や、対応時の注意点などを入力してください"
                                 />
                                 <InputError
                                     class="mt-1"
