@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Permission;
 use App\Models\Office;
 use App\Models\ProcedureType;
 use App\Models\User;
@@ -88,6 +89,41 @@ test('a staff member cannot edit or update a procedure type (403)', function () 
 
     $response->assertForbidden();
     expect($procedureType->fresh()->recurrence_type)->toBe($procedureType->recurrence_type);
+});
+
+test('a staff member with the manage_procedure_types permission can edit and update a procedure type', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)
+        ->withPermissions([Permission::ManageProcedureTypes])
+        ->create();
+    $procedureType = ProcedureType::factory()->create();
+
+    $this->actingAs($staff)
+        ->get(route('procedure-types.edit', $procedureType))
+        ->assertOk();
+
+    $response = $this->actingAs($staff)->put(route('procedure-types.update', $procedureType), [
+        'name' => $procedureType->name,
+        'category' => $procedureType->category,
+        'recurrence_type' => 'monthly',
+        'default_lead_days' => [14, 7],
+        'is_active' => true,
+    ]);
+
+    $response->assertRedirect(route('procedure-types.index'));
+    expect($procedureType->fresh()->recurrence_type->value)->toBe('monthly');
+});
+
+test('a staff member with an unrelated permission still cannot edit a procedure type', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)
+        ->withPermissions([Permission::ManageCustomFields])
+        ->create();
+    $procedureType = ProcedureType::factory()->create();
+
+    $this->actingAs($staff)
+        ->get(route('procedure-types.edit', $procedureType))
+        ->assertForbidden();
 });
 
 test('updating a procedure type affects it regardless of which office the owner belongs to (global master)', function () {

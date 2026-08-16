@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Permission;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -56,7 +57,14 @@ class UserController extends Controller
             'email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'role' => ['required', Rule::enum(UserRole::class)],
             'password' => ['required', 'confirmed', 'string', 'min:8'],
+            'permissions' => ['array'],
+            'permissions.*' => [Rule::enum(Permission::class)],
         ]);
+
+        // ownerは常に全権限を持つため、role=ownerで登録する場合はpermissionsを空にする
+        $validated['permissions'] = $validated['role'] === UserRole::Owner->value
+            ? []
+            : ($validated['permissions'] ?? []);
 
         // office_idはAssignsOfficeOnCreateがログイン中の事務所で自動付与する
         User::create($validated);
@@ -72,7 +80,7 @@ class UserController extends Controller
         $this->authorize('update', $user);
 
         return Inertia::render('Users/Edit', [
-            'targetUser' => $user->only(['id', 'name', 'email', 'role']),
+            'targetUser' => $user->only(['id', 'name', 'email', 'role', 'permissions']),
         ]);
     }
 
@@ -87,6 +95,8 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'role' => ['required', Rule::enum(UserRole::class)],
+            'permissions' => ['array'],
+            'permissions.*' => [Rule::enum(Permission::class)],
         ]);
 
         if (
@@ -98,6 +108,11 @@ class UserController extends Controller
                 'role' => '事務所に最低1名のオーナーが必要なため、降格できません。',
             ]);
         }
+
+        // ownerは常に全権限を持つため、role=ownerに設定する場合はpermissionsを空にする
+        $validated['permissions'] = $validated['role'] === UserRole::Owner->value
+            ? []
+            : ($validated['permissions'] ?? []);
 
         $user->update($validated);
 

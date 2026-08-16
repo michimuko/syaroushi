@@ -101,7 +101,12 @@ watch(
                     ユーザー管理
                 </ResponsiveNavLink>
                 <ResponsiveNavLink
-                    v-if="page.props.auth.user.role === 'owner'"
+                    v-if="
+                        page.props.auth.user.role === 'owner' ||
+                        page.props.auth.user.permissions?.includes(
+                            'manage_custom_fields',
+                        )
+                    "
                     :href="route('settings.custom-fields.index')"
                     :active="route().current('settings.custom-fields.*')"
                 >

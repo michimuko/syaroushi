@@ -15,6 +15,9 @@ const props = defineProps({
 
 const page = usePage();
 const isOwner = () => page.props.auth.user.role === 'owner';
+const canManageImports = () =>
+    isOwner() ||
+    (page.props.auth.user.permissions ?? []).includes('manage_imports');
 
 const search = ref(props.filters.search);
 const status = ref(props.filters.status);
@@ -82,7 +85,7 @@ function resetFilters() {
                         Excelエクスポート
                     </a>
                     <Link
-                        v-if="isOwner()"
+                        v-if="canManageImports()"
                         :href="route('clients.import.create')"
                         class="text-sm text-gray-600 underline hover:text-gray-900"
                     >

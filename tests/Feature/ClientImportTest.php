@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Permission;
 use App\Models\Client;
 use App\Models\CustomFieldDefinition;
 use App\Models\Office;
@@ -54,6 +55,20 @@ it('allows an owner to view the upload screen', function () {
     $owner = User::factory()->for($office)->owner()->create();
 
     $this->actingAs($owner)->get(route('clients.import.create'))->assertOk();
+});
+
+it('allows a staff member with the manage_imports permission to view the upload screen', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)->withPermissions([Permission::ManageImports])->create();
+
+    $this->actingAs($staff)->get(route('clients.import.create'))->assertOk();
+});
+
+it('denies a staff member with an unrelated permission from viewing the upload screen', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)->withPermissions([Permission::ManageCustomFields])->create();
+
+    $this->actingAs($staff)->get(route('clients.import.create'))->assertForbidden();
 });
 
 it('parses the uploaded file and shows a mapping screen with preview rows', function () {

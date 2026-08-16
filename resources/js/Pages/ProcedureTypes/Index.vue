@@ -8,6 +8,11 @@ defineProps({
 
 const page = usePage();
 const isOwner = () => page.props.auth.user.role === 'owner';
+const canManageProcedureTypes = () =>
+    isOwner() ||
+    (page.props.auth.user.permissions ?? []).includes(
+        'manage_procedure_types',
+    );
 
 const recurrenceLabels = {
     yearly: '毎年',
@@ -112,7 +117,7 @@ const recurrenceLabels = {
                                     </td>
                                     <td class="px-4 py-3 text-right">
                                         <Link
-                                            v-if="isOwner()"
+                                            v-if="canManageProcedureTypes()"
                                             :href="
                                                 route(
                                                     'procedure-types.edit',

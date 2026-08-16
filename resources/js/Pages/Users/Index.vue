@@ -15,6 +15,12 @@ defineProps({
 const page = usePage();
 const currentUserId = () => page.props.auth.user.id;
 
+const permissionLabels = {
+    manage_procedure_types: '手続き種別マスタ',
+    manage_custom_fields: 'カスタムフィールド設定',
+    manage_imports: 'Excelインポート',
+};
+
 const confirmingDeletion = ref(null);
 const deleteForm = useForm({});
 
@@ -109,6 +115,24 @@ function destroyUser() {
                                         <UserRoleBadge
                                             :role="targetUser.role"
                                         />
+                                        <p
+                                            v-if="
+                                                targetUser.permissions
+                                                    ?.length > 0
+                                            "
+                                            class="mt-1 text-xs text-gray-500"
+                                        >
+                                            {{
+                                                targetUser.permissions
+                                                    .map(
+                                                        (key) =>
+                                                            permissionLabels[
+                                                                key
+                                                            ],
+                                                    )
+                                                    .join('、')
+                                            }}
+                                        </p>
                                     </td>
                                     <td class="space-x-3 px-4 py-3 text-right">
                                         <Link

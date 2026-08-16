@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Permission;
 use App\Enums\UserRole;
 use App\Models\Office;
 use App\Models\User;
@@ -54,6 +55,16 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => UserRole::Owner,
+        ]);
+    }
+
+    /**
+     * @param  array<int, Permission>  $permissions
+     */
+    public function withPermissions(array $permissions): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'permissions' => array_map(fn (Permission $permission) => $permission->value, $permissions),
         ]);
     }
 }

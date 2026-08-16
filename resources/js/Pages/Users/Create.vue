@@ -7,12 +7,31 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
+const permissionOptions = [
+    {
+        key: 'manage_procedure_types',
+        label: '手続き種別マスタの編集',
+        description: '周期・通知タイミングの設定を変更できます。',
+    },
+    {
+        key: 'manage_custom_fields',
+        label: 'カスタムフィールド設定',
+        description: '独自項目の追加・編集・削除ができます。',
+    },
+    {
+        key: 'manage_imports',
+        label: 'Excel移行ウィザードの実行',
+        description: '顧問先・タスクのExcel一括インポートができます。',
+    },
+];
+
 const form = useForm({
     name: '',
     email: '',
     role: 'staff',
     password: '',
     password_confirmation: '',
+    permissions: [],
 });
 
 const submit = () => {
@@ -91,6 +110,37 @@ const submit = () => {
                                 <InputError
                                     class="mt-1"
                                     :message="form.errors.role"
+                                />
+                            </div>
+
+                            <div v-if="form.role === 'staff'" class="sm:col-span-2">
+                                <InputLabel>個別権限</InputLabel>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    通常オーナー限定の操作を、この社員にも個別に許可できます。
+                                </p>
+                                <div class="mt-2 space-y-2">
+                                    <label
+                                        v-for="option in permissionOptions"
+                                        :key="option.key"
+                                        class="flex items-start gap-2"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            :value="option.key"
+                                            v-model="form.permissions"
+                                            class="mt-0.5 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                        />
+                                        <span class="text-sm text-gray-700">
+                                            {{ option.label }}
+                                            <span class="block text-xs text-gray-500">{{
+                                                option.description
+                                            }}</span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <InputError
+                                    class="mt-1"
+                                    :message="form.errors.permissions"
                                 />
                             </div>
 

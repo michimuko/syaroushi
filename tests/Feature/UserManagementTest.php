@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Permission;
 use App\Models\Office;
 use App\Models\User;
 
@@ -82,6 +83,39 @@ test('the last owner in an office cannot be deleted or demoted', function () {
         'role' => 'staff',
     ])->assertSessionHasErrors('role');
     expect($otherOwner->fresh()->role->value)->toBe('owner');
+});
+
+test('an owner can grant individual permissions to a staff member', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $staff = User::factory()->for($office)->create();
+
+    $response = $this->actingAs($owner)->put(route('users.update', $staff), [
+        'name' => $staff->name,
+        'email' => $staff->email,
+        'role' => 'staff',
+        'permissions' => ['manage_custom_fields', 'manage_imports'],
+    ]);
+
+    $response->assertRedirect(route('users.index'));
+    expect($staff->fresh()->permissions)->toBe(['manage_custom_fields', 'manage_imports']);
+    expect($staff->fresh()->hasPermission(Permission::ManageCustomFields))->toBeTrue();
+    expect($staff->fresh()->hasPermission(Permission::ManageProcedureTypes))->toBeFalse();
+});
+
+test('permissions are cleared when a user is set (or promoted) to owner', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $staff = User::factory()->for($office)->withPermissions([Permission::ManageCustomFields])->create();
+
+    $this->actingAs($owner)->put(route('users.update', $staff), [
+        'name' => $staff->name,
+        'email' => $staff->email,
+        'role' => 'owner',
+        'permissions' => ['manage_custom_fields'],
+    ])->assertRedirect(route('users.index'));
+
+    expect($staff->fresh()->permissions)->toBe([]);
 });
 
 test('editing or deleting a user from another office is forbidden', function () {

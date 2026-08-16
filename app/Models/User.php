@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\Permission;
 use App\Enums\UserRole;
 use App\Models\Concerns\AssignsOfficeOnCreate;
 use Database\Factories\UserFactory;
@@ -20,7 +21,7 @@ use NotificationChannels\WebPush\HasPushSubscriptions;
  * （実機検証で確認済み）。他事務所ユーザーへのアクセス制御はPolicy層と、
  * 常にoffice()経由（Auth::user()->office->users()）でクエリすることで担保する。
  */
-#[Fillable(['office_id', 'name', 'email', 'password', 'role'])]
+#[Fillable(['office_id', 'name', 'email', 'password', 'role', 'permissions'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -38,11 +39,20 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'permissions' => 'array',
         ];
     }
 
     public function isOwner(): bool
     {
         return $this->role === UserRole::Owner;
+    }
+
+    /**
+     * ownerは常に全権限を持つ。staffは`permissions`に個別付与された権限のみ。
+     */
+    public function hasPermission(Permission $permission): bool
+    {
+        return $this->isOwner() || in_array($permission->value, $this->permissions ?? [], true);
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Permission;
 use App\Models\CustomFieldDefinition;
 use App\Models\Office;
 use App\Models\User;
@@ -47,6 +48,38 @@ it('requires options when creating a select field definition', function () {
 it('denies a staff member from creating a field definition', function () {
     $office = Office::factory()->create();
     $staff = User::factory()->for($office)->create();
+
+    $this->actingAs($staff)->post(route('settings.custom-fields.store'), [
+        'target' => 'client',
+        'label' => '管理番号',
+        'field_type' => 'text',
+    ])->assertForbidden();
+});
+
+it('allows a staff member with the manage_custom_fields permission to create, update, and delete a field definition', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)->withPermissions([Permission::ManageCustomFields])->create();
+
+    $this->actingAs($staff)->post(route('settings.custom-fields.store'), [
+        'target' => 'client',
+        'label' => '管理番号',
+        'field_type' => 'text',
+    ])->assertRedirect();
+
+    $definition = CustomFieldDefinition::sole();
+
+    $this->actingAs($staff)->put(route('settings.custom-fields.update', $definition->id), [
+        'label' => '変更後',
+    ])->assertRedirect();
+
+    $this->actingAs($staff)->delete(route('settings.custom-fields.destroy', $definition->id))
+        ->assertRedirect();
+    expect(CustomFieldDefinition::find($definition->id))->toBeNull();
+});
+
+it('denies a staff member with an unrelated permission from managing field definitions', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)->withPermissions([Permission::ManageProcedureTypes])->create();
 
     $this->actingAs($staff)->post(route('settings.custom-fields.store'), [
         'target' => 'client',
