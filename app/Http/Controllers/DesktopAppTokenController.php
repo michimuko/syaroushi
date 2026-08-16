@@ -30,6 +30,10 @@ class DesktopAppTokenController extends Controller
         $release = $this->releases->latestRelease();
 
         return Inertia::render('Settings/DesktopApp/Index', [
+            // デスクトップアプリの「事務所のURL」欄にそのまま貼り付けてもらうための値。
+            // このページ自身のURL（/settings/desktop-app付き）を貼り付けてしまう誤操作を防ぐため、
+            // ドメイン部分のみを明示的に渡す。
+            'apiBaseUrl' => config('app.url'),
             'token' => $token ? [
                 'created_at' => $token->created_at->toDateTimeString(),
                 'last_used_at' => $token->last_used_at?->toDateTimeString(),

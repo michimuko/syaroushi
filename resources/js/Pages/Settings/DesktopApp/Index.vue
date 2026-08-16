@@ -8,6 +8,7 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
+    apiBaseUrl: String,
     token: Object,
     release: Object,
 });
@@ -164,6 +165,18 @@ function revokeToken() {
                         >（アプリのダウンロードが可能になってからで構いません）</span
                     >
                 </h3>
+
+                <div class="rounded-lg bg-white p-6 shadow-sm">
+                    <h3 class="mb-1 text-sm font-semibold text-gray-700">
+                        事務所のURL
+                    </h3>
+                    <p class="mb-3 text-xs text-gray-500">
+                        デスクトップアプリの「事務所のURL」欄には、このページのURLではなく、下記のURLのみを貼り付けてください。
+                    </p>
+                    <code
+                        class="block break-all rounded-md bg-gray-50 p-3 text-sm text-gray-900"
+                    >{{ apiBaseUrl }}</code>
+                </div>
 
                 <div
                     v-if="issuedToken"

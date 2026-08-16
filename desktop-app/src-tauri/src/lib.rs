@@ -80,7 +80,7 @@ async fn do_poll(app: &AppHandle) {
 
     if !settings.is_configured() {
         let mut status = state.status.lock().unwrap();
-        status.last_error = Some("APIのURL・アクセストークンが未設定です".to_string());
+        status.last_error = Some("APIのURL・アクセストークンが未設定です。値を入力し、保存した後に実行してください。".to_string());
         return;
     }
 
@@ -132,7 +132,7 @@ pub fn run() {
             let show_item =
                 MenuItem::with_id(&handle, "show", "設定を開く", true, None::<&str>)?;
             let poll_item =
-                MenuItem::with_id(&handle, "poll", "今すぐ確認", true, None::<&str>)?;
+                MenuItem::with_id(&handle, "poll", "今すぐ通知を取得する", true, None::<&str>)?;
             let quit_item = MenuItem::with_id(&handle, "quit", "終了", true, None::<&str>)?;
             let menu = Menu::with_items(&handle, &[&show_item, &poll_item, &quit_item])?;
 
