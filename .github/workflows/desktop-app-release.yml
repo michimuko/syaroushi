@@ -1,0 +1,66 @@
+name: デスクトップ通知アプリのビルド・リリース
+
+# `desktop-app-v` から始まるタグをpushすると、Windows/macOS/Linux向けの
+# インストーラーを自動ビルドし、GitHub Releasesに公開する。
+# リリースするときは desktop-app/package.json と
+# desktop-app/src-tauri/tauri.conf.json のバージョンを揃えて更新したうえで、
+# 例: `git tag desktop-app-v0.1.0 && git push origin desktop-app-v0.1.0`
+
+on:
+  push:
+    tags:
+      - 'desktop-app-v*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows-latest
+          - platform: macos-latest
+          - platform: ubuntu-22.04
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux向け依存パッケージ
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Rustツールチェインをセットアップ
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rustのビルドキャッシュを利用
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: desktop-app/src-tauri -> target
+
+      - name: Node.jsをセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: desktop-app/package-lock.json
+
+      - name: フロントエンド依存関係をインストール
+        working-directory: desktop-app
+        run: npm ci
+
+      - name: ビルド・GitHub Releaseへの公開
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: desktop-app
+          tagName: ${{ github.ref_name }}
+          releaseName: '通知アプリ ${{ github.ref_name }}'
+          releaseDraft: false
+          prerelease: false
