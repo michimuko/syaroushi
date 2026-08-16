@@ -5,6 +5,11 @@ const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(() => ({
+  // desktop-appはTailwindを使わない素のCSSのため、自身のpostcss.config.jsを持たない。
+  // 未指定のままだとVite/postcss-load-configがリポジトリルートのpostcss.config.js
+  // （Laravel側のTailwind用、tailwindcss依存）を親ディレクトリ探索で拾ってしまい、
+  // desktop-app/node_modulesにtailwindcssが無いためビルドが失敗する（Windows環境で顕在化）。
+  css: { postcss: {} },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
