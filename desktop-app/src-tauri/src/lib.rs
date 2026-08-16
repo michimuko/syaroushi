@@ -24,6 +24,11 @@ pub struct AppState {
 
 #[tauri::command]
 fn load_settings(app: AppHandle) -> Settings {
+    // 初回起動時のみ、自動起動を既定でオンにする（一般ユーザーはこの設定の意味を意識せず
+    // 導入できるようにするため）。2回目以降はユーザー自身がチェックボックスで選んだ値を尊重する。
+    if settings::is_first_run(&app) {
+        let _ = app.autolaunch().enable();
+    }
     settings::load(&app)
 }
 

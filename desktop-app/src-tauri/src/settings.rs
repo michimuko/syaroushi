@@ -49,6 +49,15 @@ pub fn load(app: &AppHandle) -> Settings {
     }
 }
 
+/// settings.jsonがまだ無い＝アプリの初回起動かどうかを判定する。
+/// 初回起動時のみ自動起動を既定で有効化する（2回目以降はユーザーの選択を尊重する）ために使う。
+pub fn is_first_run(app: &AppHandle) -> bool {
+    match settings_path(app) {
+        Ok(path) => !path.exists(),
+        Err(_) => false,
+    }
+}
+
 pub fn save(app: &AppHandle, settings: &Settings) -> Result<(), String> {
     let path = settings_path(app)?;
     let content = serde_json::to_string_pretty(settings).map_err(|e| e.to_string())?;

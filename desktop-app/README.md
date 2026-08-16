@@ -9,7 +9,11 @@ Webアプリの「設定 &gt; デスクトップ通知アプリ」（`/settings/
 
 ## 構成
 
-- `src/` … 設定画面（トークン・確認間隔・自動起動のON/OFFを保存するだけの単純なフォーム）
+- `src/` … 設定画面（トークン・確認間隔・自動起動のON/OFFを保存するだけの単純なフォーム）。
+  自動起動は初回起動時のみ既定でONにする（`settings.json`が無い＝初回起動、と判定。
+  `src-tauri/src/lib.rs`の`load_settings`／`src-tauri/src/settings.rs`の`is_first_run`）。
+  一般ユーザーがこの設定の意味を意識せずに導入できるようにするための挙動で、
+  2回目以降はチェックボックスでのユーザーの選択を尊重する。
 - `src-tauri/src/settings.rs` … 設定をOSのアプリ設定ディレクトリに保存
 - `src-tauri/src/api.rs` … `GET /api/desktop/notifications` の呼び出し
 - `src-tauri/src/lib.rs` … トレイアイコン・バックグラウンドポーリングループ・OS通知表示
