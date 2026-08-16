@@ -117,3 +117,110 @@ test('dashboard lists upcoming non-completed tasks ordered by due date', functio
         ->where('upcomingTasks.1.id', $later->id)
     );
 });
+
+test('dashboard breaks down non-completed tasks by assignee, counting overdue ones, for the current office only', function () {
+    $office = Office::factory()->create();
+    $otherOffice = Office::factory()->create();
+    $staff = User::factory()->for($office)->create(['name' => '担当花子']);
+    $otherStaff = User::factory()->for($office)->create(['name' => '担当次郎']);
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+
+    // 担当花子：2件（うち1件期限超過）
+    ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $staff->id,
+        'due_date' => now()->subDay(),
+        'status' => 'in_progress',
+    ]);
+    ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $staff->id,
+        'due_date' => now()->addDays(5),
+        'status' => 'not_started',
+    ]);
+
+    // 完了済みはワークロードに含まれない
+    ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $staff->id,
+        'due_date' => now()->subDay(),
+        'status' => 'completed',
+    ]);
+
+    // 未割当のタスク
+    ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => null,
+        'due_date' => now()->addDays(1),
+        'status' => 'not_started',
+    ]);
+
+    // 他事務所のタスクはカウントしない
+    $otherClient = Client::factory()->for($otherOffice)->create();
+    ProcedureTask::factory()->for($otherOffice)->create([
+        'client_id' => $otherClient->id,
+        'procedure_type_id' => $procedureType->id,
+        'assigned_user_id' => $otherStaff->id,
+        'status' => 'in_progress',
+    ]);
+
+    $response = $this->actingAs($staff)->get(route('dashboard'));
+
+    $response->assertInertia(fn ($page) => $page
+        ->has('assigneeWorkload', 2)
+        ->where('assigneeWorkload.0.name', '担当花子')
+        ->where('assigneeWorkload.0.total', 2)
+        ->where('assigneeWorkload.0.overdue', 1)
+        ->where('assigneeWorkload.1.name', '未割当')
+        ->where('assigneeWorkload.1.total', 1)
+        ->where('assigneeWorkload.1.overdue', 0)
+    );
+});
+
+test('dashboard breaks down non-completed tasks by procedure type, sorted by count, for the current office only', function () {
+    $office = Office::factory()->create();
+    $otherOffice = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $popularType = ProcedureType::factory()->create(['name' => '算定基礎届']);
+    $rareType = ProcedureType::factory()->create(['name' => '労働保険年度更新']);
+
+    ProcedureTask::factory()->for($office)->count(2)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $popularType->id,
+        'status' => 'not_started',
+    ]);
+    ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $rareType->id,
+        'status' => 'not_started',
+    ]);
+    // 完了済みは内訳に含まれない
+    ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $rareType->id,
+        'status' => 'completed',
+    ]);
+
+    $otherClient = Client::factory()->for($otherOffice)->create();
+    ProcedureTask::factory()->for($otherOffice)->create([
+        'client_id' => $otherClient->id,
+        'procedure_type_id' => $popularType->id,
+        'status' => 'not_started',
+    ]);
+
+    $response = $this->actingAs($user)->get(route('dashboard'));
+
+    $response->assertInertia(fn ($page) => $page
+        ->has('procedureTypeBreakdown', 2)
+        ->where('procedureTypeBreakdown.0.name', '算定基礎届')
+        ->where('procedureTypeBreakdown.0.total', 2)
+        ->where('procedureTypeBreakdown.1.name', '労働保険年度更新')
+        ->where('procedureTypeBreakdown.1.total', 1)
+    );
+});

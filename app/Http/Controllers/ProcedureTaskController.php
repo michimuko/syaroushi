@@ -29,6 +29,7 @@ class ProcedureTaskController extends Controller
             'status' => 'nullable|in:not_started,in_progress,documents_collected,submitted,completed',
             'client_id' => 'nullable|integer',
             'assigned_user_id' => 'nullable|integer',
+            'procedure_type_id' => 'nullable|integer',
             'due_from' => 'nullable|date',
             'due_to' => 'nullable|date',
         ]);
@@ -38,6 +39,7 @@ class ProcedureTaskController extends Controller
             ->when($validated['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
             ->when($validated['client_id'] ?? null, fn ($query, $clientId) => $query->where('client_id', $clientId))
             ->when($validated['assigned_user_id'] ?? null, fn ($query, $userId) => $query->where('assigned_user_id', $userId))
+            ->when($validated['procedure_type_id'] ?? null, fn ($query, $procedureTypeId) => $query->where('procedure_type_id', $procedureTypeId))
             ->when($validated['due_from'] ?? null, fn ($query, $date) => $query->whereDate('due_date', '>=', $date))
             ->when($validated['due_to'] ?? null, fn ($query, $date) => $query->whereDate('due_date', '<=', $date))
             ->orderBy('due_date')
@@ -56,11 +58,17 @@ class ProcedureTaskController extends Controller
                 'status' => $validated['status'] ?? '',
                 'client_id' => $validated['client_id'] ?? '',
                 'assigned_user_id' => $validated['assigned_user_id'] ?? '',
+                'procedure_type_id' => $validated['procedure_type_id'] ?? '',
                 'due_from' => $validated['due_from'] ?? '',
                 'due_to' => $validated['due_to'] ?? '',
             ],
             'clientOptions' => $this->clientOptions(),
             'staffOptions' => $this->staffOptions(),
+            'procedureTypeOptions' => ProcedureType::query()
+                ->where('is_active', true)
+                ->orderBy('category')
+                ->orderBy('name')
+                ->get(['id', 'name', 'category']),
             'statusOptions' => array_map(fn (TaskStatus $status) => $status->value, TaskStatus::cases()),
         ]);
     }

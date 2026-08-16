@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import TaskStatusBadge from '@/Components/TaskStatusBadge.vue';
 import { Head, Link } from '@inertiajs/vue3';
@@ -7,6 +8,8 @@ const props = defineProps({
     summary: Object,
     statusCounts: Object,
     upcomingTasks: Array,
+    assigneeWorkload: Array,
+    procedureTypeBreakdown: Array,
     dateRanges: Object,
 });
 
@@ -25,6 +28,25 @@ const statusLabels = {
     submitted: '提出済',
     completed: '完了',
 };
+
+const maxWorkload = computed(() =>
+    Math.max(1, ...props.assigneeWorkload.map((row) => row.total)),
+);
+const maxProcedureTypeTotal = computed(() =>
+    Math.max(1, ...props.procedureTypeBreakdown.map((row) => row.total)),
+);
+
+function workloadBarWidth(row) {
+    return (row.total / maxWorkload.value) * 100;
+}
+
+function workloadOverdueShare(row) {
+    return row.total === 0 ? 0 : (row.overdue / row.total) * 100;
+}
+
+function procedureTypeBarWidth(row) {
+    return (row.total / maxProcedureTypeTotal.value) * 100;
+}
 </script>
 
 <template>
@@ -109,6 +131,126 @@ const statusLabels = {
                                 {{ statusCounts[status] ?? 0 }}件
                             </span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- 担当者別ワークロード・手続き種別内訳 -->
+                <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <div class="rounded-lg bg-white p-5 shadow-sm">
+                        <h3 class="text-sm font-semibold text-gray-700">
+                            担当者別ワークロード
+                        </h3>
+                        <p class="mt-1 text-xs text-gray-400">
+                            未完了タスクの件数（赤色は期限超過分）
+                        </p>
+
+                        <div v-if="assigneeWorkload.length > 0" class="mt-4 space-y-3">
+                            <div
+                                v-for="row in assigneeWorkload"
+                                :key="row.assigned_user_id ?? 'unassigned'"
+                                class="flex items-center gap-3"
+                            >
+                                <Link
+                                    v-if="row.assigned_user_id"
+                                    :href="
+                                        route('tasks.index', {
+                                            assigned_user_id: row.assigned_user_id,
+                                        })
+                                    "
+                                    class="w-24 shrink-0 truncate text-sm text-gray-700 hover:text-indigo-600"
+                                    :title="row.name"
+                                >
+                                    {{ row.name }}
+                                </Link>
+                                <span
+                                    v-else
+                                    class="w-24 shrink-0 truncate text-sm text-gray-500"
+                                >
+                                    未割当
+                                </span>
+
+                                <div
+                                    class="h-3 flex-1 overflow-hidden rounded-full bg-gray-100"
+                                >
+                                    <div
+                                        class="flex h-full"
+                                        :style="{ width: workloadBarWidth(row) + '%' }"
+                                    >
+                                        <div
+                                            class="h-full bg-red-500"
+                                            :style="{
+                                                width: workloadOverdueShare(row) + '%',
+                                            }"
+                                        />
+                                        <div
+                                            class="h-full bg-indigo-400"
+                                            :style="{
+                                                width:
+                                                    100 - workloadOverdueShare(row) + '%',
+                                            }"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class="w-28 shrink-0 text-right text-sm text-gray-600">
+                                    {{ row.total }}件
+                                    <span v-if="row.overdue > 0" class="text-red-600">
+                                        （超過{{ row.overdue }}）
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <p v-else class="mt-4 text-sm text-gray-500">
+                            未完了のタスクはありません。
+                        </p>
+                    </div>
+
+                    <div class="rounded-lg bg-white p-5 shadow-sm">
+                        <h3 class="text-sm font-semibold text-gray-700">
+                            手続き種別ごとの内訳
+                        </h3>
+                        <p class="mt-1 text-xs text-gray-400">
+                            未完了タスクの件数
+                        </p>
+
+                        <div
+                            v-if="procedureTypeBreakdown.length > 0"
+                            class="mt-4 space-y-3"
+                        >
+                            <Link
+                                v-for="row in procedureTypeBreakdown"
+                                :key="row.procedure_type_id"
+                                :href="
+                                    route('tasks.index', {
+                                        procedure_type_id: row.procedure_type_id,
+                                    })
+                                "
+                                class="flex items-center gap-3 group"
+                            >
+                                <span
+                                    class="w-24 shrink-0 truncate text-sm text-gray-700 group-hover:text-indigo-600"
+                                    :title="row.name"
+                                >
+                                    {{ row.name }}
+                                </span>
+                                <div
+                                    class="h-3 flex-1 overflow-hidden rounded-full bg-gray-100"
+                                >
+                                    <div
+                                        class="h-full rounded-full bg-indigo-400"
+                                        :style="{
+                                            width: procedureTypeBarWidth(row) + '%',
+                                        }"
+                                    />
+                                </div>
+                                <div class="w-14 shrink-0 text-right text-sm text-gray-600">
+                                    {{ row.total }}件
+                                </div>
+                            </Link>
+                        </div>
+                        <p v-else class="mt-4 text-sm text-gray-500">
+                            未完了のタスクはありません。
+                        </p>
                     </div>
                 </div>
 

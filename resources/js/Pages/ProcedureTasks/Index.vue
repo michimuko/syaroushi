@@ -13,6 +13,7 @@ const props = defineProps({
     filters: Object,
     clientOptions: Array,
     staffOptions: Array,
+    procedureTypeOptions: Array,
     statusOptions: Array,
 });
 
@@ -30,6 +31,7 @@ const statusLabels = {
 const status = ref(props.filters.status);
 const clientId = ref(props.filters.client_id);
 const assignedUserId = ref(props.filters.assigned_user_id);
+const procedureTypeId = ref(props.filters.procedure_type_id);
 const dueFrom = ref(props.filters.due_from);
 const dueTo = ref(props.filters.due_to);
 
@@ -40,6 +42,7 @@ function applyFilters() {
             status: status.value || undefined,
             client_id: clientId.value || undefined,
             assigned_user_id: assignedUserId.value || undefined,
+            procedure_type_id: procedureTypeId.value || undefined,
             due_from: dueFrom.value || undefined,
             due_to: dueTo.value || undefined,
         },
@@ -47,12 +50,13 @@ function applyFilters() {
     );
 }
 
-watch([status, clientId, assignedUserId, dueFrom, dueTo], applyFilters);
+watch([status, clientId, assignedUserId, procedureTypeId, dueFrom, dueTo], applyFilters);
 
 function resetFilters() {
     status.value = '';
     clientId.value = '';
     assignedUserId.value = '';
+    procedureTypeId.value = '';
     dueFrom.value = '';
     dueTo.value = '';
 }
@@ -61,6 +65,7 @@ const hasActiveFilters = () =>
     status.value ||
     clientId.value ||
     assignedUserId.value ||
+    procedureTypeId.value ||
     dueFrom.value ||
     dueTo.value;
 
@@ -216,6 +221,25 @@ function cancelRevert() {
                                 :value="staff.id"
                             >
                                 {{ staff.name }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500"
+                            >手続き種別</label
+                        >
+                        <select
+                            v-model="procedureTypeId"
+                            class="mt-1 rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        >
+                            <option value="">すべて</option>
+                            <option
+                                v-for="procedureType in procedureTypeOptions"
+                                :key="procedureType.id"
+                                :value="procedureType.id"
+                            >
+                                {{ procedureType.name }}
                             </option>
                         </select>
                     </div>

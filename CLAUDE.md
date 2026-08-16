@@ -10,7 +10,7 @@
 
 現在のステータス：**Phase 6完了**（2026-08-15）。DB設計・権限モデル・マルチテナント方針・個人情報保護要件は確定済み（企画書7章・11章）。Phase 1〜4（認証・顧問先/タスクCRUD・カレンダー・自動生成バッチ・メール/Web Push通知）、Phase 5（S3(MinIO)切り替え・`procedure_task_documents`書類チェックリスト・署名付きURL・保存期限管理・`document_access_logs`・自由入力欄へのマイナンバー検知警告・Excel移行アシスタント）に加え、Phase 6の**顧問先向け進捗レポートPDF自動生成**（差別化B、`ClientReport`／`app/Services/ClientReportPdfGenerator.php`、日本語フォント埋め込み対応）と**計算アシスタント**（差別化D、`app/Services/CalcAssistant/`：年次有給休暇の付与日数計算・時間外労働時間/36協定上限チェック・勤務シフト表作成支援の3機能、タスク詳細から呼び出し`procedure_tasks.calc_result`に保存可能）まで実装済み。
 
-企画書11章に記載の残る未確定事項（価格モデルの具体数値など）はPhase7着手時に詰める。Phase7のうち**カスタムフィールドの本格活用**（`CustomFieldDefinition`：テキスト・数値・日付・選択肢・チェックボックスの5種類、owner限定で管理番号・契約プラン等の独自項目を追加でき顧問先/手続きタスクの登録・編集画面に自動反映、値は`clients.custom_fields`／`procedure_tasks.custom_fields`にJSON保存）は実装済み。ダッシュボード集計強化・権限管理の高度化・課金機能は未着手。
+企画書11章に記載の残る未確定事項（価格モデルの具体数値など）はPhase7着手時に詰める。Phase7のうち**カスタムフィールドの本格活用**（`CustomFieldDefinition`：テキスト・数値・日付・選択肢・チェックボックスの5種類、owner限定で管理番号・契約プラン等の独自項目を追加でき顧問先/手続きタスクの登録・編集画面に自動反映、値は`clients.custom_fields`／`procedure_tasks.custom_fields`にJSON保存、Excelエクスポート/インポートにも反映済み）と**ダッシュボード集計強化**（`DashboardController`：担当者別ワークロード（期限超過件数の内訳付き）・手続き種別ごとの内訳を追加、タスク一覧の`procedure_type_id`絞り込みと連動）は実装済み。権限管理の高度化・課金機能は未着手。
 
 ## 技術スタック
 

@@ -499,6 +499,31 @@ test('a task in another office returns 404 on edit and update', function () {
     ])->assertNotFound();
 });
 
+test('index filters by procedure_type_id', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $matchingType = ProcedureType::factory()->create(['name' => '算定基礎届']);
+    $otherType = ProcedureType::factory()->create(['name' => '労働保険年度更新']);
+
+    $matchingTask = ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $matchingType->id,
+    ]);
+    ProcedureTask::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $otherType->id,
+    ]);
+
+    $response = $this->actingAs($user)->get(route('tasks.index', ['procedure_type_id' => $matchingType->id]));
+
+    $response->assertInertia(fn ($page) => $page
+        ->has('tasks.data', 1)
+        ->where('tasks.data.0.id', $matchingTask->id)
+        ->where('filters.procedure_type_id', (string) $matchingType->id)
+    );
+});
+
 test('index query does not N+1 when loading relations', function () {
     $office = Office::factory()->create();
     $user = User::factory()->for($office)->create();
