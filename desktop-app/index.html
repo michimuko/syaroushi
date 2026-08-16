@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>通知設定</title>
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+
+  <body>
+    <main class="container">
+      <h1>業務進捗・期限管理 通知設定</h1>
+      <p class="hint">
+        Webアプリの「設定 &gt; デスクトップ通知アプリ」で発行したURL・アクセストークンを入力してください。
+      </p>
+
+      <form id="settings-form">
+        <label for="base-url">事務所のURL</label>
+        <input id="base-url" type="text" placeholder="https://example.com" autocomplete="off" required />
+
+        <label for="token">アクセストークン</label>
+        <input id="token" type="password" placeholder="発行したトークンを貼り付け" autocomplete="off" required />
+
+        <label for="interval">確認間隔（分）</label>
+        <input id="interval" type="number" min="1" max="180" value="5" required />
+
+        <div class="row">
+          <label class="checkbox">
+            <input id="autostart" type="checkbox" />
+            PC起動時に自動的に常駐する
+          </label>
+        </div>
+
+        <div class="row buttons">
+          <button type="submit">保存</button>
+          <button type="button" id="poll-now-btn">今すぐ確認</button>
+        </div>
+      </form>
+
+      <div id="status" class="status"></div>
+    </main>
+  </body>
+</html>
