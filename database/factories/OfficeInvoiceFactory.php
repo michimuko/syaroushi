@@ -19,15 +19,14 @@ class OfficeInvoiceFactory extends Factory
     {
         $periodStart = $this->faker->dateTimeBetween('-6 months', 'now')->modify('first day of this month');
         $periodEnd = (clone $periodStart)->modify('last day of this month');
-        $clientCount = $this->faker->numberBetween(1, 30);
-        $unitPrice = 500;
 
         return [
             'period_start' => $periodStart,
             'period_end' => $periodEnd,
-            'client_count' => $clientCount,
-            'unit_price' => $unitPrice,
-            'amount' => $clientCount * $unitPrice,
+            'client_count' => $this->faker->numberBetween(1, 30),
+            'user_count' => $this->faker->numberBetween(1, 10),
+            'plan_name' => 'スタンダード',
+            'amount' => 14800,
             'generated_at' => now(),
         ];
     }

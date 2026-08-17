@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * 事務所ごとの月次請求記録（企画書11章）。決済連携は行わず、
  * 「その月いくら請求すべきか」の記録に留める（billing:generate-invoicesバッチが生成）。
  */
-#[Fillable(['office_id', 'period_start', 'period_end', 'client_count', 'unit_price', 'amount', 'generated_at'])]
+#[Fillable(['office_id', 'period_start', 'period_end', 'client_count', 'user_count', 'plan_name', 'amount', 'generated_at'])]
 class OfficeInvoice extends Model
 {
     /** @use HasFactory<OfficeInvoiceFactory> */
@@ -24,7 +24,7 @@ class OfficeInvoice extends Model
             'period_start' => 'date',
             'period_end' => 'date',
             'client_count' => 'integer',
-            'unit_price' => 'integer',
+            'user_count' => 'integer',
             'amount' => 'integer',
             'generated_at' => 'datetime',
         ];

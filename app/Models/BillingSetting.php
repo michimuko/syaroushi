@@ -10,13 +10,12 @@ use Illuminate\Database\Eloquent\Model;
  * プラットフォーム全体の料金設定（企画書11章）。常に1行のみ存在するシングルトン。
  * 初期値はマイグレーションで投入済み。運営者(platformガード)のみが変更できる。
  */
-#[Fillable(['unit_price_per_client', 'trial_days', 'billing_cycle'])]
+#[Fillable(['trial_days', 'billing_cycle'])]
 class BillingSetting extends Model
 {
     protected function casts(): array
     {
         return [
-            'unit_price_per_client' => 'integer',
             'trial_days' => 'integer',
             'billing_cycle' => BillingCycle::class,
         ];
@@ -29,7 +28,6 @@ class BillingSetting extends Model
     public static function current(): self
     {
         return static::query()->first() ?? static::create([
-            'unit_price_per_client' => 500,
             'trial_days' => 30,
             'billing_cycle' => BillingCycle::Monthly,
         ]);
