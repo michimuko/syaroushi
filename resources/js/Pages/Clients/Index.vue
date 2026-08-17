@@ -16,8 +16,9 @@ const props = defineProps({
 const page = usePage();
 const isOwner = () => page.props.auth.user.role === 'owner';
 const canManageImports = () =>
-    isOwner() ||
-    (page.props.auth.user.permissions ?? []).includes('manage_imports');
+    (page.props.auth.enabledModules ?? []).includes('excel_migration') &&
+    (isOwner() ||
+        (page.props.auth.user.permissions ?? []).includes('manage_imports'));
 
 const search = ref(props.filters.search);
 const status = ref(props.filters.status);

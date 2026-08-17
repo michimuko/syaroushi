@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Enums\Module;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\BillingPlan;
@@ -12,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -88,6 +90,10 @@ class OfficeController extends Controller
 
         return Inertia::render('Platform/Offices/Edit', [
             'office' => $office,
+            'availableModules' => array_map(
+                fn (Module $module) => ['value' => $module->value, 'label' => $module->label()],
+                Module::cases(),
+            ),
             'assignableBillingPlans' => BillingPlan::query()
                 ->where(function ($query) use ($office) {
                     $query->where('is_active', true);
@@ -115,6 +121,8 @@ class OfficeController extends Controller
             'contract_plan' => 'nullable|string|max:255',
             'is_active' => 'required|boolean',
             'trial_ends_at' => 'nullable|date',
+            'enabled_modules' => 'nullable|array',
+            'enabled_modules.*' => [Rule::enum(Module::class)],
             'billing_plan_id' => 'nullable|exists:billing_plans,id',
             'custom_monthly_price' => 'nullable|integer|min:0',
         ]);

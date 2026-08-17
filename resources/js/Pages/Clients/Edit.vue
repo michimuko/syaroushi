@@ -8,7 +8,7 @@ import MyNumberWarning from '@/Components/MyNumberWarning.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { containsMyNumberLikeString } from '@/Composables/useMyNumberDetection';
 import { initialCustomFieldValues } from '@/Composables/useCustomFieldValues';
 
@@ -19,6 +19,8 @@ const props = defineProps({
     subscribedProcedureTypeIds: Array,
     customFieldDefinitions: Array,
 });
+
+const page = usePage();
 
 const form = useForm({
     name: props.client.name,
@@ -74,6 +76,11 @@ const submitSubscriptions = () => {
                     {{ client.name }}の編集
                 </h2>
                 <Link
+                    v-if="
+                        page.props.auth.enabledModules?.includes(
+                            'client_report_pdf',
+                        )
+                    "
                     :href="route('clients.reports.index', client.id)"
                     class="text-sm text-gray-600 underline hover:text-gray-900"
                 >

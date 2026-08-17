@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ClientStatus;
+use App\Enums\Module;
 use Database\Factories\OfficeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'contract_plan', 'is_active', 'trial_ends_at', 'billing_plan_id', 'custom_monthly_price'])]
+#[Fillable(['name', 'contract_plan', 'is_active', 'trial_ends_at', 'enabled_modules', 'billing_plan_id', 'custom_monthly_price'])]
 class Office extends Model
 {
     /** @use HasFactory<OfficeFactory> */
@@ -21,6 +22,7 @@ class Office extends Model
         return [
             'is_active' => 'boolean',
             'trial_ends_at' => 'date',
+            'enabled_modules' => 'array',
         ];
     }
 
@@ -90,5 +92,29 @@ class Office extends Model
         }
 
         return $exceeded;
+    }
+
+    /**
+     * enabled_modulesがnull（未設定）の事務所は全モジュール有効として扱う
+     * （運営者がEdit画面で一度も保存していない既存事務所の後方互換のため）。
+     */
+    public function hasModule(Module $module): bool
+    {
+        if ($this->enabled_modules === null) {
+            return true;
+        }
+
+        return in_array($module->value, $this->enabled_modules, true);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function enabledModuleKeys(): array
+    {
+        return array_values(array_map(
+            fn (Module $module) => $module->value,
+            array_filter(Module::cases(), fn (Module $module) => $this->hasModule($module)),
+        ));
     }
 }

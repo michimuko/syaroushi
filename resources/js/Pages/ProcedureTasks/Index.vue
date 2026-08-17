@@ -20,8 +20,9 @@ const props = defineProps({
 const page = usePage();
 const isOwner = () => page.props.auth.user.role === 'owner';
 const canManageImports = () =>
-    isOwner() ||
-    (page.props.auth.user.permissions ?? []).includes('manage_imports');
+    (page.props.auth.enabledModules ?? []).includes('excel_migration') &&
+    (isOwner() ||
+        (page.props.auth.user.permissions ?? []).includes('manage_imports'));
 
 const statusLabels = {
     not_started: '未着手',

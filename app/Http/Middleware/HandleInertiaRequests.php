@@ -33,6 +33,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user('web'),
+                'enabledModules' => $request->user('web')?->office?->enabledModuleKeys() ?? [],
             ],
             'platformAuth' => [
                 'admin' => $request->user('platform'),

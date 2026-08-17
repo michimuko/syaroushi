@@ -82,6 +82,7 @@ watch(
                     カレンダー
                 </ResponsiveNavLink>
                 <ResponsiveNavLink
+                    v-if="page.props.auth.enabledModules?.includes('calc_assistant')"
                     :href="route('calc-assistant.index')"
                     :active="route().current('calc-assistant.*')"
                 >
@@ -102,10 +103,13 @@ watch(
                 </ResponsiveNavLink>
                 <ResponsiveNavLink
                     v-if="
-                        page.props.auth.user.role === 'owner' ||
-                        page.props.auth.user.permissions?.includes(
-                            'manage_custom_fields',
-                        )
+                        page.props.auth.enabledModules?.includes(
+                            'custom_fields',
+                        ) &&
+                        (page.props.auth.user.role === 'owner' ||
+                            page.props.auth.user.permissions?.includes(
+                                'manage_custom_fields',
+                            ))
                     "
                     :href="route('settings.custom-fields.index')"
                     :active="route().current('settings.custom-fields.*')"
@@ -133,7 +137,9 @@ watch(
                             {{ page.props.auth.user.email }}
                         </p>
                     </div>
-                    <PushNotificationToggle />
+                    <PushNotificationToggle
+                        v-if="page.props.auth.enabledModules?.includes('web_push')"
+                    />
                 </div>
 
                 <div class="mt-3 space-y-1">

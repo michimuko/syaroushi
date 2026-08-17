@@ -10,6 +10,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
     office: Object,
+    availableModules: Array,
     assignableBillingPlans: Array,
     usage: Object,
     exceededLimits: Array,
@@ -22,6 +23,10 @@ const form = useForm({
     trial_ends_at: props.office.trial_ends_at
         ? props.office.trial_ends_at.slice(0, 10)
         : '',
+    // office.enabled_modules が null（未設定）の事務所は「全モジュール有効」として表示する
+    enabled_modules:
+        props.office.enabled_modules ??
+        props.availableModules.map((m) => m.value),
     billing_plan_id: props.office.billing_plan_id,
     custom_monthly_price: props.office.custom_monthly_price ?? '',
 });
@@ -35,6 +40,16 @@ const planLabel = (plan) => {
             : '個別見積り';
 
     return `${plan.name}（顧問先${clients}・ユーザー${users}・${price}）`;
+};
+
+const presets = {
+    basic: [],
+    standard: ['excel_migration', 'custom_fields'],
+    premium: props.availableModules.map((m) => m.value),
+};
+
+const applyPreset = (key) => {
+    form.enabled_modules = [...presets[key]];
 };
 
 const submit = () => {
@@ -133,6 +148,54 @@ const submit = () => {
                             <InputError
                                 class="mt-1"
                                 :message="form.errors.is_active"
+                            />
+                        </div>
+
+                        <div class="mt-6 border-t border-gray-100 pt-6">
+                            <InputLabel>利用できる機能</InputLabel>
+                            <p class="mt-1 text-xs text-gray-500">
+                                機能ごとに個別にON/OFFできます（依存関係はないため自由に組み合わせ可能）。
+                            </p>
+
+                            <div class="mt-2 flex flex-wrap gap-2">
+                                <SecondaryButton
+                                    type="button"
+                                    @click="applyPreset('basic')"
+                                >
+                                    ベーシックにする
+                                </SecondaryButton>
+                                <SecondaryButton
+                                    type="button"
+                                    @click="applyPreset('standard')"
+                                >
+                                    スタンダードにする
+                                </SecondaryButton>
+                                <SecondaryButton
+                                    type="button"
+                                    @click="applyPreset('premium')"
+                                >
+                                    プレミアムにする
+                                </SecondaryButton>
+                            </div>
+
+                            <div class="mt-3 space-y-2">
+                                <label
+                                    v-for="module in availableModules"
+                                    :key="module.value"
+                                    class="flex items-center"
+                                >
+                                    <Checkbox
+                                        :value="module.value"
+                                        v-model:checked="form.enabled_modules"
+                                    />
+                                    <span class="ms-2 text-sm text-gray-700">
+                                        {{ module.label }}
+                                    </span>
+                                </label>
+                            </div>
+                            <InputError
+                                class="mt-1"
+                                :message="form.errors.enabled_modules"
                             />
                         </div>
 
