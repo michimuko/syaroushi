@@ -18,7 +18,6 @@ const props = defineProps({
 
 const form = useForm({
     name: props.office.name,
-    contract_plan: props.office.contract_plan ?? '',
     is_active: props.office.is_active,
     trial_ends_at: props.office.trial_ends_at
         ? props.office.trial_ends_at.slice(0, 10)
@@ -89,23 +88,6 @@ const submit = () => {
                                 <InputError
                                     class="mt-1"
                                     :message="form.errors.name"
-                                />
-                            </div>
-
-                            <div class="sm:col-span-2">
-                                <InputLabel for="contract_plan">
-                                    契約プラン
-                                </InputLabel>
-                                <TextInput
-                                    id="contract_plan"
-                                    type="text"
-                                    class="mt-1 block w-full"
-                                    v-model="form.contract_plan"
-                                    placeholder="例：スタンダードプラン"
-                                />
-                                <InputError
-                                    class="mt-1"
-                                    :message="form.errors.contract_plan"
                                 />
                             </div>
 

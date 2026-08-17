@@ -9,7 +9,6 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
     office_name: '',
-    contract_plan: '',
     owner_name: '',
     owner_email: '',
     owner_password: '',
@@ -56,23 +55,6 @@ const submit = () => {
                                 <InputError
                                     class="mt-1"
                                     :message="form.errors.office_name"
-                                />
-                            </div>
-
-                            <div class="sm:col-span-2">
-                                <InputLabel for="contract_plan">
-                                    契約プラン
-                                </InputLabel>
-                                <TextInput
-                                    id="contract_plan"
-                                    type="text"
-                                    class="mt-1 block w-full"
-                                    v-model="form.contract_plan"
-                                    placeholder="例：スタンダードプラン"
-                                />
-                                <InputError
-                                    class="mt-1"
-                                    :message="form.errors.contract_plan"
                                 />
                             </div>
                         </div>

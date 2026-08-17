@@ -58,14 +58,6 @@ const formatYen = (amount) =>
                     <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <dt class="text-xs text-gray-500">
-                                契約プラン
-                            </dt>
-                            <dd class="mt-1 text-sm text-gray-900">
-                                {{ office.contract_plan || '-' }}
-                            </dd>
-                        </div>
-                        <div>
-                            <dt class="text-xs text-gray-500">
                                 ステータス
                             </dt>
                             <dd class="mt-1">

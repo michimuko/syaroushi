@@ -33,6 +33,7 @@ class OfficeController extends Controller
         return Inertia::render('Platform/Offices/Index', [
             'offices' => Office::query()
                 ->withCount('users')
+                ->with('billingPlan')
                 ->orderBy('name')
                 ->paginate(20),
         ]);
@@ -56,7 +57,6 @@ class OfficeController extends Controller
     {
         $validated = $request->validate([
             'office_name' => 'required|string|max:255',
-            'contract_plan' => 'nullable|string|max:255',
             'owner_name' => 'required|string|max:255',
             'owner_email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'owner_password' => ['required', 'confirmed', Rules\Password::defaults()],
@@ -65,7 +65,6 @@ class OfficeController extends Controller
         DB::transaction(function () use ($validated) {
             $office = Office::create([
                 'name' => $validated['office_name'],
-                'contract_plan' => $validated['contract_plan'] ?? null,
                 'trial_ends_at' => now()->addDays(BillingSetting::current()->trial_days),
             ]);
 
@@ -118,7 +117,6 @@ class OfficeController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'contract_plan' => 'nullable|string|max:255',
             'is_active' => 'required|boolean',
             'trial_ends_at' => 'nullable|date',
             'enabled_modules' => 'nullable|array',

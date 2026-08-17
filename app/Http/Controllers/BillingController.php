@@ -24,7 +24,6 @@ class BillingController extends Controller
 
         return Inertia::render('Settings/Billing/Index', [
             'office' => [
-                'contract_plan' => $office->contract_plan,
                 'is_trial_active' => $office->isTrialActive(),
                 'trial_ends_at' => $office->trial_ends_at?->toDateString(),
             ],

@@ -48,7 +48,6 @@ test('a platform admin can extend or clear an office\'s trial end date', functio
 
     $response = $this->actingAs($admin, 'platform')->put(route('platform.offices.update', $office), [
         'name' => $office->name,
-        'contract_plan' => $office->contract_plan,
         'is_active' => true,
         'trial_ends_at' => null,
     ]);

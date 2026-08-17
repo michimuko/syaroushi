@@ -19,7 +19,6 @@ class OfficeFactory extends Factory
     {
         return [
             'name' => $this->faker->company().'社会保険労務士事務所',
-            'contract_plan' => null,
             'is_active' => true,
         ];
     }

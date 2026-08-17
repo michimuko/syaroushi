@@ -38,7 +38,7 @@ defineProps({
                                     <th
                                         class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                                     >
-                                        契約プラン
+                                        料金プラン
                                     </th>
                                     <th
                                         class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
@@ -78,7 +78,7 @@ defineProps({
                                         </Link>
                                     </td>
                                     <td class="px-4 py-3 text-gray-600">
-                                        {{ office.contract_plan || '-' }}
+                                        {{ office.billing_plan?.name || '-' }}
                                     </td>
                                     <td class="px-4 py-3 text-gray-600">
                                         {{ office.users_count }}

@@ -10,7 +10,6 @@ test('a platform admin can create an office with its first owner in one go', fun
 
     $response = $this->actingAs($admin, 'platform')->post(route('platform.offices.store'), [
         'office_name' => '新宿社会保険労務士事務所',
-        'contract_plan' => 'standard',
         'owner_name' => '新規オーナー',
         'owner_email' => 'new-owner@example.com',
         'owner_password' => 'password123',
@@ -50,7 +49,6 @@ test('a platform admin can toggle an office\'s is_active flag', function () {
 
     $response = $this->actingAs($admin, 'platform')->put(route('platform.offices.update', $office), [
         'name' => $office->name,
-        'contract_plan' => $office->contract_plan,
         'is_active' => false,
     ]);
 
@@ -65,7 +63,6 @@ test('a platform admin can assign a billing plan and a custom monthly price to a
 
     $response = $this->actingAs($admin, 'platform')->put(route('platform.offices.update', $office), [
         'name' => $office->name,
-        'contract_plan' => $office->contract_plan,
         'is_active' => true,
         'billing_plan_id' => $plan->id,
         'custom_monthly_price' => 350,
@@ -87,7 +84,6 @@ test('a platform admin can clear an office back to an unassigned plan and defaul
 
     $response = $this->actingAs($admin, 'platform')->put(route('platform.offices.update', $office), [
         'name' => $office->name,
-        'contract_plan' => $office->contract_plan,
         'is_active' => true,
         'billing_plan_id' => null,
         'custom_monthly_price' => null,
