@@ -1,0 +1,15 @@
+# さくらのVPS 1GBプラン向けMySQLチューニング
+# 配置先: /etc/mysql/mysql.conf.d/syaroushi.cnf （既存の mysqld.cnf を上書きしないよう別ファイルにする）
+#
+# PHP-FPM・cron起動のキューワーカー・Nginxと1GBメモリを分け合う前提のため、
+# デフォルト（innodb_buffer_pool_size=128M程度）よりさらに絞って全体のメモリ予算を守る。
+# 2GBプランへスケールアップした場合は syaroushi-2gb.cnf に差し替える。
+
+[mysqld]
+innodb_buffer_pool_size = 96M
+innodb_log_file_size = 32M
+max_connections = 20
+
+# 顧問先データは長期保存が前提のため、意図しないデータ消失を避ける設定を明示
+innodb_flush_log_at_trx_commit = 1
+sync_binlog = 1
