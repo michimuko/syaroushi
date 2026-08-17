@@ -8,24 +8,21 @@ test('a platform admin can update the platform-wide billing settings', function 
     $admin = PlatformAdmin::factory()->create();
 
     $response = $this->actingAs($admin, 'platform')->put(route('platform.billing-settings.update'), [
-        'unit_price_per_client' => 800,
         'trial_days' => 14,
         'billing_cycle' => 'monthly',
     ]);
 
-    $response->assertRedirect(route('platform.billing-settings.edit'));
+    $response->assertRedirect(route('platform.billing-plans.index'));
 
     $setting = BillingSetting::current();
-    expect($setting->unit_price_per_client)->toBe(800)
-        ->and($setting->trial_days)->toBe(14)
+    expect($setting->trial_days)->toBe(14)
         ->and($setting->billing_cycle->value)->toBe('monthly');
 });
 
 test('billing settings default to the seeded values', function () {
     $setting = BillingSetting::current();
 
-    expect($setting->unit_price_per_client)->toBe(500)
-        ->and($setting->trial_days)->toBe(30);
+    expect($setting->trial_days)->toBe(30);
 });
 
 test('creating an office via the platform sets trial_ends_at based on the configured trial days', function () {

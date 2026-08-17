@@ -44,7 +44,7 @@ watch(
 
                     <div class="flex items-center gap-4">
                         <Link
-                            :href="route('platform.billing-settings.edit')"
+                            :href="route('platform.billing-plans.index')"
                             class="text-sm text-slate-300 hover:text-white"
                         >
                             料金設定

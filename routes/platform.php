@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Platform\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Platform\BillingPlanController;
 use App\Http\Controllers\Platform\BillingSettingController;
 use App\Http\Controllers\Platform\OfficeController;
 use Illuminate\Support\Facades\Route;
@@ -18,7 +19,7 @@ Route::prefix('admin')->name('platform.')->group(function () {
     Route::middleware('auth:platform')->group(function () {
         Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
         Route::resource('offices', OfficeController::class)->except(['show', 'destroy']);
-        Route::get('billing-settings', [BillingSettingController::class, 'edit'])->name('billing-settings.edit');
+        Route::resource('billing-plans', BillingPlanController::class)->only(['index', 'store', 'update']);
         Route::put('billing-settings', [BillingSettingController::class, 'update'])->name('billing-settings.update');
     });
 });
