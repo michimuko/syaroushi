@@ -1,7 +1,10 @@
 <?php
 
 use App\Enums\UserRole;
+use App\Models\BillingPlan;
+use App\Models\Client;
 use App\Models\Office;
+use App\Models\PlatformAdmin;
 use App\Models\User;
 
 /*
@@ -78,4 +81,25 @@ it('can log in via session and load an authenticated page on a separate request 
     $response = $this->get(route('dashboard'));
 
     $response->assertOk();
+});
+
+it('does not leak the office scope to office_id=null when a platform admin queries Client via a real session', function () {
+    // actingAs('platform')はAuthenticateミドルウェアのAuth::shouldUse()を経由しないため、
+    // ここで検知した「auth:platformでの操作中、裸のauth()ヘルパーがデフォルトガードを
+    // platformとして解決し、OfficeScopeがoffice_id=nullで絞り込んでしまう」実バグを
+    // 再現できなかった（実機検証で確認済み。App\Models\Scopes\OfficeScope参照）。
+    // 上記の④と同じ理由で、実際に/admin/loginへPOSTしてセッションを張る。
+    $admin = PlatformAdmin::factory()->create();
+    $plan = BillingPlan::factory()->create();
+    $office = Office::factory()->create(['billing_plan_id' => $plan->id]);
+    Client::factory()->for($office)->count(3)->create();
+
+    $this->post(route('platform.login'), [
+        'email' => $admin->email,
+        'password' => 'password',
+    ])->assertRedirect(route('platform.offices.index'));
+
+    $response = $this->get(route('platform.offices.edit', $office));
+
+    $response->assertInertia(fn ($page) => $page->where('usage.clientCount', 3));
 });

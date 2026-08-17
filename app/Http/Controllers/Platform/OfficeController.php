@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Platform;
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\BillingPlan;
 use App\Models\BillingSetting;
 use App\Models\Office;
 use App\Models\User;
@@ -83,8 +84,24 @@ class OfficeController extends Controller
      */
     public function edit(Office $office): Response
     {
+        $office->loadMissing('billingPlan');
+
         return Inertia::render('Platform/Offices/Edit', [
             'office' => $office,
+            'assignableBillingPlans' => BillingPlan::query()
+                ->where(function ($query) use ($office) {
+                    $query->where('is_active', true);
+                    if ($office->billing_plan_id !== null) {
+                        $query->orWhere('id', $office->billing_plan_id);
+                    }
+                })
+                ->orderBy('sort_order')
+                ->get(),
+            'usage' => [
+                'clientCount' => $office->billableClientCount(),
+                'userCount' => $office->currentUserCount(),
+            ],
+            'exceededLimits' => $office->exceedsPlanLimits(),
         ]);
     }
 
@@ -98,6 +115,8 @@ class OfficeController extends Controller
             'contract_plan' => 'nullable|string|max:255',
             'is_active' => 'required|boolean',
             'trial_ends_at' => 'nullable|date',
+            'billing_plan_id' => 'nullable|exists:billing_plans,id',
+            'custom_monthly_price' => 'nullable|integer|min:0',
         ]);
 
         $office->update($validated);

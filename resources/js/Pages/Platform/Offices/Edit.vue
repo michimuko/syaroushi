@@ -10,6 +10,9 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
     office: Object,
+    assignableBillingPlans: Array,
+    usage: Object,
+    exceededLimits: Array,
 });
 
 const form = useForm({
@@ -19,7 +22,20 @@ const form = useForm({
     trial_ends_at: props.office.trial_ends_at
         ? props.office.trial_ends_at.slice(0, 10)
         : '',
+    billing_plan_id: props.office.billing_plan_id,
+    custom_monthly_price: props.office.custom_monthly_price ?? '',
 });
+
+const planLabel = (plan) => {
+    const clients = plan.max_clients ?? '無制限';
+    const users = plan.max_users ?? '無制限';
+    const price =
+        plan.monthly_price !== null
+            ? `¥${plan.monthly_price.toLocaleString()}/月`
+            : '個別見積り';
+
+    return `${plan.name}（顧問先${clients}・ユーザー${users}・${price}）`;
+};
 
 const submit = () => {
     form.put(route('platform.offices.update', props.office.id));
@@ -118,6 +134,85 @@ const submit = () => {
                                 class="mt-1"
                                 :message="form.errors.is_active"
                             />
+                        </div>
+
+                        <div class="mt-6 border-t border-gray-100 pt-6">
+                            <InputLabel for="billing_plan_id">
+                                料金プラン
+                            </InputLabel>
+                            <select
+                                id="billing_plan_id"
+                                v-model="form.billing_plan_id"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            >
+                                <option :value="null">未設定</option>
+                                <option
+                                    v-for="plan in assignableBillingPlans"
+                                    :key="plan.id"
+                                    :value="plan.id"
+                                >
+                                    {{ planLabel(plan) }}
+                                </option>
+                            </select>
+                            <InputError
+                                class="mt-1"
+                                :message="form.errors.billing_plan_id"
+                            />
+
+                            <div class="mt-4">
+                                <InputLabel for="custom_monthly_price">
+                                    月額の個別見積り／値引き（円）
+                                </InputLabel>
+                                <TextInput
+                                    id="custom_monthly_price"
+                                    type="number"
+                                    min="0"
+                                    class="mt-1 block w-full"
+                                    v-model="form.custom_monthly_price"
+                                    placeholder="空欄ならプランの月額料金をそのまま適用"
+                                />
+                                <p class="mt-1 text-xs text-gray-500">
+                                    選択したプランの月額料金より優先されます。プランの月額料金が「個別見積り」の場合は、この欄に金額を入力しないと請求記録が生成されません。
+                                </p>
+                                <InputError
+                                    class="mt-1"
+                                    :message="form.errors.custom_monthly_price"
+                                />
+                            </div>
+
+                            <div class="mt-4 rounded-md bg-gray-50 p-3 text-sm">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">
+                                        顧問先数
+                                    </span>
+                                    <span class="font-medium text-gray-900">
+                                        {{ usage.clientCount }}
+                                    </span>
+                                </div>
+                                <div
+                                    v-if="exceededLimits.includes('clients')"
+                                    class="mt-1 inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800"
+                                >
+                                    プラン上限を超過しています
+                                </div>
+
+                                <div
+                                    class="mt-3 flex items-center justify-between"
+                                >
+                                    <span class="text-gray-600">
+                                        ユーザー数
+                                    </span>
+                                    <span class="font-medium text-gray-900">
+                                        {{ usage.userCount }}
+                                    </span>
+                                </div>
+                                <div
+                                    v-if="exceededLimits.includes('users')"
+                                    class="mt-1 inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800"
+                                >
+                                    プラン上限を超過しています
+                                </div>
+                            </div>
                         </div>
 
                         <div
