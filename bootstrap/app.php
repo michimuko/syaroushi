@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
+use Sentry\Laravel\Integration;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -46,4 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // SENTRY_LARAVEL_DSN未設定時はSDKが無効化されるため、本番以外では何もしない
+        Integration::handles($exceptions);
     })->create();
