@@ -14,6 +14,8 @@ use Illuminate\Console\Command;
  * またはoffices.custom_monthly_priceによる個別上書きを優先して請求額を決定する）。
  * 決済連携は行わず、あくまで「その月いくら請求すべきか」の記録を残すのみ。
  * トライアル終了日が前月の期間に一部でもかかる事務所、および利用停止中の事務所は対象外とする。
+ * Stripeでの決済連携が有効（stripe_subscription_statusがactive/trialing）な事務所は、Stripe側の
+ * Subscription/Invoiceが実際の請求の正とみなし、このバッチでは二重に請求記録を作らずスキップする。
  * プラン未割当かつ個別価格も未設定で金額が確定できない事務所は、エラーにせず警告ログを出してスキップする
  * （新規登録をブロックしない方針のため、料金未確定は運用上の注意喚起にとどめる）。
  * 同一期間の請求は一意制約（office_id, period_start）で重複生成を防ぐ。
@@ -34,6 +36,7 @@ class GenerateOfficeInvoicesCommand extends Command
         $skippedTrialCount = 0;
         $skippedDuplicateCount = 0;
         $skippedNoPriceCount = 0;
+        $skippedStripeManagedCount = 0;
 
         Office::query()->where('is_active', true)->with('billingPlan')->each(function (Office $office) use (
             $periodStart,
@@ -41,10 +44,17 @@ class GenerateOfficeInvoicesCommand extends Command
             &$generatedCount,
             &$skippedTrialCount,
             &$skippedDuplicateCount,
-            &$skippedNoPriceCount
+            &$skippedNoPriceCount,
+            &$skippedStripeManagedCount
         ) {
             if ($office->trial_ends_at !== null && $office->trial_ends_at->greaterThan($periodStart)) {
                 $skippedTrialCount++;
+
+                return;
+            }
+
+            if ($office->hasActiveStripeSubscription()) {
+                $skippedStripeManagedCount++;
 
                 return;
             }
@@ -77,7 +87,7 @@ class GenerateOfficeInvoicesCommand extends Command
             $generatedCount++;
         });
 
-        $this->info("{$periodStart->toDateString()}〜{$periodEnd->toDateString()}分の請求記録を{$generatedCount}件生成しました（トライアル対象外{$skippedTrialCount}件、生成済み{$skippedDuplicateCount}件、料金未確定{$skippedNoPriceCount}件）。");
+        $this->info("{$periodStart->toDateString()}〜{$periodEnd->toDateString()}分の請求記録を{$generatedCount}件生成しました（トライアル対象外{$skippedTrialCount}件、Stripe決済連携済み{$skippedStripeManagedCount}件、生成済み{$skippedDuplicateCount}件、料金未確定{$skippedNoPriceCount}件）。");
 
         return self::SUCCESS;
     }

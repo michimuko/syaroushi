@@ -28,6 +28,12 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <!-- StripeClientのコンテナ登録（AppServiceProvider）が文字列以外だと即座に例外を投げるため、
+             実際にAPIへ到達しないテストでもダミー値が必要（Stripe呼び出し自体はStripeSubscriptionGatewayを
+             $this->mock()で差し替えて検証する） -->
+        <env name="STRIPE_KEY" value="pk_test_dummy"/>
+        <env name="STRIPE_SECRET" value="sk_test_dummy"/>
+        <env name="STRIPE_WEBHOOK_SECRET" value=""/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>

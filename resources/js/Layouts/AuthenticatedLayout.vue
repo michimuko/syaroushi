@@ -9,19 +9,29 @@ const showingSidebar = ref(false);
 
 const page = usePage();
 const flashMessage = ref('');
+const flashIsError = ref(false);
 let flashTimer = null;
+
+const showFlash = (message, isError) => {
+    if (!message) return;
+
+    flashMessage.value = message;
+    flashIsError.value = isError;
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => {
+        flashMessage.value = '';
+    }, 3000);
+};
 
 watch(
     () => page.props.flash?.success,
-    (message) => {
-        if (!message) return;
+    (message) => showFlash(message, false),
+    { immediate: true },
+);
 
-        flashMessage.value = message;
-        clearTimeout(flashTimer);
-        flashTimer = setTimeout(() => {
-            flashMessage.value = '';
-        }, 3000);
-    },
+watch(
+    () => page.props.flash?.error,
+    (message) => showFlash(message, true),
     { immediate: true },
 );
 </script>
@@ -236,7 +246,8 @@ watch(
         >
             <div
                 v-if="flashMessage"
-                class="fixed bottom-6 right-6 z-50 rounded-md bg-gray-900 px-4 py-3 text-sm text-white shadow-lg"
+                class="fixed bottom-6 right-6 z-50 rounded-md px-4 py-3 text-sm text-white shadow-lg"
+                :class="flashIsError ? 'bg-red-700' : 'bg-gray-900'"
                 role="status"
             >
                 {{ flashMessage }}

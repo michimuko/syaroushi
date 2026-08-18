@@ -107,6 +107,24 @@ test('creating a plan requires a name', function () {
     $response->assertSessionHasErrors('name');
 });
 
+test('a platform admin can set a Stripe price id on a plan', function () {
+    $admin = PlatformAdmin::factory()->create();
+    $plan = BillingPlan::factory()->create(['stripe_price_id' => null]);
+
+    $response = $this->actingAs($admin, 'platform')->put(route('platform.billing-plans.update', $plan), [
+        'name' => $plan->name,
+        'max_clients' => $plan->max_clients,
+        'max_users' => $plan->max_users,
+        'monthly_price' => $plan->monthly_price,
+        'stripe_price_id' => 'price_test_abc',
+        'sort_order' => $plan->sort_order,
+        'is_active' => $plan->is_active,
+    ]);
+
+    $response->assertRedirect(route('platform.billing-plans.index'));
+    expect($plan->fresh()->stripe_price_id)->toBe('price_test_abc');
+});
+
 test('a non platform admin cannot access billing plan management', function () {
     $office = Office::factory()->create();
     $user = User::factory()->for($office)->create();

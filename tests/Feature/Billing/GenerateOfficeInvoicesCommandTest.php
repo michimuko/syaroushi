@@ -95,6 +95,21 @@ test('it skips offices with no determinable price without failing', function () 
     expect(OfficeInvoice::where('office_id', $office->id)->exists())->toBeFalse();
 });
 
+test('it skips offices with an active Stripe subscription (Stripe is the source of truth for those)', function () {
+    $plan = BillingPlan::factory()->create(['monthly_price' => 14800]);
+    $office = Office::factory()->create([
+        'is_active' => true,
+        'trial_ends_at' => null,
+        'billing_plan_id' => $plan->id,
+        'stripe_subscription_status' => 'active',
+    ]);
+    Client::factory()->for($office)->create(['status' => ClientStatus::Active]);
+
+    $this->artisan('billing:generate-invoices')->assertExitCode(0);
+
+    expect(OfficeInvoice::where('office_id', $office->id)->exists())->toBeFalse();
+});
+
 test('running it twice does not duplicate invoices for the same period', function () {
     $plan = BillingPlan::factory()->create();
     $office = Office::factory()->create(['is_active' => true, 'trial_ends_at' => null, 'billing_plan_id' => $plan->id]);

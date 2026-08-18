@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 
 const props = defineProps({
     office: Object,
@@ -15,6 +16,18 @@ const props = defineProps({
 
 const formatYen = (amount) =>
     amount === null ? '個別見積り' : `${amount.toLocaleString('ja-JP')}円`;
+
+const subscriptionStatusLabel = {
+    active: '契約中',
+    trialing: 'トライアル中（Stripe）',
+    past_due: '支払い遅延',
+    canceled: '解約済み',
+    unpaid: '未払い',
+};
+
+const startCheckout = () => {
+    router.post(route('settings.billing.checkout'));
+};
 </script>
 
 <template>
@@ -30,7 +43,7 @@ const formatYen = (amount) =>
         <div class="py-8">
             <div class="mx-auto max-w-3xl space-y-6 sm:px-6 lg:px-8">
                 <p class="text-sm text-gray-500">
-                    課金は契約プランの月額固定です（決済は本画面では行われません。請求方法は別途ご案内します）。
+                    課金は契約プランの月額固定です。下記からStripe（決済代行）を通じてお申し込み・お支払い方法の変更ができます。
                 </p>
 
                 <div
@@ -96,6 +109,32 @@ const formatYen = (amount) =>
                             </p>
                         </div>
                         <div>
+                            <dt class="text-xs text-gray-500">決済状況</dt>
+                            <dd class="mt-1">
+                                <span
+                                    v-if="office.stripe_subscription_status"
+                                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                                    :class="
+                                        office.has_active_stripe_subscription
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-red-100 text-red-800'
+                                    "
+                                >
+                                    {{
+                                        subscriptionStatusLabel[
+                                            office.stripe_subscription_status
+                                        ] ?? office.stripe_subscription_status
+                                    }}
+                                </span>
+                                <span
+                                    v-else
+                                    class="text-sm text-gray-500"
+                                >
+                                    未お申し込み
+                                </span>
+                            </dd>
+                        </div>
+                        <div>
                             <dt class="text-xs text-gray-500">
                                 現在の課金対象顧問先数
                             </dt>
@@ -125,6 +164,36 @@ const formatYen = (amount) =>
                             </p>
                         </div>
                     </dl>
+
+                    <div
+                        class="mt-6 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-4"
+                    >
+                        <PrimaryButton
+                            v-if="
+                                billingPlan?.checkout_available &&
+                                !office.has_active_stripe_subscription
+                            "
+                            @click="startCheckout"
+                        >
+                            このプランでお申し込みする
+                        </PrimaryButton>
+                        <p
+                            v-else-if="
+                                !billingPlan?.checkout_available &&
+                                !office.has_active_stripe_subscription
+                            "
+                            class="text-xs text-gray-500"
+                        >
+                            このプランはオンラインでのお申し込みに対応していません。運営者までお問い合わせください。
+                        </p>
+                        <Link
+                            v-if="office.has_stripe_customer"
+                            :href="route('settings.billing.portal')"
+                            class="text-sm text-indigo-600 hover:text-indigo-900"
+                        >
+                            お支払い方法・請求書を管理する（Stripe）
+                        </Link>
+                    </div>
                 </div>
 
                 <div class="rounded-lg bg-white p-6 shadow-sm">

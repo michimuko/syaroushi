@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Stripe\StripeClient;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,7 +16,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // コンテナ経由でbindすることで、テストではfakeなStripeClientに差し替えられるようにする。
+        $this->app->singleton(StripeClient::class, fn () => new StripeClient(config('services.stripe.secret')));
     }
 
     /**

@@ -35,6 +35,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'module' => EnsureModuleEnabled::class,
         ]);
 
+        // StripeからのWebhookはCSRFトークンを送れないため対象外にする（署名検証はStripeWebhookController側で行う）
+        $middleware->validateCsrfTokens(except: ['webhooks/stripe']);
+
         // /admin配下は運営者用ログイン画面へ、それ以外は社労士側ログイン画面へリダイレクトする
         $middleware->redirectGuestsTo(
             fn (Request $request) => $request->is('admin/*') ? route('platform.login') : route('login')

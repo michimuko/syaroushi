@@ -11,7 +11,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'is_active', 'trial_ends_at', 'enabled_modules', 'billing_plan_id', 'custom_monthly_price'])]
+#[Fillable([
+    'name', 'is_active', 'trial_ends_at', 'enabled_modules', 'billing_plan_id', 'custom_monthly_price',
+    'stripe_customer_id', 'stripe_subscription_id', 'stripe_subscription_status',
+])]
 class Office extends Model
 {
     /** @use HasFactory<OfficeFactory> */
@@ -92,6 +95,15 @@ class Office extends Model
         }
 
         return $exceeded;
+    }
+
+    /**
+     * Stripe側でsubscriptionがactive/trialing状態であることを指す
+     * （customer.subscription.*系のwebhookでstripe_subscription_statusが更新される）。
+     */
+    public function hasActiveStripeSubscription(): bool
+    {
+        return in_array($this->stripe_subscription_status, ['active', 'trialing'], true);
     }
 
     /**

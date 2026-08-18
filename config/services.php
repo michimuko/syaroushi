@@ -35,6 +35,15 @@ return [
         ],
     ],
 
+    'stripe' => [
+        // 契約プラン（billing_plans）のCheckout/Customer Portal・webhook検証に使う。
+        // 複数のtoB SaaS（korotaneブランド）で共通のStripeアカウントを使う想定のため、
+        // Price IDはここではなくプランごとにDB（billing_plans.stripe_price_id）で持つ。
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+    ],
+
     'github' => [
         // デスクトップ通知アプリのインストーラーをGitHub Releasesから配布するために使う。
         // リポジトリがprivateのため、一覧取得・ダウンロードともにトークンでの認証が必要。

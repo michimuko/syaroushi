@@ -33,6 +33,7 @@ const planForm = useForm({
     max_clients: '',
     max_users: '',
     monthly_price: '',
+    stripe_price_id: '',
     sort_order: 0,
     is_active: true,
 });
@@ -50,6 +51,7 @@ const openEditModal = (plan) => {
     planForm.max_clients = plan.max_clients ?? '';
     planForm.max_users = plan.max_users ?? '';
     planForm.monthly_price = plan.monthly_price ?? '';
+    planForm.stripe_price_id = plan.stripe_price_id ?? '';
     planForm.sort_order = plan.sort_order;
     planForm.is_active = plan.is_active;
     planForm.clearErrors();
@@ -370,6 +372,27 @@ const formatYen = (value) =>
                         <InputError
                             class="mt-1"
                             :message="planForm.errors.sort_order"
+                        />
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <InputLabel for="stripe_price_id">
+                            Stripe Price ID
+                        </InputLabel>
+                        <TextInput
+                            id="stripe_price_id"
+                            type="text"
+                            class="mt-1 block w-full font-mono text-sm"
+                            v-model="planForm.stripe_price_id"
+                            placeholder="price_... （空欄だと事務所側のお申し込みボタンは表示されません）"
+                        />
+                        <p class="mt-1 text-xs text-gray-500">
+                            Stripeダッシュボードで発行したPrice
+                            IDを設定する。テスト環境ではサンドボックスの、本番環境では本番アカウントのIDを使うこと。エンタープライズ等の個別見積りプランは空欄のままでよい。
+                        </p>
+                        <InputError
+                            class="mt-1"
+                            :message="planForm.errors.stripe_price_id"
                         />
                     </div>
 

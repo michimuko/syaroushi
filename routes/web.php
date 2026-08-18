@@ -20,6 +20,8 @@ use App\Http\Controllers\ProcedureTaskImportController;
 use App\Http\Controllers\ProcedureTypeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PushSubscriptionController;
+use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -107,11 +109,16 @@ Route::middleware('auth:web')->group(function () {
     });
 
     Route::get('/settings/billing', [BillingController::class, 'index'])->name('settings.billing.index');
+    Route::post('/settings/billing/checkout', [SubscriptionController::class, 'checkout'])->name('settings.billing.checkout');
+    Route::get('/settings/billing/portal', [SubscriptionController::class, 'portal'])->name('settings.billing.portal');
 
     Route::get('/settings/desktop-app', [DesktopAppTokenController::class, 'index'])->name('settings.desktop-app.index');
     Route::post('/settings/desktop-app/token', [DesktopAppTokenController::class, 'store'])->name('settings.desktop-app.token.store');
     Route::delete('/settings/desktop-app/token', [DesktopAppTokenController::class, 'destroy'])->name('settings.desktop-app.token.destroy');
     Route::get('/settings/desktop-app/download/{os}', [DesktopAppDownloadController::class, 'download'])->name('settings.desktop-app.download');
 });
+
+// Stripeからのサーバー間通信を受けるためauth:webグループの外側に置く（未認証・CSRF対象外）
+Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle'])->name('webhooks.stripe');
 
 require __DIR__.'/auth.php';

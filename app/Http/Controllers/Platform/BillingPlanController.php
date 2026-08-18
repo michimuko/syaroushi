@@ -58,6 +58,7 @@ class BillingPlanController extends Controller
             'max_clients' => 'nullable|integer|min:1|max:100000',
             'max_users' => 'nullable|integer|min:1|max:100000',
             'monthly_price' => 'nullable|integer|min:0|max:10000000',
+            'stripe_price_id' => 'nullable|string|max:255',
             'sort_order' => 'required|integer|min:0|max:1000',
             'is_active' => 'required|boolean',
         ];
