@@ -56,3 +56,45 @@ test('a platform admin cannot access tenant routes', function () {
 
     $response->assertRedirect(route('login'));
 });
+
+test('platform login ignores a stray tenant url left over in the session and goes to the offices index', function () {
+    $admin = PlatformAdmin::factory()->create();
+
+    // 未ログイン状態で社労士側の保護ページにアクセスすると、url.intendedに管理画面外のURLが記録される
+    $this->get(route('dashboard'));
+
+    $response = $this->post(route('platform.login'), [
+        'email' => $admin->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertAuthenticatedAs($admin, 'platform');
+    $response->assertRedirect(route('platform.offices.index'));
+});
+
+test('logging out of the platform guard preserves an active web guard session', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->owner()->create();
+    $admin = PlatformAdmin::factory()->create();
+
+    $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->post(route('platform.login'), [
+        'email' => $admin->email,
+        'password' => 'password',
+    ]);
+
+    $webSessionKey = collect($this->app['session']->all())
+        ->keys()
+        ->first(fn ($key) => str_starts_with($key, 'login_web_'));
+
+    expect($webSessionKey)->not->toBeNull();
+
+    $this->post(route('platform.logout'));
+
+    $this->assertGuest('platform');
+    expect($this->app['session']->get($webSessionKey))->toBe($user->getAuthIdentifier());
+});

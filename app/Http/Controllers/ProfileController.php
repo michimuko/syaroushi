@@ -51,12 +51,14 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        Auth::logout();
+        Auth::guard('web')->logout();
 
         $user->delete();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // 運営者(platformガード)が同じブラウザで同時ログインしている場合に備え、
+        // invalidate()（セッション全体をクリア）ではなく、webガードのみをログアウトした
+        // 状態を保ったままセッションIDだけを再発行する（古いセッションは破棄され安全性は同等）。
+        $request->session()->regenerate(true);
 
         return Redirect::to('/');
     }
