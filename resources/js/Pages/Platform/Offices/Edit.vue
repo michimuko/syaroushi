@@ -69,6 +69,13 @@ const submit = () => {
         <div class="py-8">
             <div class="mx-auto max-w-2xl sm:px-6 lg:px-8">
                 <div class="rounded-lg bg-white p-6 shadow-sm">
+                    <div class="mb-6 text-sm text-gray-500">
+                        事務所ID：
+                        <span class="font-mono text-gray-700">{{
+                            office.id
+                        }}</span>
+                    </div>
+
                     <form @submit.prevent="submit">
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div class="sm:col-span-2">
