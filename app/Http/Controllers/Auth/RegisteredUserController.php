@@ -49,13 +49,16 @@ class RegisteredUserController extends Controller
                 'name' => $request->office_name,
             ]);
 
-            return User::create([
+            // office_idはOffice::create()直後の信頼できる値。AssignsOfficeOnCreateの
+            // 「認証中のwebガードユーザーの事務所に強制」フックが割り込むと事故になるため止める
+            // （このルートはguest:webでガードされ通常webガード認証中はあり得ないが、念のため）。
+            return User::withoutEvents(fn () => User::create([
                 'office_id' => $office->id,
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'role' => UserRole::Owner,
-            ]);
+            ]));
         });
 
         event(new Registered($user));

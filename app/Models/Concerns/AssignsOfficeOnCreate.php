@@ -15,6 +15,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * 切り替わっていると、officeに属さないPlatformAdminがここに紛れ込みoffice_idがnullになりうる
  * （実機検証で確認済み）。テナント分離の根幹なので暗黙のデフォルトガードに依存しない。
  *
+ * 事務所そのものを新規作成し、その最初のオーナーを同時に作る場合（運営管理画面での事務所契約、
+ * 自己登録によるオーナー作成）は、上記の「認証中ユーザーの事務所へ強制」がむしろ有害
+ * （運営者が同じブラウザで別事務所のwebガードにもログインしていた場合、新規オーナーの
+ * office_idがそちらに書き換わってしまう。実機検証で確認済み）。このケースはoffice_idを
+ * 信用してよい（フォーム由来ではなくサーバー側でOffice::create()直後のIDを渡すため）ので、
+ * 呼び出し側で`User::withoutEvents(fn () => User::create([...]))`としてこのフックを止めること。
+ *
  * Userモデルはこのトレイトのみを使用し、BelongsToOffice（Global Scope付き）は使わない。
  * Global ScopeがUser::find()内でauth()->user()を呼ぶと、セッションからのユーザー復元
  * （SessionGuardのretrieveById）がそのクエリ自体を再度呼び出し、無限再帰でスタックオーバーフロー

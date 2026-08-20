@@ -26,6 +26,31 @@ test('a platform admin can create an office with its first owner in one go', fun
         ->and($owner->role->value)->toBe('owner');
 });
 
+test('a platform admin creating an office keeps the new owner in the new office even if a web guard session for another office is active in the same browser', function () {
+    $admin = PlatformAdmin::factory()->create();
+    $existingOffice = Office::factory()->create();
+    $existingOwner = User::factory()->for($existingOffice)->owner()->create();
+
+    $response = $this
+        ->actingAs($existingOwner, 'web')
+        ->actingAs($admin, 'platform')
+        ->post(route('platform.offices.store'), [
+            'office_name' => '渋谷社会保険労務士事務所',
+            'owner_name' => '新規オーナー2',
+            'owner_email' => 'new-owner-2@example.com',
+            'owner_password' => 'password123',
+            'owner_password_confirmation' => 'password123',
+        ]);
+
+    $response->assertRedirect(route('platform.offices.index'));
+
+    $office = Office::where('name', '渋谷社会保険労務士事務所')->sole();
+    $owner = User::where('email', 'new-owner-2@example.com')->sole();
+
+    expect($owner->office_id)->toBe($office->id)
+        ->and($owner->office_id)->not->toBe($existingOffice->id);
+});
+
 test('office creation rolls back entirely if the owner email is already taken', function () {
     $admin = PlatformAdmin::factory()->create();
     $existingOffice = Office::factory()->create();

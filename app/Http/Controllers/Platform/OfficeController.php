@@ -68,13 +68,16 @@ class OfficeController extends Controller
                 'trial_ends_at' => now()->addDays(BillingSetting::current()->trial_days),
             ]);
 
-            User::create([
+            // office_idはOffice::create()直後の信頼できる値。AssignsOfficeOnCreateの
+            // 「認証中のwebガードユーザーの事務所に強制」フックが割り込むと、運営者が同じ
+            // ブラウザで別事務所のwebガードにもログインしていた場合に書き換わってしまうため止める。
+            User::withoutEvents(fn () => User::create([
                 'office_id' => $office->id,
                 'name' => $validated['owner_name'],
                 'email' => $validated['owner_email'],
                 'password' => Hash::make($validated['owner_password']),
                 'role' => UserRole::Owner,
-            ]);
+            ]));
         });
 
         return redirect()->route('platform.offices.index')->with('success', '事務所を作成しました。');
