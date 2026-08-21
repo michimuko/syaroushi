@@ -2,6 +2,7 @@
 import PlatformAuthenticatedLayout from '@/Layouts/PlatformAuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
+import PasswordInput from '@/Components/PasswordInput.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
@@ -128,9 +129,8 @@ const submit = () => {
                                     パスワード
                                     <span class="text-red-600">*</span>
                                 </InputLabel>
-                                <TextInput
+                                <PasswordInput
                                     id="owner_password"
-                                    type="password"
                                     class="mt-1 block w-full"
                                     v-model="form.owner_password"
                                     placeholder="8文字以上の半角英数字"
@@ -148,9 +148,8 @@ const submit = () => {
                                     パスワード（確認用）
                                     <span class="text-red-600">*</span>
                                 </InputLabel>
-                                <TextInput
+                                <PasswordInput
                                     id="owner_password_confirmation"
-                                    type="password"
                                     class="mt-1 block w-full"
                                     v-model="form.owner_password_confirmation"
                                     placeholder="確認のためもう一度入力してください"
