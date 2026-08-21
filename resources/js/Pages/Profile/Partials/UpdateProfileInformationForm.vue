@@ -18,6 +18,7 @@ const user = usePage().props.auth.user;
 
 const form = useForm({
     name: user.name,
+    login_id: user.login_id,
     email: user.email,
 });
 </script>
@@ -53,6 +54,22 @@ const form = useForm({
                 />
 
                 <InputError class="mt-2" :message="form.errors.name" />
+            </div>
+
+            <div>
+                <InputLabel for="login_id" value="ユーザーID" />
+
+                <TextInput
+                    id="login_id"
+                    type="text"
+                    class="mt-1 block w-full"
+                    v-model="form.login_id"
+                    placeholder="例：taro（ログイン時に使用します）"
+                    required
+                    autocomplete="username"
+                />
+
+                <InputError class="mt-2" :message="form.errors.login_id" />
             </div>
 
             <div>

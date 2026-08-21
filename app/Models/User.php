@@ -22,7 +22,7 @@ use NotificationChannels\WebPush\HasPushSubscriptions;
  * （実機検証で確認済み）。他事務所ユーザーへのアクセス制御はPolicy層と、
  * 常にoffice()経由（Auth::user()->office->users()）でクエリすることで担保する。
  */
-#[Fillable(['office_id', 'name', 'email', 'password', 'role', 'permissions'])]
+#[Fillable(['office_id', 'name', 'login_id', 'email', 'password', 'role', 'permissions'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {

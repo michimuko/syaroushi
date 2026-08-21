@@ -78,7 +78,7 @@ test('logging out of the platform guard preserves an active web guard session', 
     $admin = PlatformAdmin::factory()->create();
 
     $this->post('/login', [
-        'email' => $user->email,
+        'login_id' => $user->login_id,
         'password' => 'password',
     ]);
 

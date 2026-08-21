@@ -30,6 +30,7 @@ class UserFactory extends Factory
         return [
             'office_id' => Office::factory(),
             'name' => fake()->name(),
+            'login_id' => fake()->unique()->userName(),
             'email' => fake()->unique()->safeEmail(),
             'role' => UserRole::Staff,
             'email_verified_at' => now(),

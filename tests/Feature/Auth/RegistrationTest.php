@@ -14,6 +14,7 @@ test('new users can register', function () {
     $response = $this->post('/register', [
         'office_name' => 'テスト社労士事務所',
         'name' => 'Test User',
+        'login_id' => 'test-user',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
@@ -34,6 +35,7 @@ test('registering while a platform admin session is active in the same browser s
     $response = $this->actingAs($admin, 'platform')->post('/register', [
         'office_name' => 'もう一つのテスト事務所',
         'name' => 'Test User 2',
+        'login_id' => 'test-user-2',
         'email' => 'test2@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',

@@ -40,6 +40,7 @@ test('a newly created user is always attached to the creating owner\'s office', 
 
     $response = $this->actingAs($owner)->post(route('users.store'), [
         'name' => '新しい社員',
+        'login_id' => 'newstaff',
         'email' => 'newstaff@example.com',
         'role' => 'staff',
         'password' => 'password123',
@@ -51,6 +52,24 @@ test('a newly created user is always attached to the creating owner\'s office', 
 
     $created = User::where('email', 'newstaff@example.com')->sole();
     expect($created->office_id)->toBe($office->id);
+});
+
+test('login_id must be unique across offices when creating a user', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $existing = User::factory()->for($office)->create(['login_id' => 'taken-id']);
+
+    $response = $this->actingAs($owner)->post(route('users.store'), [
+        'name' => '重複ID社員',
+        'login_id' => $existing->login_id,
+        'email' => 'dup-login-id@example.com',
+        'role' => 'staff',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ]);
+
+    $response->assertSessionHasErrors('login_id');
+    expect(User::where('email', 'dup-login-id@example.com')->exists())->toBeFalse();
 });
 
 test('an owner cannot delete themselves', function () {
@@ -69,6 +88,7 @@ test('the last owner in an office cannot be deleted or demoted', function () {
     // otherOwnerがいる間はownerを削除・降格できる
     $this->actingAs($otherOwner)->put(route('users.update', $owner), [
         'name' => $owner->name,
+        'login_id' => $owner->login_id,
         'email' => $owner->email,
         'role' => 'staff',
     ])->assertRedirect(route('users.index'));
@@ -79,6 +99,7 @@ test('the last owner in an office cannot be deleted or demoted', function () {
 
     $this->actingAs($otherOwner)->put(route('users.update', $otherOwner), [
         'name' => $otherOwner->name,
+        'login_id' => $otherOwner->login_id,
         'email' => $otherOwner->email,
         'role' => 'staff',
     ])->assertSessionHasErrors('role');
@@ -92,6 +113,7 @@ test('an owner can grant individual permissions to a staff member', function () 
 
     $response = $this->actingAs($owner)->put(route('users.update', $staff), [
         'name' => $staff->name,
+        'login_id' => $staff->login_id,
         'email' => $staff->email,
         'role' => 'staff',
         'permissions' => ['manage_custom_fields', 'manage_imports'],
@@ -110,6 +132,7 @@ test('permissions are cleared when a user is set (or promoted) to owner', functi
 
     $this->actingAs($owner)->put(route('users.update', $staff), [
         'name' => $staff->name,
+        'login_id' => $staff->login_id,
         'email' => $staff->email,
         'role' => 'owner',
         'permissions' => ['manage_custom_fields'],

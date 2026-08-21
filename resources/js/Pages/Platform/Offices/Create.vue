@@ -10,6 +10,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 const form = useForm({
     office_name: '',
     owner_name: '',
+    owner_login_id: '',
     owner_email: '',
     owner_password: '',
     owner_password_confirmation: '',
@@ -81,6 +82,25 @@ const submit = () => {
                                 <InputError
                                     class="mt-1"
                                     :message="form.errors.owner_name"
+                                />
+                            </div>
+
+                            <div class="sm:col-span-2">
+                                <InputLabel for="owner_login_id">
+                                    ユーザーID
+                                    <span class="text-red-600">*</span>
+                                </InputLabel>
+                                <TextInput
+                                    id="owner_login_id"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    v-model="form.owner_login_id"
+                                    placeholder="例：taro（ログイン時に使用します）"
+                                    required
+                                />
+                                <InputError
+                                    class="mt-1"
+                                    :message="form.errors.owner_login_id"
                                 />
                             </div>
 

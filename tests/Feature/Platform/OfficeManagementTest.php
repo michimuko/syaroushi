@@ -11,6 +11,7 @@ test('a platform admin can create an office with its first owner in one go', fun
     $response = $this->actingAs($admin, 'platform')->post(route('platform.offices.store'), [
         'office_name' => '新宿社会保険労務士事務所',
         'owner_name' => '新規オーナー',
+        'owner_login_id' => 'new-owner',
         'owner_email' => 'new-owner@example.com',
         'owner_password' => 'password123',
         'owner_password_confirmation' => 'password123',
@@ -37,6 +38,7 @@ test('a platform admin creating an office keeps the new owner in the new office 
         ->post(route('platform.offices.store'), [
             'office_name' => '渋谷社会保険労務士事務所',
             'owner_name' => '新規オーナー2',
+            'owner_login_id' => 'new-owner-2',
             'owner_email' => 'new-owner-2@example.com',
             'owner_password' => 'password123',
             'owner_password_confirmation' => 'password123',
@@ -59,6 +61,7 @@ test('office creation rolls back entirely if the owner email is already taken', 
     $response = $this->actingAs($admin, 'platform')->post(route('platform.offices.store'), [
         'office_name' => '重複テスト事務所',
         'owner_name' => 'テスト',
+        'owner_login_id' => 'duplicate-test',
         'owner_email' => 'taken@example.com',
         'owner_password' => 'password123',
         'owner_password_confirmation' => 'password123',

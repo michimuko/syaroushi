@@ -27,6 +27,7 @@ it('always assigns office_id from the authenticated user on create, ignoring a s
     $staff = new User([
         'office_id' => $officeB->id, // 悪意あるフォーム入力を想定
         'name' => 'なりすまし疑いスタッフ',
+        'login_id' => 'spoof-staff',
         'email' => 'spoof@example.com',
         'password' => bcrypt('password'),
         'role' => UserRole::Staff,
@@ -42,6 +43,7 @@ it('does not auto-assign office_id when unauthenticated (e.g. self-registration)
     $user = new User([
         'office_id' => $office->id,
         'name' => '新規登録者',
+        'login_id' => 'new-owner',
         'email' => 'new-owner@example.com',
         'password' => bcrypt('password'),
         'role' => UserRole::Owner,
@@ -68,13 +70,13 @@ it('can log in via session and load an authenticated page on a separate request 
     // この回帰テストは実際に/loginへPOSTしてセッションを張り、別リクエストで
     // SessionGuardによるユーザー復元（User::find相当）を確実に経由させる。
     $office = Office::factory()->create();
-    User::factory()->for($office)->create([
+    $user = User::factory()->for($office)->create([
         'email' => 'session-test@example.com',
         'password' => bcrypt('password'),
     ]);
 
     $this->post('/login', [
-        'email' => 'session-test@example.com',
+        'login_id' => $user->login_id,
         'password' => 'password',
     ])->assertRedirect(route('dashboard', absolute: false));
 

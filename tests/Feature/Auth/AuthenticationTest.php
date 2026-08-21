@@ -14,7 +14,7 @@ test('users can authenticate using the login screen', function () {
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
-        'email' => $user->email,
+        'login_id' => $user->login_id,
         'password' => 'password',
     ]);
 
@@ -22,11 +22,23 @@ test('users can authenticate using the login screen', function () {
     $response->assertRedirect(route('dashboard', absolute: false));
 });
 
+test('logging in with an email address instead of the login_id fails', function () {
+    $user = User::factory()->create();
+
+    $response = $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $response->assertSessionHasErrors('login_id');
+    $this->assertGuest();
+});
+
 test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
 
     $this->post('/login', [
-        'email' => $user->email,
+        'login_id' => $user->login_id,
         'password' => 'wrong-password',
     ]);
 
@@ -50,7 +62,7 @@ test('logging in ignores a stray platform admin url left over in the session and
     $this->get(route('platform.offices.index'));
 
     $response = $this->post('/login', [
-        'email' => $user->email,
+        'login_id' => $user->login_id,
         'password' => 'password',
     ]);
 
@@ -64,7 +76,7 @@ test('logging out of the web guard preserves an active platform guard session', 
     $admin = PlatformAdmin::factory()->create();
 
     $this->post('/login', [
-        'email' => $user->email,
+        'login_id' => $user->login_id,
         'password' => 'password',
     ]);
 

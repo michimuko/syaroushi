@@ -32,6 +32,7 @@ test('creating an office via the platform sets trial_ends_at based on the config
     $this->actingAs($admin, 'platform')->post(route('platform.offices.store'), [
         'office_name' => 'トライアル事務所',
         'owner_name' => 'テストオーナー',
+        'owner_login_id' => 'trial-owner',
         'owner_email' => 'trial-owner@example.com',
         'owner_password' => 'password123',
         'owner_password_confirmation' => 'password123',

@@ -8,11 +8,11 @@ test('users belonging to an inactive office cannot log in', function () {
     $user = User::factory()->for($office)->create();
 
     $response = $this->post('/login', [
-        'email' => $user->email,
+        'login_id' => $user->login_id,
         'password' => 'password',
     ]);
 
-    $response->assertSessionHasErrors('email');
+    $response->assertSessionHasErrors('login_id');
     $this->assertGuest();
 });
 
@@ -21,7 +21,7 @@ test('users can log in again once their office is reactivated', function () {
     $user = User::factory()->for($office)->create();
 
     $this->post('/login', [
-        'email' => $user->email,
+        'login_id' => $user->login_id,
         'password' => 'password',
     ]);
     $this->assertGuest();
@@ -29,7 +29,7 @@ test('users can log in again once their office is reactivated', function () {
     $office->update(['is_active' => true]);
 
     $response = $this->post('/login', [
-        'email' => $user->email,
+        'login_id' => $user->login_id,
         'password' => 'password',
     ]);
 
@@ -42,7 +42,7 @@ test('users belonging to an active office can log in as usual', function () {
     $user = User::factory()->for($office)->create();
 
     $response = $this->post('/login', [
-        'email' => $user->email,
+        'login_id' => $user->login_id,
         'password' => 'password',
     ]);
 

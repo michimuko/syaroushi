@@ -40,6 +40,7 @@ class RegisteredUserController extends Controller
         $request->validate([
             'office_name' => 'required|string|max:255',
             'name' => 'required|string|max:255',
+            'login_id' => ['required', 'string', 'min:3', 'max:30', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,login_id'],
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
@@ -55,6 +56,7 @@ class RegisteredUserController extends Controller
             return User::withoutEvents(fn () => User::create([
                 'office_id' => $office->id,
                 'name' => $request->name,
+                'login_id' => $request->login_id,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'role' => UserRole::Owner,

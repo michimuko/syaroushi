@@ -58,6 +58,7 @@ class OfficeController extends Controller
         $validated = $request->validate([
             'office_name' => 'required|string|max:255',
             'owner_name' => 'required|string|max:255',
+            'owner_login_id' => ['required', 'string', 'min:3', 'max:30', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,login_id'],
             'owner_email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'owner_password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
@@ -74,6 +75,7 @@ class OfficeController extends Controller
             User::withoutEvents(fn () => User::create([
                 'office_id' => $office->id,
                 'name' => $validated['owner_name'],
+                'login_id' => $validated['owner_login_id'],
                 'email' => $validated['owner_email'],
                 'password' => Hash::make($validated['owner_password']),
                 'role' => UserRole::Owner,

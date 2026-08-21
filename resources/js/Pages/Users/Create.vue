@@ -27,6 +27,7 @@ const permissionOptions = [
 
 const form = useForm({
     name: '',
+    login_id: '',
     email: '',
     role: 'staff',
     password: '',
@@ -77,6 +78,26 @@ const submit = () => {
                             </div>
 
                             <div class="sm:col-span-2">
+                                <InputLabel for="login_id">
+                                    ユーザーID
+                                    <span class="text-red-600">*</span>
+                                </InputLabel>
+                                <TextInput
+                                    id="login_id"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    v-model="form.login_id"
+                                    placeholder="例：hanako（ログイン時に使用します）"
+                                    required
+                                    autocomplete="username"
+                                />
+                                <InputError
+                                    class="mt-1"
+                                    :message="form.errors.login_id"
+                                />
+                            </div>
+
+                            <div class="sm:col-span-2">
                                 <InputLabel for="email">
                                     メールアドレス
                                     <span class="text-red-600">*</span>
@@ -88,7 +109,7 @@ const submit = () => {
                                     v-model="form.email"
                                     placeholder="例：hanako@example.co.jp"
                                     required
-                                    autocomplete="username"
+                                    autocomplete="email"
                                 />
                                 <InputError
                                     class="mt-1"
