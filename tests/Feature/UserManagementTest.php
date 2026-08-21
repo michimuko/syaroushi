@@ -3,6 +3,8 @@
 use App\Enums\Permission;
 use App\Models\Office;
 use App\Models\User;
+use App\Notifications\UserAccountCreated;
+use Illuminate\Support\Facades\Notification;
 
 test('owner can list only their own office\'s users', function () {
     $office = Office::factory()->create();
@@ -52,6 +54,36 @@ test('a newly created user is always attached to the creating owner\'s office', 
 
     $created = User::where('email', 'newstaff@example.com')->sole();
     expect($created->office_id)->toBe($office->id);
+});
+
+test('a newly created user is notified by mail with their login_id but not their password', function () {
+    Notification::fake();
+
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+
+    $this->actingAs($owner)->post(route('users.store'), [
+        'name' => '通知確認太郎',
+        'login_id' => 'notify-taro',
+        'email' => 'notify-taro@example.com',
+        'role' => 'staff',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ]);
+
+    $created = User::where('email', 'notify-taro@example.com')->sole();
+
+    Notification::assertSentTo(
+        $created,
+        function (UserAccountCreated $notification, array $channels) use ($created, $office) {
+            $rendered = (string) $notification->toMail($created)->render();
+
+            return $channels === ['mail']
+                && $notification->office->is($office)
+                && str_contains($rendered, 'notify-taro')
+                && ! str_contains($rendered, 'password123');
+        }
+    );
 });
 
 test('login_id must be unique across offices when creating a user', function () {

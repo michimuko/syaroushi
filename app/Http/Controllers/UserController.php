@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\Permission;
 use App\Enums\UserRole;
 use App\Models\User;
+use App\Notifications\UserAccountCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -68,7 +69,9 @@ class UserController extends Controller
             : ($validated['permissions'] ?? []);
 
         // office_idはAssignsOfficeOnCreateがログイン中の事務所で自動付与する
-        User::create($validated);
+        $user = User::create($validated);
+
+        $user->notify(new UserAccountCreated(Auth::user()->office));
 
         return redirect()->route('users.index')->with('success', 'ユーザーを登録しました。');
     }
