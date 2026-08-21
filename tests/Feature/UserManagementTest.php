@@ -104,6 +104,28 @@ test('login_id must be unique across offices when creating a user', function () 
     expect(User::where('email', 'dup-login-id@example.com')->exists())->toBeFalse();
 });
 
+test('login_id validation errors are returned in clear Japanese, not the default English messages', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+
+    // メールアドレスのような、許可されていない文字（@）を含むIDは正規表現ルールで弾かれる
+    $response = $this->actingAs($owner)->post(route('users.store'), [
+        'name' => '不正ID社員',
+        'login_id' => 'not-an-id@example.com',
+        'email' => 'invalid-format@example.com',
+        'role' => 'staff',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ]);
+
+    $response->assertSessionHasErrors('login_id');
+    $message = session('errors')->first('login_id');
+
+    expect($message)
+        ->toBe('ユーザーIDは半角英数字・アンダースコア（_）・ハイフン（-）・ピリオド（.）のみ使用できます。')
+        ->not->toContain('The login id field');
+});
+
 test('an owner cannot delete themselves', function () {
     $office = Office::factory()->create();
     $owner = User::factory()->for($office)->owner()->create();

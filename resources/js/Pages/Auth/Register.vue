@@ -87,7 +87,7 @@ const submit = () => {
                     v-model="form.email"
                     placeholder="例：taro@example.co.jp"
                     required
-                    autocomplete="username"
+                    autocomplete="email"
                 />
 
                 <InputError class="mt-2" :message="form.errors.email" />

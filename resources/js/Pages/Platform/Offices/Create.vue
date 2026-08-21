@@ -98,6 +98,7 @@ const submit = () => {
                                     v-model="form.owner_login_id"
                                     placeholder="例：taro（ログイン時に使用します）"
                                     required
+                                    autocomplete="username"
                                 />
                                 <InputError
                                     class="mt-1"
@@ -117,6 +118,7 @@ const submit = () => {
                                     v-model="form.owner_email"
                                     placeholder="例：taro@example.co.jp"
                                     required
+                                    autocomplete="email"
                                 />
                                 <InputError
                                     class="mt-1"
