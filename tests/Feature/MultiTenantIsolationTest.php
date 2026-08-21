@@ -97,7 +97,7 @@ it('does not leak the office scope to office_id=null when a platform admin queri
     Client::factory()->for($office)->count(3)->create();
 
     $this->post(route('platform.login'), [
-        'email' => $admin->email,
+        'login_id' => $admin->login_id,
         'password' => 'password',
     ])->assertRedirect(route('platform.offices.index'));
 

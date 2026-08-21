@@ -81,7 +81,7 @@ test('logging out of the web guard preserves an active platform guard session', 
     ]);
 
     $this->post(route('platform.login'), [
-        'email' => $admin->email,
+        'login_id' => $admin->login_id,
         'password' => 'password',
     ]);
 

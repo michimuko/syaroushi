@@ -13,7 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * テーブル・認証ガードとも完全に分離する（社労士側ユーザーが構造的に
  * プラットフォーム管理機能へアクセスできないようにするための設計）。
  */
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'login_id', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class PlatformAdmin extends Authenticatable
 {

@@ -22,6 +22,7 @@ class PlatformAdminFactory extends Factory
     {
         return [
             'name' => $this->faker->name(),
+            'login_id' => $this->faker->unique()->userName(),
             'email' => $this->faker->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('password'),
         ];

@@ -7,7 +7,7 @@ import TextInput from '@/Components/TextInput.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
-    email: '',
+    login_id: '',
     password: '',
 });
 
@@ -28,20 +28,20 @@ const submit = () => {
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="email" value="メールアドレス" />
+                <InputLabel for="login_id" value="ユーザーID" />
 
                 <TextInput
-                    id="email"
-                    type="email"
+                    id="login_id"
+                    type="text"
                     class="mt-1 block w-full"
-                    v-model="form.email"
-                    placeholder="運営者アカウントのメールアドレス"
+                    v-model="form.login_id"
+                    placeholder="運営者アカウントのユーザーID"
                     required
                     autofocus
                     autocomplete="username"
                 />
 
-                <InputError class="mt-2" :message="form.errors.email" />
+                <InputError class="mt-2" :message="form.errors.login_id" />
             </div>
 
             <div class="mt-4">
