@@ -16,6 +16,12 @@ const form = useForm({
     name: props.procedureType.name,
     category: props.procedureType.category,
     recurrence_type: props.procedureType.recurrence_type,
+    recurrence_rule: {
+        month: props.procedureType.recurrence_rule?.month ?? null,
+        day: props.procedureType.recurrence_rule?.day ?? null,
+        interval_months: props.procedureType.recurrence_rule?.interval_months ?? null,
+        note: props.procedureType.recurrence_rule?.note ?? '',
+    },
     default_lead_days: props.procedureType.default_lead_days.join(', '),
     description: props.procedureType.description ?? '',
     is_active: props.procedureType.is_active,
@@ -27,6 +33,22 @@ const leadDaysPreview = computed(() =>
         .map((value) => value.trim())
         .filter((value) => value !== ''),
 );
+
+const yearlyPreview = computed(() => {
+    const { month, day } = form.recurrence_rule;
+    if (!month || !day) {
+        return '月・日が未設定のため、期限日は自動作成されません（このタイプは手動でタスクを作成してください）。';
+    }
+    return `毎年${month}月${day}日が期限日として、この手続きを購読している全顧問先に自動でタスクが作成されます。`;
+});
+
+const monthlyPreview = computed(() => {
+    const { interval_months: intervalMonths, day } = form.recurrence_rule;
+    if (!intervalMonths || !day) {
+        return 'ヶ月数・日が未設定のため、期限日は自動作成されません（このタイプは手動でタスクを作成してください）。';
+    }
+    return `${intervalMonths}ヶ月ごとの${day}日が期限日として、この手続きを購読している全顧問先に自動でタスクが作成されます。`;
+});
 
 const submit = () => {
     form.transform((data) => ({
@@ -108,6 +130,136 @@ const submit = () => {
                                     class="mt-1"
                                     :message="form.errors.recurrence_type"
                                 />
+                            </div>
+
+                            <div
+                                v-if="form.recurrence_type === 'yearly'"
+                                class="rounded-md border border-gray-200 p-3"
+                            >
+                                <InputLabel>毎年の期限日</InputLabel>
+                                <div class="mt-1 flex items-center gap-2">
+                                    <select
+                                        v-model.number="
+                                            form.recurrence_rule.month
+                                        "
+                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >
+                                        <option :value="null">月</option>
+                                        <option
+                                            v-for="m in 12"
+                                            :key="m"
+                                            :value="m"
+                                        >
+                                            {{ m }}月
+                                        </option>
+                                    </select>
+                                    <select
+                                        v-model.number="
+                                            form.recurrence_rule.day
+                                        "
+                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >
+                                        <option :value="null">日</option>
+                                        <option
+                                            v-for="d in 31"
+                                            :key="d"
+                                            :value="d"
+                                        >
+                                            {{ d }}日
+                                        </option>
+                                    </select>
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    {{ yearlyPreview }}
+                                </p>
+                                <InputError
+                                    class="mt-1"
+                                    :message="
+                                        form.errors['recurrence_rule.month'] ||
+                                        form.errors['recurrence_rule.day']
+                                    "
+                                />
+
+                                <div class="mt-3">
+                                    <InputLabel for="recurrence_note">
+                                        備考（自動作成しない場合の理由など）
+                                    </InputLabel>
+                                    <TextInput
+                                        id="recurrence_note"
+                                        type="text"
+                                        class="mt-1 block w-full"
+                                        v-model="form.recurrence_rule.note"
+                                        placeholder="例：有効期間は事業所ごとに異なるため個別管理"
+                                    />
+                                </div>
+                            </div>
+
+                            <div
+                                v-else-if="form.recurrence_type === 'monthly'"
+                                class="rounded-md border border-gray-200 p-3"
+                            >
+                                <InputLabel>期限日の周期</InputLabel>
+                                <div
+                                    class="mt-1 flex items-center gap-2 text-sm text-gray-700"
+                                >
+                                    <span>毎</span>
+                                    <TextInput
+                                        type="number"
+                                        min="1"
+                                        class="w-20"
+                                        v-model.number="
+                                            form.recurrence_rule
+                                                .interval_months
+                                        "
+                                    />
+                                    <span>ヶ月ごとの</span>
+                                    <select
+                                        v-model.number="
+                                            form.recurrence_rule.day
+                                        "
+                                        class="block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >
+                                        <option :value="null">日</option>
+                                        <option
+                                            v-for="d in 31"
+                                            :key="d"
+                                            :value="d"
+                                        >
+                                            {{ d }}日
+                                        </option>
+                                    </select>
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    {{ monthlyPreview }}
+                                </p>
+                                <InputError
+                                    class="mt-1"
+                                    :message="
+                                        form.errors[
+                                            'recurrence_rule.interval_months'
+                                        ] || form.errors['recurrence_rule.day']
+                                    "
+                                />
+
+                                <div class="mt-3">
+                                    <InputLabel for="recurrence_note">
+                                        備考（自動作成しない場合の理由など）
+                                    </InputLabel>
+                                    <TextInput
+                                        id="recurrence_note"
+                                        type="text"
+                                        class="mt-1 block w-full"
+                                        v-model="form.recurrence_rule.note"
+                                        placeholder="例：初回のみ対応が異なるため個別管理"
+                                    />
+                                </div>
+                            </div>
+
+                            <div
+                                v-else
+                                class="rounded-md bg-gray-50 p-3 text-xs text-gray-500"
+                            >
+                                「都度」「カスタム」を選択した場合、期限日は自動作成されません。この手続きの手続きタスクは顧問先ごとに個別で作成してください。
                             </div>
 
                             <div>
