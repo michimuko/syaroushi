@@ -7,6 +7,7 @@ use PhpOffice\PhpSpreadsheet\Cell\Cell;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Stringable;
 
 /**
  * アップロードされたExcel(xlsx/xls)・CSVファイルを解析する薄いラッパー（Excel移行アシスタント）。
@@ -91,6 +92,12 @@ class SpreadsheetReader
     private function cellValue(Cell $cell): mixed
     {
         $value = $cell->getValue();
+
+        // Excelアプリではなくopenpyxlなどでリッチテキストとして書き出されたセルはRichTextオブジェクトになるため、
+        // 文字列バリデーションが素通りできるようここで先に文字列化しておく。
+        if ($value instanceof Stringable) {
+            $value = (string) $value;
+        }
 
         if ($value !== null && $value !== '' && is_numeric($value) && Date::isDateTime($cell)) {
             return Date::excelToDateTimeObject($value)->format('Y-m-d');

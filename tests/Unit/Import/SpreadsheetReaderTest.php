@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\Import\SpreadsheetReader;
+use PhpOffice\PhpSpreadsheet\RichText\RichText;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -91,6 +92,24 @@ it('normalizes a date-formatted cell to Y-m-d', function () {
     $rows = iterator_to_array($this->reader->readAllRows($path));
 
     expect($rows[0][0])->toBe('2026-04-01');
+});
+
+it('reads a rich text cell (as produced by non-Excel tools like openpyxl) as a plain string', function () {
+    $path = makeXlsxFixture(
+        ['顧問先名'],
+        [],
+        function ($sheet) {
+            $richText = new RichText;
+            $richText->createText('アルファ商事');
+            $sheet->setCellValue('A2', $richText);
+        },
+    );
+    $this->tempFiles[] = $path;
+
+    $rows = iterator_to_array($this->reader->readAllRows($path));
+
+    expect($rows[0][0])->toBe('アルファ商事')
+        ->and($rows[0][0])->toBeString();
 });
 
 it('reads all rows from a csv file as plain strings', function () {
