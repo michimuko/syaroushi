@@ -423,12 +423,35 @@
                 </div>
                 <div class="mt-12 grid gap-8 sm:grid-cols-2">
                     @foreach ([
-                        ['title' => '事務所ごとのデータ分離', 'body' => '事務所（テナント）単位でデータを分離し、他事務所のデータへアクセスできない設計にしています。'],
-                        ['title' => '書類のアクセスログ・保存期限管理', 'body' => 'アップロードされた書類は署名付きURLで配信し、誰がいつアクセスしたかを記録します。'],
-                        ['title' => 'マイナンバー入力の検知警告', 'body' => '自由入力欄にマイナンバーとみられる値が入力された場合に警告を表示します。'],
-                        ['title' => 'きめ細かな権限管理', 'body' => '事務所オーナーが、手続き種別マスタ編集などの操作をスタッフへ個別に委譲できます。'],
+                        [
+                            'title' => '事務所ごとのデータ分離',
+                            'body' => '事務所（テナント）単位でデータを分離し、他事務所のデータへアクセスできない設計にしています。',
+                            'badge' => 'bg-indigo-50 text-indigo-600',
+                            'icon' => '<rect x="6" y="11" width="12" height="9" rx="1.5"/><path d="M8.5 11V8a3.5 3.5 0 017 0v3"/><circle cx="12" cy="15" r="1.1"/>',
+                        ],
+                        [
+                            'title' => '書類のアクセスログ・保存期限管理',
+                            'body' => 'アップロードされた書類は署名付きURLで配信し、誰がいつアクセスしたかを記録します。',
+                            'badge' => 'bg-sky-50 text-sky-600',
+                            'icon' => '<rect x="5" y="3" width="11" height="15" rx="1.5"/><line x1="7.5" y1="7" x2="13.5" y2="7"/><line x1="7.5" y1="10.5" x2="13.5" y2="10.5"/><circle cx="16" cy="16" r="3"/><line x1="18.1" y1="18.1" x2="20.5" y2="20.5"/>',
+                        ],
+                        [
+                            'title' => 'マイナンバー入力の検知警告',
+                            'body' => '自由入力欄にマイナンバーとみられる値が入力された場合に警告を表示します。',
+                            'badge' => 'bg-amber-50 text-amber-600',
+                            'icon' => '<path d="M12 4L21 19H3L12 4z" stroke-linejoin="round"/><line x1="12" y1="10.5" x2="12" y2="14"/><circle cx="12" cy="16.5" r="0.9" fill="currentColor" stroke="none"/>',
+                        ],
+                        [
+                            'title' => 'きめ細かな権限管理',
+                            'body' => '事務所オーナーが、手続き種別マスタ編集などの操作をスタッフへ個別に委譲できます。',
+                            'badge' => 'bg-emerald-50 text-emerald-600',
+                            'icon' => '<circle cx="7.5" cy="12" r="3.25"/><line x1="10.5" y1="12" x2="19" y2="12"/><line x1="15.5" y1="12" x2="15.5" y2="15"/><line x1="18" y1="12" x2="18" y2="15"/>',
+                        ],
                     ] as $item)
                         <div class="reveal rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-100" style="transition-delay: {{ $loop->index * 0.1 }}s;">
+                            <div class="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full {{ $item['badge'] }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6" aria-hidden="true">{!! $item['icon'] !!}</svg>
+                            </div>
                             <h3 class="font-semibold text-slate-900">{{ $item['title'] }}</h3>
                             <p class="mt-2 text-sm leading-relaxed text-slate-600">{{ $item['body'] }}</p>
                         </div>
