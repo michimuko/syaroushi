@@ -1,0 +1,1 @@
+PASS BATCH-001: in-range(90d)生成=1件, out-range(130d)生成=0件 (期待: 1件, 0件)

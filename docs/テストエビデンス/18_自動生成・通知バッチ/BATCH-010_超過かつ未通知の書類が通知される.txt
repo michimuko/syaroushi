@@ -1,0 +1,1 @@
+PASS BATCH-010: 実行後のretention_notified_at=2026-08-22 00:00:00(期待: nullでない=通知済みになる)
