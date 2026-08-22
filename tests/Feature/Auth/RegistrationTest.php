@@ -3,6 +3,8 @@
 use App\Enums\UserRole;
 use App\Models\Office;
 use App\Models\PlatformAdmin;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Notification;
 
 test('registration screen can be rendered', function () {
     $response = $this->get('/register');
@@ -27,6 +29,27 @@ test('new users can register', function () {
     $user = auth()->user();
     expect($user->role)->toBe(UserRole::Owner);
     expect($user->office->name)->toBe('テスト社労士事務所');
+});
+
+test('new users receive a verification email and cannot reach the dashboard until verified', function () {
+    Notification::fake();
+
+    $this->post('/register', [
+        'office_name' => 'メール確認テスト事務所',
+        'office_code' => 'verify-email-office',
+        'name' => 'Verify User',
+        'login_id' => 'verify-user',
+        'email' => 'verify-user@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    $user = auth()->user();
+    expect($user->hasVerifiedEmail())->toBeFalse();
+    Notification::assertSentTo($user, VerifyEmail::class);
+
+    $response = $this->get(route('dashboard', absolute: false));
+    $response->assertRedirect(route('verification.notice', absolute: false));
 });
 
 test('office_code must be unique when registering', function () {

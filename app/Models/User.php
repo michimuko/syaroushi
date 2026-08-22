@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\Permission;
 use App\Enums\UserRole;
 use App\Models\Concerns\AssignsOfficeOnCreate;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,7 +24,7 @@ use NotificationChannels\WebPush\HasPushSubscriptions;
  */
 #[Fillable(['office_id', 'name', 'login_id', 'email', 'password', 'role', 'permissions'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use AssignsOfficeOnCreate, HasApiTokens, HasFactory, HasPushSubscriptions, Notifiable;
