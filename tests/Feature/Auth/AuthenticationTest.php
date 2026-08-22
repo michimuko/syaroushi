@@ -115,7 +115,7 @@ test('users can logout', function () {
     $response = $this->actingAs($user)->post('/logout');
 
     $this->assertGuest();
-    $response->assertRedirect('/');
+    $response->assertRedirect(route('login', absolute: false));
 });
 
 test('logging in ignores a stray platform admin url left over in the session and goes to the dashboard', function () {

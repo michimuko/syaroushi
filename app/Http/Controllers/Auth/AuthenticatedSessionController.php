@@ -62,6 +62,6 @@ class AuthenticatedSessionController extends Controller
         // 状態を保ったままセッションIDだけを再発行する（古いセッションは破棄され安全性は同等）。
         $request->session()->regenerate(true);
 
-        return redirect('/');
+        return redirect()->route('login');
     }
 }

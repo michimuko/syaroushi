@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BillingController;
+use App\Models\BillingSetting;
 use App\Http\Controllers\CalcAssistantController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ClientController;
@@ -23,12 +24,14 @@ use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UserController;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->to(Auth::guard('web')->check() ? route('dashboard') : route('login'));
-});
+    return view('marketing.landing', [
+        'trialDays' => BillingSetting::current()->trial_days,
+        'contactEmail' => config('app.sales_contact_email'),
+    ]);
+})->name('landing');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth:web', 'verified'])
