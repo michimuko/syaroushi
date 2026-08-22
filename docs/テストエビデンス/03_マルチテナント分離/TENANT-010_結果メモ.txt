@@ -1,0 +1,7 @@
+=== TENANT-010: 新規作成時にoffice_idはログインユーザーの所属が強制される ===
+事務所A(id=21)のownerAでログイン中に、POST /clients のリクエストボディへ他事務所B(id=22)のoffice_idを直接指定して送信した。
+レスポンスは302（作成成功→clients.indexへリダイレクト）。
+DBを直接確認した結果、作成されたレコードの office_id は 21（ログインユーザーの所属=事務所A）であり、
+リクエストボディで指定した22（事務所B）は無視された。
+AssignsOfficeOnCreateトレイト（creating時にauth('web')->user()->office_idで強制上書き）の設計どおりに機能していることを確認。
+（画面キャプチャ TENANT-010_office_id spoof送信結果.png も参照。fetchのredirect:'manual'指定によりステータスは0=不透明リダイレクトとして記録されているが、これは302成功時の正常な挙動）

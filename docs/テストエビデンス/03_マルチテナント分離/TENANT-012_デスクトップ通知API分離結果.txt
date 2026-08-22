@@ -1,0 +1,41 @@
+=== TENANT-012: デスクトップ通知APIの他ユーザー分離 ===
+前提: NotificationLog(channel=email)をタスクID86(事務所A、recipient=staffA)とタスクID87(事務所B、recipient=ownerB)に1件ずつ作成し、
+staffA・ownerBそれぞれのSanctumトークン(desktop-notifications:read)を発行した。
+
+--- 事務所A staffAのトークンでGET /api/desktop/notifications（1回目） ---
+{
+    "notifications": [
+        {
+            "procedure_task_id": 86,
+            "title": "blanditiis corporis placeat",
+            "client_name": "テストA顧問先(active)",
+            "procedure_type": "算定基礎届（定時決定）",
+            "due_date": "2026-08-27",
+            "lead_days": 30,
+            "url": "http://localhost:8002/tasks/86/edit"
+        }
+    ]
+}
+
+--- 事務所B ownerBのトークンでGET /api/desktop/notifications（1回目） ---
+{
+    "notifications": [
+        {
+            "procedure_task_id": 87,
+            "title": "magni soluta cum",
+            "client_name": "テストB顧問先",
+            "procedure_type": "算定基礎届（定時決定）",
+            "due_date": "2026-08-25",
+            "lead_days": 30,
+            "url": "http://localhost:8002/tasks/87/edit"
+        }
+    ]
+}
+
+--- 2回目の呼び出し（両トークンとも空になることの確認、配信済みとしてchannel='desktop'が記録されるための正常な仕様） ---
+staffAトークン: {"notifications":[]}
+ownerBトークン: {"notifications":[]}
+
+結果: staffAのトークンでは事務所Aのタスク(86)・自分宛の通知のみ、ownerBのトークンでは事務所Bのタスク(87)・自分宛の通知のみが返却され、
+互いの事務所・ユーザーのデータへは到達できないことを確認した。2回目呼び出しで両方とも空配列になるのは「配信済みは重複配信しない」既存仕様どおりで、
+テナント分離とは別の正常動作。
