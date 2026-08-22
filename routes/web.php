@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\BillingController;
-use App\Models\BillingSetting;
 use App\Http\Controllers\CalcAssistantController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ClientController;
@@ -24,6 +23,7 @@ use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UserController;
+use App\Models\BillingSetting;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {

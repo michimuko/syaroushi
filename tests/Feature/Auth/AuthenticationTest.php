@@ -55,7 +55,7 @@ test('users can authenticate using the login screen', function () {
     $response->assertRedirect(route('dashboard', absolute: false));
 });
 
-test('logging in with an unknown office_code fails with a dedicated error', function () {
+test('logging in with an unknown office_code fails with the same generic error as wrong credentials', function () {
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
@@ -64,7 +64,10 @@ test('logging in with an unknown office_code fails with a dedicated error', func
         'password' => 'password',
     ]);
 
-    $response->assertSessionHasErrors('office_code');
+    // 事業所IDの存在有無を推測されないよう、認証情報が誤っている場合と同じ
+    // フィールド(login_id)・同じ文言のエラーになることを確認する。
+    $response->assertSessionHasErrors(['login_id' => trans('auth.failed')]);
+    $response->assertSessionDoesntHaveErrors('office_code');
     $this->assertGuest();
 });
 

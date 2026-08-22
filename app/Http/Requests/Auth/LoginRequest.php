@@ -49,11 +49,13 @@ class LoginRequest extends FormRequest
 
         $office = Office::query()->where('office_code', Str::lower($this->string('office_code')))->first();
 
+        // 事業所IDが存在しない場合と認証情報が誤っている場合を、フィールド・文言ともに
+        // 区別できないようにする（事業所IDの存在有無を推測されるのを防ぐため）。
         if (! $office) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'office_code' => 'この事業所IDは見つかりません。',
+                'login_id' => trans('auth.failed'),
             ]);
         }
 

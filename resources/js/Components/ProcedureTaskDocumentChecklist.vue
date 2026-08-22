@@ -127,7 +127,7 @@ function destroyDocument() {
                 </div>
 
                 <a
-                    v-if="document.file_path"
+                    v-if="document.has_file"
                     :href="route('tasks.documents.download', [task.id, document.id])"
                     target="_blank"
                     class="text-sm text-indigo-600 underline hover:text-indigo-800"
@@ -140,7 +140,7 @@ function destroyDocument() {
                         class="cursor-pointer text-sm text-gray-600 underline hover:text-gray-800"
                         :class="{ 'pointer-events-none opacity-50': uploadingId === document.id }"
                     >
-                        {{ document.file_path ? '再アップロード' : 'アップロード' }}
+                        {{ document.has_file ? '再アップロード' : 'アップロード' }}
                         <input
                             type="file"
                             class="hidden"
