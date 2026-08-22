@@ -120,7 +120,7 @@ function destroyDocument() {
                         </span>
                         <span v-else>未収集</span>
                         <span v-if="document.retention_until">
-                            ・保存期限：{{ document.retention_until }}
+                            ・保存期限：{{ document.retention_until?.slice(0, 10) }}
                         </span>
                     </p>
                     <InputError class="mt-1" :message="uploadForm.errors.file" />

@@ -34,7 +34,10 @@ class CustomFieldDefinitionController extends Controller
             'label' => 'required|string|max:255',
             'field_type' => ['required', Rule::enum(CustomFieldType::class)],
             'options' => 'required_if:field_type,select|array|min:1',
-            'options.*' => 'required|string|max:255|distinct',
+            // フロントエンド(CustomFieldDefinitionSection.vue)はfield_typeに関わらず
+            // 常にoptions: ['']を送信し、ConvertEmptyStringsToNullミドルウェアにより
+            // 空文字はnullへ変換される。select以外の型ではnullを許容する必要がある。
+            'options.*' => 'nullable|required_if:field_type,select|string|max:255|distinct',
         ]);
 
         CustomFieldDefinition::create([

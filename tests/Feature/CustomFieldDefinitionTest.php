@@ -24,6 +24,25 @@ it('allows an owner to create a text field definition', function () {
         ->and($definition->office_id)->toBe($office->id);
 });
 
+it('allows creating a non-select field definition even when the frontend sends a default empty options array', function () {
+    // Inertiaのフォーム(CustomFieldDefinitionSection.vue)はfield_typeに関わらず
+    // 常にoptions: ['']をペイロードに含める。options.*のバリデーションがfield_typeで
+    // 絞り込まれていないと、テキスト等の非select型が一切作成できなくなる回帰を防ぐ。
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+
+    $response = $this->actingAs($owner)->post(route('settings.custom-fields.store'), [
+        'target' => 'client',
+        'label' => '管理番号',
+        'field_type' => 'text',
+        'options' => [''],
+    ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHasNoErrors();
+    expect(CustomFieldDefinition::sole()->label)->toBe('管理番号');
+});
+
 it('requires options when creating a select field definition', function () {
     $office = Office::factory()->create();
     $owner = User::factory()->for($office)->owner()->create();
