@@ -9,7 +9,7 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 
 test('it generates an invoice using the assigned billing plan\'s monthly price and snapshots client/user counts', function () {
-    $plan = BillingPlan::factory()->create(['name' => 'スターター', 'monthly_price' => 8000]);
+    $plan = BillingPlan::factory()->create(['name' => 'スターター', 'monthly_price' => 2800]);
     $office = Office::factory()->create(['is_active' => true, 'trial_ends_at' => null, 'billing_plan_id' => $plan->id]);
     Client::factory()->for($office)->count(4)->create(['status' => ClientStatus::Active]);
     Client::factory()->for($office)->create(['status' => ClientStatus::Inactive]);
@@ -24,7 +24,7 @@ test('it generates an invoice using the assigned billing plan\'s monthly price a
         ->and($invoice->client_count)->toBe(4)
         ->and($invoice->user_count)->toBe(2)
         ->and($invoice->plan_name)->toBe('スターター')
-        ->and($invoice->amount)->toBe(8000);
+        ->and($invoice->amount)->toBe(2800);
 });
 
 test('it skips offices still within their trial period', function () {
@@ -49,7 +49,7 @@ test('it skips inactive offices', function () {
 });
 
 test('it prefers custom_monthly_price over the assigned plan\'s price', function () {
-    $plan = BillingPlan::factory()->create(['name' => 'プロフェッショナル', 'monthly_price' => 24800]);
+    $plan = BillingPlan::factory()->create(['name' => 'プロフェッショナル', 'monthly_price' => 14800]);
     $office = Office::factory()->create([
         'is_active' => true,
         'trial_ends_at' => null,

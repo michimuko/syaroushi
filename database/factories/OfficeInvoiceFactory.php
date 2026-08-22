@@ -26,7 +26,7 @@ class OfficeInvoiceFactory extends Factory
             'client_count' => $this->faker->numberBetween(1, 30),
             'user_count' => $this->faker->numberBetween(1, 10),
             'plan_name' => 'スタンダード',
-            'amount' => 14800,
+            'amount' => 6800,
             'generated_at' => now(),
         ];
     }

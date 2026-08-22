@@ -23,6 +23,7 @@ use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UserController;
+use App\Models\BillingPlan;
 use App\Models\BillingSetting;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +31,7 @@ Route::get('/', function () {
     return view('marketing.landing', [
         'trialDays' => BillingSetting::current()->trial_days,
         'contactEmail' => config('app.sales_contact_email'),
+        'billingPlans' => BillingPlan::query()->where('is_active', true)->orderBy('sort_order')->get(),
     ]);
 })->name('landing');
 

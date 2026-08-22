@@ -60,6 +60,7 @@
                 <nav class="flex items-center gap-6">
                     <a href="#features" class="hidden text-sm text-slate-600 hover:text-slate-900 sm:inline">機能</a>
                     <a href="#desktop-notification" class="hidden text-sm text-slate-600 hover:text-slate-900 sm:inline">デスクトップ通知</a>
+                    <a href="#pricing" class="hidden text-sm text-slate-600 hover:text-slate-900 sm:inline">料金</a>
                     <a href="#security" class="hidden text-sm text-slate-600 hover:text-slate-900 sm:inline">セキュリティ</a>
                     <a href="{{ route('login') }}" class="text-sm text-slate-600 hover:text-slate-900">ログイン</a>
                     <a href="{{ route('register') }}" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition hover:-translate-y-0.5">
@@ -359,6 +360,58 @@
             </div>
         </section>
 
+        {{-- 料金 --}}
+        <section id="pricing" class="mx-auto max-w-6xl px-6 py-20">
+            <div class="mx-auto max-w-2xl text-center">
+                <h2 class="reveal text-2xl font-bold text-slate-900 sm:text-3xl">シンプルな料金プラン</h2>
+                <p class="reveal mt-3 text-sm text-slate-600 sm:text-base">
+                    どのプランも{{ $trialDays }}日間無料トライアル付き、クレジットカード登録は不要です。
+                </p>
+            </div>
+            <div class="mx-auto mt-12 grid max-w-5xl gap-6 lg:grid-cols-4">
+                @foreach ($billingPlans as $plan)
+                    @php $isRecommended = $plan->name === 'スタンダード'; @endphp
+                    <div
+                        class="reveal relative flex flex-col rounded-xl border p-6 {{ $isRecommended ? 'border-indigo-600 shadow-lg' : 'border-slate-200' }}"
+                        style="transition-delay: {{ $loop->index * 0.1 }}s;"
+                    >
+                        @if ($isRecommended)
+                            <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold text-white">
+                                おすすめ
+                            </span>
+                        @endif
+                        <h3 class="text-lg font-bold text-slate-900">{{ $plan->name }}</h3>
+                        <p class="mt-4">
+                            @if ($plan->monthly_price !== null)
+                                <span class="text-3xl font-bold text-slate-900">¥{{ number_format($plan->monthly_price) }}</span>
+                                <span class="text-sm text-slate-500">/月</span>
+                            @else
+                                <span class="text-2xl font-bold text-slate-900">個別見積り</span>
+                            @endif
+                        </p>
+                        <ul class="mt-6 space-y-2 text-sm text-slate-600">
+                            <li>顧問先数：{{ $plan->max_clients !== null ? $plan->max_clients.'件まで' : '無制限' }}</li>
+                            <li>ユーザー数：{{ $plan->max_users !== null ? $plan->max_users.'人まで' : '無制限' }}</li>
+                        </ul>
+                        <div class="mt-6">
+                            @if ($plan->monthly_price !== null)
+                                <a href="{{ route('register') }}" class="block w-full rounded-md px-4 py-2.5 text-center text-sm font-semibold transition hover:-translate-y-0.5 {{ $isRecommended ? 'bg-indigo-600 text-white shadow-sm hover:bg-indigo-700' : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50' }}">
+                                    無料トライアルを始める
+                                </a>
+                            @else
+                                <a href="mailto:{{ $contactEmail }}?subject={{ urlencode('エンタープライズプランについての問い合わせ') }}" class="block w-full rounded-md border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-slate-50">
+                                    問い合わせる
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            <p class="reveal mx-auto mt-8 max-w-2xl text-center text-xs text-slate-400">
+                プラン上限を超えても登録がブロックされることはありません（上限超過時は画面上に案内が表示されます）。
+            </p>
+        </section>
+
         {{-- セキュリティ --}}
         <section id="security" class="border-t border-slate-100 bg-slate-50">
             <div class="mx-auto max-w-6xl px-6 py-20">
@@ -393,14 +446,14 @@
                     <h2 class="text-2xl font-bold text-white sm:text-3xl">まずは無料トライアルでお試しください</h2>
                     <p class="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-indigo-100 sm:text-base">
                         クレジットカード登録は不要です。{{ $trialDays }}日間、実際の画面で機能をご確認いただけます。
-                        料金プランについては、お問い合わせください。
+                        エンタープライズプランや導入相談は、お気軽にお問い合わせください。
                     </p>
                     <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                         <a href="{{ route('register') }}" class="w-full rounded-md bg-white px-8 py-3 text-center text-sm font-semibold text-indigo-700 shadow-sm hover:bg-indigo-50 sm:w-auto transition hover:-translate-y-0.5">
                             無料トライアルを始める
                         </a>
-                        <a href="mailto:{{ $contactEmail }}?subject={{ urlencode('料金プランについての問い合わせ') }}" class="w-full rounded-md border border-indigo-300 px-8 py-3 text-center text-sm font-semibold text-white hover:bg-indigo-500 sm:w-auto transition hover:-translate-y-0.5">
-                            料金について問い合わせる
+                        <a href="mailto:{{ $contactEmail }}?subject={{ urlencode('導入についての問い合わせ') }}" class="w-full rounded-md border border-indigo-300 px-8 py-3 text-center text-sm font-semibold text-white hover:bg-indigo-500 sm:w-auto transition hover:-translate-y-0.5">
+                            導入について問い合わせる
                         </a>
                     </div>
                 </div>

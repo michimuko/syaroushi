@@ -8,7 +8,7 @@ use App\Models\OfficeInvoice;
 use App\Models\User;
 
 test('an owner can view their office\'s billing status and estimated monthly amount', function () {
-    $plan = BillingPlan::factory()->create(['name' => 'スタンダード', 'monthly_price' => 14800]);
+    $plan = BillingPlan::factory()->create(['name' => 'スタンダード', 'monthly_price' => 6800]);
     $office = Office::factory()->create(['trial_ends_at' => null, 'billing_plan_id' => $plan->id]);
     $owner = User::factory()->for($office)->owner()->create();
 
@@ -20,7 +20,7 @@ test('an owner can view their office\'s billing status and estimated monthly amo
     $response->assertOk()
         ->assertInertia(fn ($page) => $page
             ->where('currentClientCount', 3)
-            ->where('estimatedMonthlyAmount', 14800)
+            ->where('estimatedMonthlyAmount', 6800)
             ->where('billingPlan.name', 'スタンダード')
             ->where('office.is_trial_active', false)
         );
