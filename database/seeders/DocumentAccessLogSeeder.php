@@ -9,7 +9,9 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 
 /**
- * 収集済み書類の閲覧・ダウンロード履歴を作成する（企画書7.7章「取扱状況の把握」要件）。
+ * 収集済み書類のダウンロード履歴を作成する（企画書7.7章「取扱状況の把握」要件）。
+ * アプリ側はダウンロード（署名付きURL発行）1種類のみをログ対象とする設計のため、
+ * ダミーデータも同じ日時をずらした複数回のDownloadアクセスとして生成する。
  */
 class DocumentAccessLogSeeder extends Seeder
 {
@@ -26,7 +28,7 @@ class DocumentAccessLogSeeder extends Seeder
                 'office_id' => $document->office_id,
                 'procedure_task_document_id' => $document->id,
                 'user_id' => $user->id,
-                'action' => DocumentAccessAction::View,
+                'action' => DocumentAccessAction::Download,
                 'accessed_at' => now()->subDays(2),
             ]);
 
