@@ -17,6 +17,7 @@ const props = defineProps({
     staffOptions: Array,
     procedureTypes: Array,
     subscribedProcedureTypeIds: Array,
+    leadDaysOverrides: Object,
     customFieldDefinitions: Array,
 });
 
@@ -56,13 +57,34 @@ const procedureTypesByCategory = computed(() => {
 
 const subscriptionForm = useForm({
     procedure_type_ids: [...props.subscribedProcedureTypeIds],
+    lead_days_overrides: Object.fromEntries(
+        props.procedureTypes.map((procedureType) => [
+            procedureType.id,
+            (props.leadDaysOverrides?.[procedureType.id] ?? []).join(', '),
+        ]),
+    ),
 });
 
 const submitSubscriptions = () => {
-    subscriptionForm.put(
-        route('clients.procedure-subscriptions.update', props.client.id),
-        { preserveScroll: true },
-    );
+    subscriptionForm
+        .transform((data) => ({
+            ...data,
+            lead_days_overrides: Object.fromEntries(
+                Object.entries(data.lead_days_overrides).map(
+                    ([procedureTypeId, value]) => [
+                        procedureTypeId,
+                        value
+                            .split(',')
+                            .map((v) => v.trim())
+                            .filter((v) => v !== '')
+                            .map(Number),
+                    ],
+                ),
+            ),
+        }))
+        .put(route('clients.procedure-subscriptions.update', props.client.id), {
+            preserveScroll: true,
+        });
 };
 </script>
 
@@ -328,25 +350,47 @@ const submitSubscriptions = () => {
                                 {{ category }}
                             </h4>
                             <div
-                                class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2"
+                                class="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2"
                             >
-                                <label
+                                <div
                                     v-for="procedureType in items"
                                     :key="procedureType.id"
-                                    class="flex items-center gap-2"
+                                    class="rounded-md border border-gray-100 p-2"
                                 >
-                                    <input
-                                        type="checkbox"
-                                        :value="procedureType.id"
-                                        v-model="
-                                            subscriptionForm.procedure_type_ids
-                                        "
-                                        class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-                                    />
-                                    <span class="text-sm text-gray-700">{{
-                                        procedureType.name
-                                    }}</span>
-                                </label>
+                                    <label class="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            :value="procedureType.id"
+                                            v-model="
+                                                subscriptionForm.procedure_type_ids
+                                            "
+                                            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                        />
+                                        <span class="text-sm text-gray-700">{{
+                                            procedureType.name
+                                        }}</span>
+                                    </label>
+                                    <div class="mt-1 pl-6">
+                                        <label
+                                            :for="`lead_days_override_${procedureType.id}`"
+                                            class="text-xs text-gray-500"
+                                        >
+                                            通知タイミングをこの顧問先だけ変更する（空欄なら既定値を使用）
+                                        </label>
+                                        <TextInput
+                                            :id="`lead_days_override_${procedureType.id}`"
+                                            type="text"
+                                            class="mt-1 block w-full text-sm"
+                                            v-model="
+                                                subscriptionForm
+                                                    .lead_days_overrides[
+                                                    procedureType.id
+                                                ]
+                                            "
+                                            :placeholder="`既定：${procedureType.default_lead_days.join(', ')}日前`"
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

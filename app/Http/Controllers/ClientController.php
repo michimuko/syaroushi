@@ -89,10 +89,13 @@ class ClientController extends Controller
                 ->where('is_active', true)
                 ->orderBy('category')
                 ->orderBy('name')
-                ->get(['id', 'name', 'category']),
+                ->get(['id', 'name', 'category', 'default_lead_days']),
             'subscribedProcedureTypeIds' => $client->procedureSubscriptions()
                 ->where('is_active', true)
                 ->pluck('procedure_type_id'),
+            'leadDaysOverrides' => $client->procedureSubscriptions()
+                ->whereNotNull('lead_days_override')
+                ->pluck('lead_days_override', 'procedure_type_id'),
             'customFieldDefinitions' => $this->customFieldDefinitions(),
         ]);
     }

@@ -78,6 +78,70 @@ test('subscriptions can be updated to select none', function () {
     expect(ClientProcedureSubscription::where('client_id', $client->id)->first()->is_active)->toBeFalse();
 });
 
+test('a lead_days_override can be set for a specific client and procedure type', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create(['default_lead_days' => [90, 30, 7]]);
+
+    $this->actingAs($user)->put(
+        route('clients.procedure-subscriptions.update', $client),
+        [
+            'procedure_type_ids' => [$procedureType->id],
+            'lead_days_overrides' => [$procedureType->id => ['60', '30', '14']],
+        ],
+    )->assertRedirect(route('clients.edit', $client));
+
+    $subscription = ClientProcedureSubscription::where('client_id', $client->id)
+        ->where('procedure_type_id', $procedureType->id)->first();
+
+    expect($subscription->lead_days_override)->toBe([60, 30, 14]);
+});
+
+test('leaving the lead_days_override input empty clears a previously set override', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+
+    ClientProcedureSubscription::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'is_active' => true,
+        'lead_days_override' => [14],
+    ]);
+
+    $this->actingAs($user)->put(
+        route('clients.procedure-subscriptions.update', $client),
+        [
+            'procedure_type_ids' => [$procedureType->id],
+            'lead_days_overrides' => [$procedureType->id => []],
+        ],
+    )->assertRedirect(route('clients.edit', $client));
+
+    expect(ClientProcedureSubscription::where('client_id', $client->id)->first()->lead_days_override)->toBeNull();
+});
+
+test('edit screen includes existing lead_days_overrides', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create(['is_active' => true]);
+
+    ClientProcedureSubscription::factory()->for($office)->create([
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'is_active' => true,
+        'lead_days_override' => [21, 3],
+    ]);
+
+    $response = $this->actingAs($user)->get(route('clients.edit', $client));
+
+    $response->assertInertia(fn ($page) => $page
+        ->where("leadDaysOverrides.{$procedureType->id}", [21, 3])
+    );
+});
+
 test('subscriptions cannot be updated for a client in another office (404)', function () {
     $office = Office::factory()->create();
     $otherOffice = Office::factory()->create();
