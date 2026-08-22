@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -39,8 +40,11 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'office_name' => 'required|string|max:255',
+            'office_code' => ['required', 'string', 'min:3', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:offices,office_code'],
             'name' => 'required|string|max:255',
-            'login_id' => ['required', 'string', 'min:3', 'max:30', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,login_id'],
+            // login_idは事務所内でのみ一意であればよく、新規作成する事務所には
+            // まだ他のユーザーがいないため、ここでの重複チェックは不要。
+            'login_id' => ['required', 'string', 'min:3', 'max:30', 'regex:/^[a-zA-Z0-9_.-]+$/'],
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
@@ -48,6 +52,7 @@ class RegisteredUserController extends Controller
         $user = DB::transaction(function () use ($request) {
             $office = Office::create([
                 'name' => $request->office_name,
+                'office_code' => Str::lower($request->office_code),
             ]);
 
             // office_idはOffice::create()直後の信頼できる値。AssignsOfficeOnCreateの

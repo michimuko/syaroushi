@@ -19,6 +19,7 @@ class OfficeFactory extends Factory
     {
         return [
             'name' => $this->faker->company().'社会保険労務士事務所',
+            'office_code' => $this->faker->unique()->slug(2),
             'is_active' => true,
         ];
     }

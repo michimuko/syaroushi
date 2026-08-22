@@ -9,6 +9,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
     office_name: '',
+    office_code: '',
     name: '',
     login_id: '',
     email: '',
@@ -43,6 +44,22 @@ const submit = () => {
                 />
 
                 <InputError class="mt-2" :message="form.errors.office_name" />
+            </div>
+
+            <div class="mt-4">
+                <InputLabel for="office_code" value="事業所ID" />
+
+                <TextInput
+                    id="office_code"
+                    type="text"
+                    class="mt-1 block w-full"
+                    v-model="form.office_code"
+                    placeholder="例：samplekabusikigaisya（ログイン時に使用します）"
+                    required
+                    autocomplete="off"
+                />
+
+                <InputError class="mt-2" :message="form.errors.office_code" />
             </div>
 
             <div class="mt-4">

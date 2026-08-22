@@ -86,7 +86,7 @@ test('a newly created user is notified by mail with their login_id but not their
     );
 });
 
-test('login_id must be unique across offices when creating a user', function () {
+test('login_id must be unique within the same office when creating a user', function () {
     $office = Office::factory()->create();
     $owner = User::factory()->for($office)->owner()->create();
     $existing = User::factory()->for($office)->create(['login_id' => 'taken-id']);
@@ -102,6 +102,26 @@ test('login_id must be unique across offices when creating a user', function () 
 
     $response->assertSessionHasErrors('login_id');
     expect(User::where('email', 'dup-login-id@example.com')->exists())->toBeFalse();
+});
+
+test('the same login_id can be reused in a different office when creating a user', function () {
+    $otherOffice = Office::factory()->create();
+    User::factory()->for($otherOffice)->create(['login_id' => 'taro']);
+
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+
+    $response = $this->actingAs($owner)->post(route('users.store'), [
+        'name' => '同名ID社員',
+        'login_id' => 'taro',
+        'email' => 'same-login-id-different-office@example.com',
+        'role' => 'staff',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ]);
+
+    $response->assertRedirect(route('users.index'));
+    expect(User::where('email', 'same-login-id-different-office@example.com')->exists())->toBeTrue();
 });
 
 test('login_id validation errors are returned in clear Japanese, not the default English messages', function () {

@@ -13,6 +13,7 @@ test('registration screen can be rendered', function () {
 test('new users can register', function () {
     $response = $this->post('/register', [
         'office_name' => 'テスト社労士事務所',
+        'office_code' => 'test-sharoushi-office',
         'name' => 'Test User',
         'login_id' => 'test-user',
         'email' => 'test@example.com',
@@ -28,12 +29,30 @@ test('new users can register', function () {
     expect($user->office->name)->toBe('テスト社労士事務所');
 });
 
+test('office_code must be unique when registering', function () {
+    $existingOffice = Office::factory()->create(['office_code' => 'taken-office-code']);
+
+    $response = $this->post('/register', [
+        'office_name' => '重複コードテスト事務所',
+        'office_code' => 'taken-office-code',
+        'name' => 'Test User 3',
+        'login_id' => 'test-user-3',
+        'email' => 'test3@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    $response->assertSessionHasErrors('office_code');
+    expect(Office::where('name', '重複コードテスト事務所')->exists())->toBeFalse();
+});
+
 test('registering while a platform admin session is active in the same browser still assigns the new office correctly', function () {
     $admin = PlatformAdmin::factory()->create();
     $otherOffice = Office::factory()->create();
 
     $response = $this->actingAs($admin, 'platform')->post('/register', [
         'office_name' => 'もう一つのテスト事務所',
+        'office_code' => 'another-test-office',
         'name' => 'Test User 2',
         'login_id' => 'test-user-2',
         'email' => 'test2@example.com',

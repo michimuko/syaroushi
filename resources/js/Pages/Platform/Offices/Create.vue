@@ -10,6 +10,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
     office_name: '',
+    office_code: '',
     owner_name: '',
     owner_login_id: '',
     owner_email: '',
@@ -57,6 +58,25 @@ const submit = () => {
                                 <InputError
                                     class="mt-1"
                                     :message="form.errors.office_name"
+                                />
+                            </div>
+
+                            <div class="sm:col-span-2">
+                                <InputLabel for="office_code">
+                                    事業所ID
+                                    <span class="text-red-600">*</span>
+                                </InputLabel>
+                                <TextInput
+                                    id="office_code"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    v-model="form.office_code"
+                                    placeholder="例：samplekabusikigaisya（ログイン時に事業所を特定するために使用します）"
+                                    required
+                                />
+                                <InputError
+                                    class="mt-1"
+                                    :message="form.errors.office_code"
                                 />
                             </div>
                         </div>

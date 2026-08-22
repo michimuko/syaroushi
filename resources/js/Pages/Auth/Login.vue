@@ -8,16 +8,21 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
-defineProps({
+const props = defineProps({
     canResetPassword: {
         type: Boolean,
     },
     status: {
         type: String,
     },
+    rememberedOfficeCode: {
+        type: String,
+        default: null,
+    },
 });
 
 const form = useForm({
+    office_code: props.rememberedOfficeCode ?? '',
     login_id: '',
     password: '',
     remember: false,
@@ -40,6 +45,23 @@ const submit = () => {
 
         <form @submit.prevent="submit">
             <div>
+                <InputLabel for="office_code" value="事業所ID" />
+
+                <TextInput
+                    id="office_code"
+                    type="text"
+                    class="mt-1 block w-full"
+                    v-model="form.office_code"
+                    placeholder="例：samplekabusikigaisya"
+                    required
+                    :autofocus="!rememberedOfficeCode"
+                    autocomplete="organization"
+                />
+
+                <InputError class="mt-2" :message="form.errors.office_code" />
+            </div>
+
+            <div class="mt-4">
                 <InputLabel for="login_id" value="ユーザーID" />
 
                 <TextInput
@@ -49,7 +71,7 @@ const submit = () => {
                     v-model="form.login_id"
                     placeholder="例：taro"
                     required
-                    autofocus
+                    :autofocus="!!rememberedOfficeCode"
                     autocomplete="username"
                 />
 

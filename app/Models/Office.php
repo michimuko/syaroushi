@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'name', 'is_active', 'trial_ends_at', 'enabled_modules', 'billing_plan_id', 'custom_monthly_price',
+    'name', 'office_code', 'is_active', 'trial_ends_at', 'enabled_modules', 'billing_plan_id', 'custom_monthly_price',
     'stripe_customer_id', 'stripe_subscription_id', 'stripe_subscription_status',
 ])]
 class Office extends Model

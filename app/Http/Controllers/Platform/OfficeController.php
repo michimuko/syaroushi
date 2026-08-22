@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
@@ -57,8 +58,11 @@ class OfficeController extends Controller
     {
         $validated = $request->validate([
             'office_name' => 'required|string|max:255',
+            'office_code' => ['required', 'string', 'min:3', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:offices,office_code'],
             'owner_name' => 'required|string|max:255',
-            'owner_login_id' => ['required', 'string', 'min:3', 'max:30', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,login_id'],
+            // owner_login_idは事務所内でのみ一意であればよく、新規作成する事務所には
+            // まだ他のユーザーがいないため、ここでの重複チェックは不要。
+            'owner_login_id' => ['required', 'string', 'min:3', 'max:30', 'regex:/^[a-zA-Z0-9_.-]+$/'],
             'owner_email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'owner_password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
@@ -66,6 +70,7 @@ class OfficeController extends Controller
         DB::transaction(function () use ($validated) {
             $office = Office::create([
                 'name' => $validated['office_name'],
+                'office_code' => Str::lower($validated['office_code']),
                 'trial_ends_at' => now()->addDays(BillingSetting::current()->trial_days),
             ]);
 
@@ -122,6 +127,7 @@ class OfficeController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'office_code' => ['required', 'string', 'min:3', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', Rule::unique('offices', 'office_code')->ignore($office->id)],
             'is_active' => 'required|boolean',
             'trial_ends_at' => 'nullable|date',
             'enabled_modules' => 'nullable|array',
@@ -129,6 +135,8 @@ class OfficeController extends Controller
             'billing_plan_id' => 'nullable|exists:billing_plans,id',
             'custom_monthly_price' => 'nullable|integer|min:0',
         ]);
+
+        $validated['office_code'] = Str::lower($validated['office_code']);
 
         $office->update($validated);
 

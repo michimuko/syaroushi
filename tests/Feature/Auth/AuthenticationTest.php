@@ -10,10 +10,43 @@ test('login screen can be rendered', function () {
     $response->assertStatus(200);
 });
 
+test('login screen prefills the office_code from a previously remembered cookie', function () {
+    $office = Office::factory()->create();
+
+    $response = $this->withCookie('remembered_office_code', $office->office_code)->get('/login');
+
+    $response->assertInertia(fn ($page) => $page
+        ->component('Auth/Login')
+        ->where('rememberedOfficeCode', $office->office_code)
+    );
+});
+
+test('login screen has no remembered office_code on first visit', function () {
+    $response = $this->get('/login');
+
+    $response->assertInertia(fn ($page) => $page
+        ->component('Auth/Login')
+        ->where('rememberedOfficeCode', null)
+    );
+});
+
+test('a successful login remembers the office_code in a long-lived cookie', function () {
+    $user = User::factory()->create();
+
+    $response = $this->post('/login', [
+        'office_code' => $user->office->office_code,
+        'login_id' => $user->login_id,
+        'password' => 'password',
+    ]);
+
+    $response->assertCookie('remembered_office_code', $user->office->office_code);
+});
+
 test('users can authenticate using the login screen', function () {
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
+        'office_code' => $user->office->office_code,
         'login_id' => $user->login_id,
         'password' => 'password',
     ]);
@@ -22,10 +55,24 @@ test('users can authenticate using the login screen', function () {
     $response->assertRedirect(route('dashboard', absolute: false));
 });
 
+test('logging in with an unknown office_code fails with a dedicated error', function () {
+    $user = User::factory()->create();
+
+    $response = $this->post('/login', [
+        'office_code' => 'no-such-office',
+        'login_id' => $user->login_id,
+        'password' => 'password',
+    ]);
+
+    $response->assertSessionHasErrors('office_code');
+    $this->assertGuest();
+});
+
 test('logging in with an email address instead of the login_id fails', function () {
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
+        'office_code' => $user->office->office_code,
         'email' => $user->email,
         'password' => 'password',
     ]);
@@ -38,11 +85,28 @@ test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
 
     $this->post('/login', [
+        'office_code' => $user->office->office_code,
         'login_id' => $user->login_id,
         'password' => 'wrong-password',
     ]);
 
     $this->assertGuest();
+});
+
+test('the same login_id can belong to different offices without colliding', function () {
+    $officeA = Office::factory()->create();
+    $officeB = Office::factory()->create();
+    User::factory()->for($officeA)->create(['login_id' => 'taro', 'password' => bcrypt('password-a')]);
+    $userB = User::factory()->for($officeB)->create(['login_id' => 'taro', 'password' => bcrypt('password-b')]);
+
+    $response = $this->post('/login', [
+        'office_code' => $officeB->office_code,
+        'login_id' => 'taro',
+        'password' => 'password-b',
+    ]);
+
+    $this->assertAuthenticatedAs($userB);
+    $response->assertRedirect(route('dashboard', absolute: false));
 });
 
 test('users can logout', function () {
@@ -62,6 +126,7 @@ test('logging in ignores a stray platform admin url left over in the session and
     $this->get(route('platform.offices.index'));
 
     $response = $this->post('/login', [
+        'office_code' => $office->office_code,
         'login_id' => $user->login_id,
         'password' => 'password',
     ]);
@@ -76,6 +141,7 @@ test('logging out of the web guard preserves an active platform guard session', 
     $admin = PlatformAdmin::factory()->create();
 
     $this->post('/login', [
+        'office_code' => $office->office_code,
         'login_id' => $user->login_id,
         'password' => 'password',
     ]);

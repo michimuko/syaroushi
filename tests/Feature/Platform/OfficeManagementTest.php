@@ -10,6 +10,7 @@ test('a platform admin can create an office with its first owner in one go', fun
 
     $response = $this->actingAs($admin, 'platform')->post(route('platform.offices.store'), [
         'office_name' => '新宿社会保険労務士事務所',
+        'office_code' => 'shinjuku-office',
         'owner_name' => '新規オーナー',
         'owner_login_id' => 'new-owner',
         'owner_email' => 'new-owner@example.com',
@@ -37,6 +38,7 @@ test('a platform admin creating an office keeps the new owner in the new office 
         ->actingAs($admin, 'platform')
         ->post(route('platform.offices.store'), [
             'office_name' => '渋谷社会保険労務士事務所',
+            'office_code' => 'shibuya-office',
             'owner_name' => '新規オーナー2',
             'owner_login_id' => 'new-owner-2',
             'owner_email' => 'new-owner-2@example.com',
@@ -60,6 +62,7 @@ test('office creation rolls back entirely if the owner email is already taken', 
 
     $response = $this->actingAs($admin, 'platform')->post(route('platform.offices.store'), [
         'office_name' => '重複テスト事務所',
+        'office_code' => 'duplicate-test-office',
         'owner_name' => 'テスト',
         'owner_login_id' => 'duplicate-test',
         'owner_email' => 'taken@example.com',
@@ -71,12 +74,60 @@ test('office creation rolls back entirely if the owner email is already taken', 
     expect(Office::where('name', '重複テスト事務所')->exists())->toBeFalse();
 });
 
+test('office_code must be unique when creating an office via the platform', function () {
+    $admin = PlatformAdmin::factory()->create();
+    Office::factory()->create(['office_code' => 'taken-office-code']);
+
+    $response = $this->actingAs($admin, 'platform')->post(route('platform.offices.store'), [
+        'office_name' => '重複コードテスト事務所',
+        'office_code' => 'taken-office-code',
+        'owner_name' => 'テスト',
+        'owner_login_id' => 'code-dup-owner',
+        'owner_email' => 'code-dup-owner@example.com',
+        'owner_password' => 'password123',
+        'owner_password_confirmation' => 'password123',
+    ]);
+
+    $response->assertSessionHasErrors('office_code');
+    expect(Office::where('name', '重複コードテスト事務所')->exists())->toBeFalse();
+});
+
+test('office_code must remain unique when a platform admin edits an office', function () {
+    $admin = PlatformAdmin::factory()->create();
+    $officeA = Office::factory()->create(['office_code' => 'office-a']);
+    $officeB = Office::factory()->create(['office_code' => 'office-b']);
+
+    $response = $this->actingAs($admin, 'platform')->put(route('platform.offices.update', $officeB), [
+        'name' => $officeB->name,
+        'office_code' => $officeA->office_code,
+        'is_active' => true,
+    ]);
+
+    $response->assertSessionHasErrors('office_code');
+    expect($officeB->fresh()->office_code)->toBe('office-b');
+});
+
+test('a platform admin can change an office\'s office_code to a new unused value', function () {
+    $admin = PlatformAdmin::factory()->create();
+    $office = Office::factory()->create(['office_code' => 'old-code']);
+
+    $response = $this->actingAs($admin, 'platform')->put(route('platform.offices.update', $office), [
+        'name' => $office->name,
+        'office_code' => 'New-Code',
+        'is_active' => true,
+    ]);
+
+    $response->assertRedirect(route('platform.offices.index'));
+    expect($office->fresh()->office_code)->toBe('new-code');
+});
+
 test('a platform admin can toggle an office\'s is_active flag', function () {
     $admin = PlatformAdmin::factory()->create();
     $office = Office::factory()->create();
 
     $response = $this->actingAs($admin, 'platform')->put(route('platform.offices.update', $office), [
         'name' => $office->name,
+        'office_code' => $office->office_code,
         'is_active' => false,
     ]);
 
@@ -91,6 +142,7 @@ test('a platform admin can assign a billing plan and a custom monthly price to a
 
     $response = $this->actingAs($admin, 'platform')->put(route('platform.offices.update', $office), [
         'name' => $office->name,
+        'office_code' => $office->office_code,
         'is_active' => true,
         'billing_plan_id' => $plan->id,
         'custom_monthly_price' => 350,
@@ -112,6 +164,7 @@ test('a platform admin can clear an office back to an unassigned plan and defaul
 
     $response = $this->actingAs($admin, 'platform')->put(route('platform.offices.update', $office), [
         'name' => $office->name,
+        'office_code' => $office->office_code,
         'is_active' => true,
         'billing_plan_id' => null,
         'custom_monthly_price' => null,

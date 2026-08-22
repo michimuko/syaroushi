@@ -18,6 +18,7 @@ const props = defineProps({
 
 const form = useForm({
     name: props.office.name,
+    office_code: props.office.office_code,
     is_active: props.office.is_active,
     trial_ends_at: props.office.trial_ends_at
         ? props.office.trial_ends_at.slice(0, 10)
@@ -70,7 +71,7 @@ const submit = () => {
             <div class="mx-auto max-w-2xl sm:px-6 lg:px-8">
                 <div class="rounded-lg bg-white p-6 shadow-sm">
                     <div class="mb-6 text-sm text-gray-500">
-                        事務所ID：
+                        事務所番号：
                         <span class="font-mono text-gray-700">{{
                             office.id
                         }}</span>
@@ -95,6 +96,28 @@ const submit = () => {
                                 <InputError
                                     class="mt-1"
                                     :message="form.errors.name"
+                                />
+                            </div>
+
+                            <div class="sm:col-span-2">
+                                <InputLabel for="office_code">
+                                    事業所ID（ログイン用）
+                                    <span class="text-red-600">*</span>
+                                </InputLabel>
+                                <TextInput
+                                    id="office_code"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    v-model="form.office_code"
+                                    placeholder="例：samplekabusikigaisya"
+                                    required
+                                />
+                                <p class="mt-1 text-xs text-gray-500">
+                                    この事務所に所属する全ユーザーがログイン画面で入力する事業所IDです。変更すると、これまでの事業所IDでログインできなくなるため注意してください。
+                                </p>
+                                <InputError
+                                    class="mt-1"
+                                    :message="form.errors.office_code"
                                 />
                             </div>
 

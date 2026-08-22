@@ -33,7 +33,12 @@ defineProps({
                                     <th
                                         class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                                     >
-                                        事務所ID
+                                        事務所番号
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                                    >
+                                        事業所ID（ログイン用）
                                     </th>
                                     <th
                                         class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
@@ -73,6 +78,11 @@ defineProps({
                                         class="px-4 py-3 font-mono text-gray-500"
                                     >
                                         {{ office.id }}
+                                    </td>
+                                    <td
+                                        class="px-4 py-3 font-mono text-gray-500"
+                                    >
+                                        {{ office.office_code }}
                                     </td>
                                     <td class="px-4 py-3">
                                         <Link
@@ -135,7 +145,7 @@ defineProps({
                                 </tr>
                                 <tr v-if="offices.data.length === 0">
                                     <td
-                                        colspan="7"
+                                        colspan="8"
                                         class="px-4 py-12 text-center text-sm text-gray-500"
                                     >
                                         契約中の事務所がありません。

@@ -55,7 +55,10 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'login_id' => ['required', 'string', 'min:3', 'max:30', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,login_id'],
+            'login_id' => [
+                'required', 'string', 'min:3', 'max:30', 'regex:/^[a-zA-Z0-9_.-]+$/',
+                Rule::unique('users', 'login_id')->where('office_id', Auth::user()->office_id),
+            ],
             'email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'role' => ['required', Rule::enum(UserRole::class)],
             'password' => ['required', 'confirmed', 'string', 'min:8'],
@@ -97,7 +100,10 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'login_id' => ['required', 'string', 'min:3', 'max:30', 'regex:/^[a-zA-Z0-9_.-]+$/', Rule::unique('users', 'login_id')->ignore($user->id)],
+            'login_id' => [
+                'required', 'string', 'min:3', 'max:30', 'regex:/^[a-zA-Z0-9_.-]+$/',
+                Rule::unique('users', 'login_id')->where('office_id', Auth::user()->office_id)->ignore($user->id),
+            ],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'role' => ['required', Rule::enum(UserRole::class)],
             'permissions' => ['array'],

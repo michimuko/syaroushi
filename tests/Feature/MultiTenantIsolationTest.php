@@ -76,6 +76,7 @@ it('can log in via session and load an authenticated page on a separate request 
     ]);
 
     $this->post('/login', [
+        'office_code' => $office->office_code,
         'login_id' => $user->login_id,
         'password' => 'password',
     ])->assertRedirect(route('dashboard', absolute: false));

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\Office;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -28,6 +29,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'office_code' => ['required', 'string'],
             'login_id' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
@@ -36,13 +38,30 @@ class LoginRequest extends FormRequest
     /**
      * Attempt to authenticate the request's credentials.
      *
+     * login_idは事務所内でのみ一意（他事務所と重複しうる）ため、まず事務所コードで
+     * 事務所を特定してから、その事務所に所属するユーザーとしてlogin_id・パスワードを照合する。
+     *
      * @throws ValidationException
      */
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('login_id', 'password'), $this->boolean('remember'))) {
+        $office = Office::query()->where('office_code', Str::lower($this->string('office_code')))->first();
+
+        if (! $office) {
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'office_code' => 'この事業所IDは見つかりません。',
+            ]);
+        }
+
+        if (! Auth::attempt([
+            'office_id' => $office->id,
+            'login_id' => $this->string('login_id'),
+            'password' => $this->string('password'),
+        ], $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -50,7 +69,7 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        if (! Auth::user()->office->is_active) {
+        if (! $office->is_active) {
             Auth::logout();
 
             throw ValidationException::withMessages([
@@ -89,6 +108,8 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('login_id')).'|'.$this->ip());
+        return Str::transliterate(
+            Str::lower($this->string('office_code')).'|'.Str::lower($this->string('login_id')).'|'.$this->ip()
+        );
     }
 }

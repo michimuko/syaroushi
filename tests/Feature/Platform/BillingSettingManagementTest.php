@@ -31,6 +31,7 @@ test('creating an office via the platform sets trial_ends_at based on the config
 
     $this->actingAs($admin, 'platform')->post(route('platform.offices.store'), [
         'office_name' => 'トライアル事務所',
+        'office_code' => 'trial-office',
         'owner_name' => 'テストオーナー',
         'owner_login_id' => 'trial-owner',
         'owner_email' => 'trial-owner@example.com',
@@ -49,6 +50,7 @@ test('a platform admin can extend or clear an office\'s trial end date', functio
 
     $response = $this->actingAs($admin, 'platform')->put(route('platform.offices.update', $office), [
         'name' => $office->name,
+        'office_code' => $office->office_code,
         'is_active' => true,
         'trial_ends_at' => null,
     ]);
