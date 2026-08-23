@@ -11,6 +11,7 @@ const props = defineProps({
     title: String,
     uploadRoute: String,
     backRoute: String,
+    templateRoute: String,
 });
 
 const parentLabel = computed(() =>
@@ -50,16 +51,31 @@ function submit() {
             <div class="mx-auto max-w-2xl sm:px-6 lg:px-8">
                 <div class="rounded-lg bg-white p-6 shadow-sm">
                     <p class="text-sm text-gray-600">
-                        Excel（xlsx/xls）またはCSVファイルをアップロードしてください。1行目は見出し行として扱われます。
+                        Excel（xlsx/xls）またはCSV/TSVファイルをアップロードしてください。1行目は見出し行として扱われます。
                         列の割り当ては次の画面で手動で指定します（自動マッピングは行いません）。
+                        文字コード（UTF-8、BOMの有無）や区切り文字（カンマ/タブ）は自動判定されるため、意識せずアップロードして問題ありません。
                     </p>
+
+                    <div
+                        class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md bg-indigo-50 px-4 py-3 text-sm text-indigo-700"
+                    >
+                        <p>
+                            まずはテンプレートをダウンロードし、入力例の行を自事務所のデータに書き換えてからアップロードしてください。
+                        </p>
+                        <a
+                            :href="templateRoute"
+                            class="inline-flex shrink-0 items-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+                        >
+                            テンプレートをダウンロード
+                        </a>
+                    </div>
 
                     <form class="mt-6" @submit.prevent="submit">
                         <InputLabel for="file">ファイル</InputLabel>
                         <input
                             id="file"
                             type="file"
-                            accept=".xlsx,.xls,.csv"
+                            accept=".xlsx,.xls,.csv,.tsv"
                             class="mt-1 block w-full text-sm text-gray-700"
                             @change="onFileChange"
                         />

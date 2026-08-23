@@ -40,6 +40,17 @@ function buildTaskImportXlsx(array $headers, array $rows): UploadedFile
     return new UploadedFile($path, 'tasks.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', null, true);
 }
 
+/**
+ * 生のテキスト内容から.csv拡張子のアップロードファイルを作る（CSV/TSV/BOM有無の検証用）。
+ */
+function buildTaskImportRawCsv(string $content, string $filename = 'tasks.csv'): UploadedFile
+{
+    $path = tempnam(sys_get_temp_dir(), 'tasks-import').'.csv';
+    file_put_contents($path, $content);
+
+    return new UploadedFile($path, $filename, mime_content_type($path), null, true);
+}
+
 beforeEach(function () {
     Storage::fake('local');
 });
@@ -61,6 +72,49 @@ it('rejects the wizard actions for a staff member', function () {
     $this->actingAs($staff)->post(route('tasks.import.commit'), ['token' => (string) Str::uuid(), 'mapping' => []])->assertForbidden();
 
     expect(ProcedureTask::count())->toBe(0);
+});
+
+it('accepts a tab-separated file saved with a .csv extension', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $file = buildTaskImportRawCsv("client_name\ttitle\nアルファ商事\t算定基礎届\n");
+
+    $response = $this->actingAs($owner)->post(route('tasks.import.preview'), ['file' => $file]);
+
+    $response->assertOk()->assertInertia(fn ($page) => $page
+        ->component('Imports/Mapping')
+        ->where('headers', ['client_name', 'title'])
+    );
+});
+
+it('accepts a UTF-8 BOM prefixed CSV file without leaving BOM artifacts in the header', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $file = buildTaskImportRawCsv("\xEF\xBB\xBFclient_name,title\nアルファ商事,算定基礎届\n");
+
+    $response = $this->actingAs($owner)->post(route('tasks.import.preview'), ['file' => $file]);
+
+    $response->assertOk()->assertInertia(fn ($page) => $page
+        ->component('Imports/Mapping')
+        ->where('headers', ['client_name', 'title'])
+    );
+});
+
+it('lets an owner download an Excel import template with the same column labels used for mapping', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+
+    $response = $this->actingAs($owner)->get(route('tasks.import.template'));
+
+    $response->assertOk();
+    $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+});
+
+it('denies a staff member without the manage_imports permission from downloading the template', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)->create();
+
+    $this->actingAs($staff)->get(route('tasks.import.template'))->assertForbidden();
 });
 
 it('runs the full wizard end to end and creates tasks for valid rows only, resolving names within the office', function () {

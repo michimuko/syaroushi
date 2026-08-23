@@ -52,6 +52,7 @@ Route::middleware('auth:web')->group(function () {
     Route::get('/clients/export', [ClientExportController::class, 'index'])->name('clients.export');
     Route::middleware('module:excel_migration')->group(function () {
         Route::get('/clients/import', [ClientImportController::class, 'create'])->name('clients.import.create');
+        Route::get('/clients/import/template', [ClientImportController::class, 'template'])->name('clients.import.template');
         Route::post('/clients/import/preview', [ClientImportController::class, 'preview'])->name('clients.import.preview');
         Route::post('/clients/import/validate', [ClientImportController::class, 'validateMapping'])->name('clients.import.validate');
         Route::post('/clients/import/commit', [ClientImportController::class, 'commit'])->name('clients.import.commit');
@@ -74,6 +75,7 @@ Route::middleware('auth:web')->group(function () {
     Route::get('/tasks/export', [ProcedureTaskExportController::class, 'index'])->name('tasks.export');
     Route::middleware('module:excel_migration')->group(function () {
         Route::get('/tasks/import', [ProcedureTaskImportController::class, 'create'])->name('tasks.import.create');
+        Route::get('/tasks/import/template', [ProcedureTaskImportController::class, 'template'])->name('tasks.import.template');
         Route::post('/tasks/import/preview', [ProcedureTaskImportController::class, 'preview'])->name('tasks.import.preview');
         Route::post('/tasks/import/validate', [ProcedureTaskImportController::class, 'validateMapping'])->name('tasks.import.validate');
         Route::post('/tasks/import/commit', [ProcedureTaskImportController::class, 'commit'])->name('tasks.import.commit');

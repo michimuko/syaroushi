@@ -6,12 +6,14 @@ use App\Services\Import\ClientImportProcessor;
 use App\Services\Import\ImportReportBuilder;
 use App\Services\Import\ImportWizardService;
 use App\Services\Import\SpreadsheetReader;
+use App\Services\Import\SpreadsheetWriter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * 顧問先のExcelインポートウィザード（アップロード→マッピング→確認→確定、企画書6章）。
@@ -34,7 +36,37 @@ class ClientImportController extends Controller
             'title' => '顧問先のExcelインポート',
             'uploadRoute' => route('clients.import.preview'),
             'backRoute' => route('clients.index'),
+            'templateRoute' => route('clients.import.template'),
         ]);
+    }
+
+    /**
+     * インポート用のExcelテンプレート（見出し＋入力例1行）をダウンロードする。
+     * 見出しはfields()と同じ文言にすることで、次のマッピング画面で列名がそのまま参考になるようにする。
+     */
+    public function template(SpreadsheetWriter $writer): StreamedResponse
+    {
+        $this->authorize('manage-imports');
+
+        $office = Auth::user()->office;
+        $fields = $this->processor->fields($office);
+
+        $headers = array_map(fn (array $field) => $field['label'], $fields);
+
+        $exampleByKey = [
+            'name' => 'サンプル商事株式会社',
+            'representative_name' => '山田 太郎',
+            'address' => '東京都千代田区1-1-1',
+            'phone' => '03-1234-5678',
+            'email' => 'sample@example.com',
+            'contract_start_date' => '2026-04-01',
+            'status' => '契約中',
+            'assigned_user_name' => '（担当スタッフの氏名を入力）',
+            'notes' => '（自由記載。空欄可）',
+        ];
+        $example = array_map(fn (array $field) => $exampleByKey[$field['key']] ?? '（自由記載。空欄可）', $fields);
+
+        return $writer->export('xlsx', '顧問先インポートテンプレート', $headers, [$example]);
     }
 
     public function preview(Request $request): Response
@@ -42,7 +74,10 @@ class ClientImportController extends Controller
         $this->authorize('manage-imports');
 
         $validated = $request->validate([
-            'file' => 'required|file|max:5120|mimes:xlsx,xls,csv',
+            // mimesは内容から推測したMIMEタイプで判定するため、タブ区切りの内容を
+            // .csvで保存したファイル等がtext/plain判定となり弾かれてしまう。
+            // 拡張子ベースのextensionsを使い、区切り文字の判定はSpreadsheetReaderに委ねる。
+            'file' => 'required|file|max:5120|extensions:xlsx,xls,csv,tsv',
         ]);
 
         $officeId = Auth::user()->office_id;

@@ -39,6 +39,19 @@ function buildClientImportXlsx(array $headers, array $rows): UploadedFile
     return new UploadedFile($path, 'clients.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', null, true);
 }
 
+/**
+ * 生のテキスト内容から.csv拡張子のアップロードファイルを作る（CSV/TSV/BOM有無の検証用）。
+ * mime_content_typeで内容から推測した値をそのままUploadedFileへ渡すことで、
+ * 「タブ区切りの内容を.csvで保存した」ような、内容とMIMEタイプが一致しないケースを再現する。
+ */
+function buildClientImportRawCsv(string $content, string $filename = 'clients.csv'): UploadedFile
+{
+    $path = tempnam(sys_get_temp_dir(), 'clients-import').'.csv';
+    file_put_contents($path, $content);
+
+    return new UploadedFile($path, $filename, mime_content_type($path), null, true);
+}
+
 beforeEach(function () {
     Storage::fake('local');
 });
@@ -89,6 +102,63 @@ it('parses the uploaded file and shows a mapping screen with preview rows', func
     $props = clientImportInertiaProps($response);
     expect($props['token'])->toBeString()
         ->and($props['previewRows'][0])->toBe(['アルファ商事', '03-1111-2222']);
+});
+
+it('accepts a tab-separated file saved with a .csv extension', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $file = buildClientImportRawCsv("name\tphone\nアルファ商事\t03-1111-2222\n");
+
+    $response = $this->actingAs($owner)->post(route('clients.import.preview'), ['file' => $file]);
+
+    $response->assertOk()->assertInertia(fn ($page) => $page
+        ->component('Imports/Mapping')
+        ->where('headers', ['name', 'phone'])
+    );
+    expect(clientImportInertiaProps($response)['previewRows'][0])->toBe(['アルファ商事', '03-1111-2222']);
+});
+
+it('accepts a UTF-8 BOM prefixed CSV file without leaving BOM artifacts in the header', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $file = buildClientImportRawCsv("\xEF\xBB\xBFname,phone\nアルファ商事,03-1111-2222\n");
+
+    $response = $this->actingAs($owner)->post(route('clients.import.preview'), ['file' => $file]);
+
+    $response->assertOk()->assertInertia(fn ($page) => $page
+        ->component('Imports/Mapping')
+        ->where('headers', ['name', 'phone'])
+    );
+});
+
+it('accepts a CSV file without a BOM', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+    $file = buildClientImportRawCsv("name,phone\nアルファ商事,03-1111-2222\n");
+
+    $response = $this->actingAs($owner)->post(route('clients.import.preview'), ['file' => $file]);
+
+    $response->assertOk()->assertInertia(fn ($page) => $page
+        ->component('Imports/Mapping')
+        ->where('headers', ['name', 'phone'])
+    );
+});
+
+it('lets an owner download an Excel import template with the same column labels used for mapping', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+
+    $response = $this->actingAs($owner)->get(route('clients.import.template'));
+
+    $response->assertOk();
+    $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+});
+
+it('denies a staff member without the manage_imports permission from downloading the template', function () {
+    $office = Office::factory()->create();
+    $staff = User::factory()->for($office)->create();
+
+    $this->actingAs($staff)->get(route('clients.import.template'))->assertForbidden();
 });
 
 it('runs the full wizard end to end and creates clients for valid rows only', function () {
