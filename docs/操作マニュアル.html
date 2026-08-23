@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <title>業務進捗・期限管理SaaS 操作マニュアル</title>
 <style>
-@page { size: A4; margin: 0; }
+@page { size: A4; margin: 15mm 0; }
+@page :first { margin: 0; }
 * { box-sizing: border-box; }
 html, body {
   margin: 0; padding: 0;
@@ -20,7 +21,7 @@ html, body {
 
 /* ---------- cover ---------- */
 .cover {
-  width: 210mm; height: 297mm;
+  width: 210mm; min-height: 297mm;
   background: linear-gradient(150deg, #1e1b4b 0%, #312e81 45%, #4338ca 100%);
   color: #fff;
   display: flex; align-items: center; justify-content: center;
@@ -44,7 +45,7 @@ html, body {
 .cover-version { font-size: 9.5pt; color: #a5b4fc; }
 
 /* ---------- toc ---------- */
-.toc-page { width: 210mm; min-height: 297mm; padding: 22mm 22mm; page-break-after: always; }
+.toc-page { width: 210mm; padding: 0 22mm; page-break-after: always; }
 .toc-heading { font-size: 18pt; color: #1e1b4b; border-bottom: 0.8mm solid #4f46e5; padding-bottom: 3mm; margin-bottom: 8mm; }
 .toc-list { list-style: none; margin: 0; padding: 0; }
 .toc-list li {
@@ -59,7 +60,7 @@ html, body {
 .toc-title { color: #1e293b; font-weight: 600; }
 
 /* ---------- chapters ---------- */
-.chapter { width: 210mm; padding: 14mm 16mm 18mm; page-break-before: always; }
+.chapter { width: 210mm; padding: 0 16mm; page-break-before: always; }
 .chapter:first-of-type { page-break-before: avoid; }
 
 .chapter-band {
@@ -157,6 +158,25 @@ table.data-table tbody tr:nth-child(even) td { background: #f8fafc; }
   letter-spacing: 0.04em;
 }
 .ph-text { font-size: 9pt; color: #475569; }
+
+/* ---------- screenshots ---------- */
+figure.screenshot {
+  margin: 0 0 4mm; padding: 0; text-align: center;
+  break-inside: avoid; page-break-inside: avoid;
+}
+figure.screenshot img {
+  max-width: 100%; max-height: 95mm; width: auto; height: auto;
+  border: 0.3mm solid #e2e8f0; border-radius: 2mm;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+figure.screenshot figcaption {
+  font-size: 8.3pt; color: #64748b; margin-top: 2mm;
+}
+.screenshot-row {
+  display: flex; gap: 4mm; margin: 0 0 4mm;
+  break-inside: avoid; page-break-inside: avoid;
+}
+.screenshot-row figure.screenshot { flex: 1; margin-bottom: 0; }
 
 /* ---------- inline refs ---------- */
 .btn-ref {
@@ -503,48 +523,92 @@ table.data-table tbody tr:nth-child(even) td { background: #f8fafc; }
 
 <p class="body-text">ブラウザを起動していなくても、パソコンにインストールした専用アプリが常駐し、OS通知センターに直接通知を表示する機能です（Windows／Mac／Linux対応）。以下、設定画面での操作からアプリのインストール・初期設定まで、順を追って説明します。</p>
 
-<h3 class="h3">8.3.1　アクセストークンの発行（Web側の操作）</h3>
+<h3 class="h3">8.3.1　アプリのダウンロード</h3>
 
-<ol class="numbered-steps"><li><span class="num-badge">1</span><span class="num-text">画面右上または左下のアカウントメニューから<span class="btn-ref btn-primary">デスクトップ通知アプリ</span>を選び、設定画面を開きます。</span></li><li><span class="num-badge">2</span><span class="num-text"><span class="btn-ref btn-primary">トークンを発行する</span>ボタンを押します。確認は不要で、押すと即座に新しいトークンが発行されます。</span></li><li><span class="num-badge">3</span><span class="num-text">発行された<strong>平文のトークン文字列</strong>が画面に一度だけ表示されます。<strong>この画面を離れると二度と表示されない</strong>ため、必ずこの時点でコピーしてください（コピーし忘れた場合は再発行が必要です。8.3.4参照）。</span></li></ol>
-
-<div class="image-placeholder">
-  <div class="ph-label">画像挿入</div>
-  <div class="ph-text">デスクトップ通知アプリ連携画面（トークン発行直後、平文トークンが表示された状態）</div>
-</div>
-
-<h3 class="h3">8.3.2　インストーラーのダウンロード</h3>
-
-<p class="body-text">同じ画面の「1. アプリをダウンロードしてインストールする」セクションから、お使いのパソコンのOSに応じたインストーラーをダウンロードします。</p>
+<p class="body-text">画面右上または左下のアカウントメニューから<span class="btn-ref btn-primary">デスクトップ通知アプリ</span>を選び、連携画面を開きます。「1. アプリをダウンロードしてインストールする」セクションから、お使いのパソコンのOSに応じたインストーラーをダウンロードします。</p>
 
 <ul class="bullets"><li><strong>Windows：</strong>「Windows用をダウンロード」ボタンから .msi ファイルをダウンロードします。</li><li><strong>Mac：</strong>「Mac用をダウンロード」ボタンから .dmg ファイルをダウンロードします。</li><li><strong>Linux：</strong>「Linux用をダウンロード」ボタンから .AppImage ファイルをダウンロードします。</li></ul>
 
-<p class="body-text">アクセスした端末のOSが自動判定され、該当するボタンがハイライト表示（「お使いのPC向け」）されます。開発ツールのインストールなどは不要で、ダウンロードしたインストーラーを実行するだけでセットアップが完了します。</p>
+<p class="body-text">アクセスした端末のOSが自動判定され、該当するボタンがハイライト表示（「お使いのPC向け」）されます。開発ツールのインストールなどは不要です。</p>
 
-<div class="image-placeholder">
-  <div class="ph-label">画像挿入</div>
-  <div class="ph-text">OS別ダウンロードボタン（Windows／Mac／Linux）の表示</div>
+<figure class="screenshot">
+  <img src="デスクトップ通知/1.png" alt="デスクトップ通知アプリ連携画面（OS別のダウンロードボタン）">
+  <figcaption>デスクトップ通知アプリ連携画面（OS別のダウンロードボタン）</figcaption>
+</figure>
+
+<figure class="screenshot">
+  <img src="デスクトップ通知/2.png" alt="ダウンロードが完了した状態（Windowsの例。ブラウザの通知からファイルを開けます）">
+  <figcaption>ダウンロードが完了した状態（Windowsの例。ブラウザの通知からファイルを開けます）</figcaption>
+</figure>
+
+<h3 class="h3">8.3.2　インストール</h3>
+
+<p class="body-text">ダウンロードしたインストーラーを実行します（Macは.dmgをマウントしてアプリをApplicationsフォルダへドラッグ、Linuxは.AppImageに実行権限を付与して起動。以下はWindowsの.msiを例に説明します）。</p>
+
+<ol class="numbered-steps"><li><span class="num-badge">1</span><span class="num-text">セットアップウィザードが起動します。「Next」を押して進めます。</span></li><li><span class="num-badge">2</span><span class="num-text">インストール先フォルダを確認し（変更しない場合はそのまま）「Next」を押します。</span></li><li><span class="num-badge">3</span><span class="num-text">「Ready to install」の画面で「Install」を押すとインストールが始まります。</span></li><li><span class="num-badge">4</span><span class="num-text">Windowsの場合、発行元が未署名であることを示す「ユーザー アカウント制御」の確認が表示されます。内容を確認し「はい」を選択するとインストールが続行されます。</span></li><li><span class="num-badge">5</span><span class="num-text">「Completed」の画面が表示されたら完了です。「Launch syaroushi-desktop-notifier」にチェックが入った状態で「Finish」を押すと、そのままアプリが起動します。</span></li></ol>
+
+<div class="screenshot-row">
+<figure class="screenshot">
+  <img src="デスクトップ通知/3.png" alt="セットアップウィザードの開始画面（Welcome）">
+  <figcaption>セットアップウィザードの開始画面（Welcome）</figcaption>
+</figure>
+
+<figure class="screenshot">
+  <img src="デスクトップ通知/4.png" alt="インストール先フォルダの確認画面">
+  <figcaption>インストール先フォルダの確認画面</figcaption>
+</figure>
+
 </div>
+<div class="screenshot-row">
+<figure class="screenshot">
+  <img src="デスクトップ通知/5.png" alt="インストール準備完了画面（Ready to install）">
+  <figcaption>インストール準備完了画面（Ready to install）</figcaption>
+</figure>
 
-<h3 class="h3">8.3.3　インストールとアプリ初回設定</h3>
+<figure class="screenshot">
+  <img src="デスクトップ通知/6.jpg" alt="Windowsのユーザーアカウント制御の確認ダイアログ">
+  <figcaption>Windowsのユーザーアカウント制御の確認ダイアログ</figcaption>
+</figure>
 
-<ol class="numbered-steps"><li><span class="num-badge">1</span><span class="num-text">ダウンロードしたインストーラーを実行します（Windowsは.msiをダブルクリック、Macは.dmgをマウントしてアプリをApplicationsフォルダへドラッグ、Linuxは.AppImageに実行権限を付与して起動）。</span></li><li><span class="num-badge">2</span><span class="num-text">インストール後、アプリを起動すると設定画面が表示されます。</span></li><li><span class="num-badge">3</span><span class="num-text">「事務所のURL」欄に、デスクトップ通知アプリ連携画面に表示されているURL（このページ自体のURLではなく、ドメイン部分のみのURL）を貼り付けます。</span></li><li><span class="num-badge">4</span><span class="num-text">「APIトークン」欄に、8.3.1でコピーした平文トークンを貼り付けます。</span></li><li><span class="num-badge">5</span><span class="num-text">「確認間隔」（通知を何分おきに確認しに行くか。デフォルト5分、最小1分）を必要に応じて変更します。</span></li><li><span class="num-badge">6</span><span class="num-text">「自動起動」（パソコン起動時にアプリも自動的に起動するか）を必要に応じてON／OFFします。初回起動時はデフォルトでONになっています。</span></li><li><span class="num-badge">7</span><span class="num-text">設定を保存すると、アプリはOSのタスクトレイ（Windowsは画面右下、Macは画面右上、Linuxはデスクトップ環境により異なる）に常駐アイコンとして表示され、以後バックグラウンドで通知を確認し続けます。</span></li></ol>
-
-<div class="image-placeholder">
-  <div class="ph-label">画像挿入</div>
-  <div class="ph-text">デスクトップアプリの初回設定画面（事務所のURL・APIトークン・確認間隔・自動起動の入力欄）</div>
 </div>
+<figure class="screenshot">
+  <img src="デスクトップ通知/7.png" alt="インストール完了画面（Completed）">
+  <figcaption>インストール完了画面（Completed）</figcaption>
+</figure>
 
-<div class="image-placeholder">
-  <div class="ph-label">画像挿入</div>
-  <div class="ph-text">タスクトレイに常駐したアプリのアイコンとメニュー</div>
-</div>
+<h3 class="h3">8.3.3　アクセストークンの発行とアプリへの設定</h3>
+
+<p class="body-text">アプリを初めて起動すると、事務所のURL・アクセストークンなどを入力する設定画面が表示されます（この時点ではまだ空欄です）。トークンはWebブラウザ側の連携画面から発行します。</p>
+
+<figure class="screenshot">
+  <img src="デスクトップ通知/8.png" alt="起動直後のアプリ設定画面（まだ何も入力されていない状態）">
+  <figcaption>起動直後のアプリ設定画面（まだ何も入力されていない状態）</figcaption>
+</figure>
+
+<ol class="numbered-steps"><li><span class="num-badge">1</span><span class="num-text">ブラウザ側のデスクトップ通知アプリ連携画面に戻り、<span class="btn-ref btn-primary">トークンを発行する</span>ボタンを押します。確認は不要で、押すと即座に新しいトークンが発行されます。</span></li><li><span class="num-badge">2</span><span class="num-text">発行された<strong>平文のトークン文字列</strong>が画面に一度だけ表示されます。<strong>この画面を離れると二度と表示されない</strong>ため、必ずこの時点でコピーしてください（コピーし忘れた場合は再発行が必要です。8.3.5参照）。</span></li><li><span class="num-badge">3</span><span class="num-text">アプリの設定画面に戻り、「事務所のURL」欄にブラウザ側に表示されているURL（このページ自体のURLではなく、ドメイン部分のみのURL）を貼り付けます。</span></li><li><span class="num-badge">4</span><span class="num-text">「アクセストークン」欄に、コピーした平文トークンを貼り付けます。</span></li><li><span class="num-badge">5</span><span class="num-text">「確認間隔（分）」（通知を何分おきに確認しに行くか。デフォルト5分、最小1分）を必要に応じて変更します。</span></li><li><span class="num-badge">6</span><span class="num-text">「パソコンの電源を入れたら自動でこのアプリを起動する」を必要に応じてON／OFFします（初期状態でON・推奨）。</span></li><li><span class="num-badge">7</span><span class="num-text"><span class="btn-ref btn-primary">保存</span>を押すと設定が反映されます。<span class="btn-ref btn-primary">今すぐ確認</span>を押すと、保存後すぐに通知の確認を1回実行できます。</span></li></ol>
+
+<figure class="screenshot">
+  <img src="デスクトップ通知/9.png" alt="ブラウザ側でトークンを発行した直後の状態（背面にアプリの設定画面も見えています）">
+  <figcaption>ブラウザ側でトークンを発行した直後の状態（背面にアプリの設定画面も見えています）</figcaption>
+</figure>
+
+<figure class="screenshot">
+  <img src="デスクトップ通知/10.png" alt="事務所のURL・アクセストークンを入力し終えた状態（トークンは目のアイコンで表示・非表示を切り替え可能）">
+  <figcaption>事務所のURL・アクセストークンを入力し終えた状態（トークンは目のアイコンで表示・非表示を切り替え可能）</figcaption>
+</figure>
+
+<p class="body-text">設定を保存すると、アプリはOSのタスクトレイ（Windowsは画面右下、Macは画面右上、Linuxはデスクトップ環境により異なる）に常駐アイコンとして表示され、以後バックグラウンドで通知を確認し続けます。</p>
 
 <div class="callout callout-info">
   <div class="callout-head">補足</div>
   <div class="callout-body">アプリのウィンドウを閉じても、アプリ自体は終了せずタスクトレイに常駐し続けます。完全に終了したい場合は、トレイアイコンを右クリックして表示されるメニューから終了操作を行ってください。</div>
 </div>
 
-<h3 class="h3">8.3.4　トークンの再発行・失効</h3>
+<h3 class="h3">8.3.4　通知が届く仕組み</h3>
+
+<p class="body-text">設定した確認間隔ごとに、アプリがバックグラウンドでサーバーに問い合わせ、まだ配信していない期限アラートがあればOS標準の通知として表示します。メール・ブラウザ通知と同じタイミング設定（5.2章）が使われるため、通知タイミングを個別に設定する必要はありません。</p>
+
+<h3 class="h3">8.3.5　トークンの再発行・失効</h3>
 
 <p class="body-text">デスクトップ通知アプリ連携画面には、発行済みトークンの発行日時・最終利用日時が表示されます。<span class="btn-ref btn-primary">再発行する</span>を押すと確認ダイアログが表示され、承諾すると<strong>新しいトークンが発行されると同時に、現在使用中の古いトークンは自動的に無効になります</strong>。再発行後は、パソコン側のデスクトップアプリの設定画面でも新しいトークンに入力し直す必要があります。</p>
 
@@ -809,7 +873,7 @@ table.data-table tbody tr:nth-child(even) td { background: #f8fafc; }
 <div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>担当していないタスクを編集できません。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>担当者以外（オーナーを除く）はタスクの内容を編集できない仕様です。担当者の変更が必要な場合は、現在の担当者またはオーナーに依頼してください。</div></div>
 <div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>期限が近いのに通知が来ません。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>手続き種別マスタの通知タイミング設定（5.2）と、ブラウザ通知・デスクトップ通知の有効化状況（8章）をご確認ください。メール通知は常時有効です。迷惑メールフォルダも合わせてご確認ください。</div></div>
 <div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>Excelインポートでエラーになる行があります。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>確認画面に表示されるエラー内容（必須項目の未入力、顧問先名・手続き名の不一致など）をご確認のうえ、元のExcelファイルを修正して再アップロードするか、該当行のみ手動で登録してください。</div></div>
-<div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>デスクトップ通知アプリのトークンを忘れてしまいました。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>トークンは発行直後の一度しか画面に表示されません。「デスクトップ通知アプリ」画面から再発行してください（既存のトークンは自動的に無効になります。8.3.4参照）。</div></div>
+<div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>デスクトップ通知アプリのトークンを忘れてしまいました。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>トークンは発行直後の一度しか画面に表示されません。「デスクトップ通知アプリ」画面から再発行してください（既存のトークンは自動的に無効になります。8.3.5参照）。</div></div>
 <div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>デスクトップ通知アプリをインストールしたのに通知が来ません。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>設定画面の「事務所のURL」欄に、デスクトップ通知アプリ連携画面自体のURLではなく、ドメイン部分のみのURLが入力されているかご確認ください。また401／403エラーが表示される場合はトークンが失効している可能性があるため、再発行をお試しください。</div></div>
 <div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>顧問先を削除したい。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>顧問先の削除はオーナーのみ実行できます。スタッフの方はオーナーにご依頼ください。</div></div>
 <div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>マイナンバーの入力を警告されました。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>メモ欄やカスタムフィールドにマイナンバーとみられる文字列を入力すると警告が表示されます。入力自体は禁止されていませんが、マイナンバーを含む情報は原則としてタスクの書類チェックリストからファイルとしてアップロードしてください。</div></div>
