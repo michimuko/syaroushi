@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\ClientStatus;
 use App\Enums\CustomFieldTarget;
+use App\Http\Controllers\Concerns\ComputesHighlightPage;
 use App\Models\Client;
 use App\Models\CustomFieldDefinition;
 use App\Models\ProcedureType;
@@ -17,6 +18,8 @@ use Inertia\Response;
 
 class ClientController extends Controller
 {
+    use ComputesHighlightPage;
+
     /**
      * Display a listing of the resource.
      */
@@ -72,7 +75,9 @@ class ClientController extends Controller
 
         $client = Client::create($validated);
 
-        return redirect()->route('clients.index')
+        $page = $this->pageContainingId(Client::query()->orderBy('name'), $client->id);
+
+        return redirect()->route('clients.index', $page > 1 ? ['page' => $page] : [])
             ->with('success', '顧問先を登録しました。')
             ->with('highlightId', $client->id);
     }
@@ -113,7 +118,9 @@ class ClientController extends Controller
 
         $client->update($validated);
 
-        return redirect()->route('clients.index')
+        $page = $this->pageContainingId(Client::query()->orderBy('name'), $client->id);
+
+        return redirect()->route('clients.index', $page > 1 ? ['page' => $page] : [])
             ->with('success', '顧問先を更新しました。')
             ->with('highlightId', $client->id);
     }

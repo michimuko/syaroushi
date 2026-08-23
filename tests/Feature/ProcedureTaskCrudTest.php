@@ -305,6 +305,55 @@ test('a task can be created with valid data and defaults to not_started', functi
         ->and($task->due_date->toDateString())->toBe('2026-10-10');
 });
 
+test('a task can be created with valid data and flashes its id for row highlighting', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+
+    $response = $this->actingAs($user)->post(route('tasks.store'), [
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'title' => $procedureType->name,
+        'due_date' => '2026-10-10',
+    ]);
+
+    $task = ProcedureTask::sole();
+    $response->assertSessionHas('highlightId', $task->id);
+});
+
+test('creating a task redirects to the page containing it when sorted by due date pushes it past page 1', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+    $client = Client::factory()->for($office)->create();
+    $procedureType = ProcedureType::factory()->create();
+
+    // 一覧は due_date 昇順・20件/ページ。先に期限の早いタスクを20件作っておき、
+    // 新規作成したタスクが2ページ目に入ることを確認する。
+    ProcedureTask::factory()->for($office)->count(20)->sequence(fn ($sequence) => [
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'due_date' => now()->addDays($sequence->index),
+    ])->create();
+
+    $response = $this->actingAs($user)->post(route('tasks.store'), [
+        'client_id' => $client->id,
+        'procedure_type_id' => $procedureType->id,
+        'title' => '21件目のタスク',
+        'due_date' => now()->addDays(30)->toDateString(),
+    ]);
+
+    $newTask = ProcedureTask::where('title', '21件目のタスク')->sole();
+    $response->assertRedirect(route('tasks.index', ['page' => 2]));
+    $response->assertSessionHas('highlightId', $newTask->id);
+
+    $page2 = $this->actingAs($user)->get(route('tasks.index', ['page' => 2]));
+    $page2->assertInertia(fn ($page) => $page
+        ->has('tasks.data', 1)
+        ->where('tasks.data.0.id', $newTask->id)
+    );
+});
+
 test('a task cannot be created for a client belonging to another office', function () {
     $office = Office::factory()->create();
     $otherOffice = Office::factory()->create();

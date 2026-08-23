@@ -103,10 +103,38 @@ test('a client can be created with valid data', function () {
     ]);
 
     $response->assertRedirect(route('clients.index'));
+    $response->assertSessionHas('highlightId');
 
     $client = Client::sole();
     expect($client->name)->toBe('新規株式会社')
-        ->and($client->office_id)->toBe($office->id);
+        ->and($client->office_id)->toBe($office->id)
+        ->and($response->getSession()->get('highlightId'))->toBe($client->id);
+});
+
+test('creating a client redirects to the page containing it when sorted by name pushes it past page 1', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+
+    // 一覧は name 昇順・20件/ページ。「あ」始まりの顧問先を20件作っておき、
+    // 名前順で後ろになる新規顧問先が2ページ目に入ることを確認する。
+    Client::factory()->for($office)->count(20)->sequence(
+        fn ($sequence) => ['name' => 'あ顧問先'.str_pad($sequence->index, 2, '0', STR_PAD_LEFT)],
+    )->create();
+
+    $response = $this->actingAs($user)->post(route('clients.store'), [
+        'name' => 'ん顧問先（一番後ろ）',
+        'status' => 'active',
+    ]);
+
+    $newClient = Client::where('name', 'ん顧問先（一番後ろ）')->sole();
+    $response->assertRedirect(route('clients.index', ['page' => 2]));
+    $response->assertSessionHas('highlightId', $newClient->id);
+
+    $page2 = $this->actingAs($user)->get(route('clients.index', ['page' => 2]));
+    $page2->assertInertia(fn ($page) => $page
+        ->has('clients.data', 1)
+        ->where('clients.data.0.id', $newClient->id)
+    );
 });
 
 test('client creation requires a name', function () {
@@ -171,6 +199,24 @@ test('a client can be updated with valid data', function () {
 
     expect($client->fresh()->name)->toBe('新顧問先名')
         ->and($client->fresh()->status)->toBe(ClientStatus::Inactive);
+});
+
+test('renaming a client redirects to the page containing it under its new sort position', function () {
+    $office = Office::factory()->create();
+    $user = User::factory()->for($office)->create();
+
+    Client::factory()->for($office)->count(20)->sequence(
+        fn ($sequence) => ['name' => 'あ顧問先'.str_pad($sequence->index, 2, '0', STR_PAD_LEFT)],
+    )->create();
+    $client = Client::factory()->for($office)->create(['name' => 'あ改名前']);
+
+    $response = $this->actingAs($user)->put(route('clients.update', $client), [
+        'name' => 'ん改名後（一番後ろ）',
+        'status' => 'active',
+    ]);
+
+    $response->assertRedirect(route('clients.index', ['page' => 2]));
+    $response->assertSessionHas('highlightId', $client->id);
 });
 
 test('a client in another office cannot be edited or updated (404)', function () {

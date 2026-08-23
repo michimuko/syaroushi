@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Platform;
 
 use App\Enums\Module;
 use App\Enums\UserRole;
+use App\Http\Controllers\Concerns\ComputesHighlightPage;
 use App\Http\Controllers\Controller;
 use App\Models\BillingPlan;
 use App\Models\BillingSetting;
@@ -26,6 +27,8 @@ use Inertia\Response;
  */
 class OfficeController extends Controller
 {
+    use ComputesHighlightPage;
+
     /**
      * Display a listing of the resource.
      */
@@ -89,7 +92,9 @@ class OfficeController extends Controller
             return $office;
         });
 
-        return redirect()->route('platform.offices.index')
+        $page = $this->pageContainingId(Office::query()->orderBy('name'), $office->id);
+
+        return redirect()->route('platform.offices.index', $page > 1 ? ['page' => $page] : [])
             ->with('success', '事務所を作成しました。')
             ->with('highlightId', $office->id);
     }
@@ -144,7 +149,9 @@ class OfficeController extends Controller
 
         $office->update($validated);
 
-        return redirect()->route('platform.offices.index')
+        $page = $this->pageContainingId(Office::query()->orderBy('name'), $office->id);
+
+        return redirect()->route('platform.offices.index', $page > 1 ? ['page' => $page] : [])
             ->with('success', '事務所情報を更新しました。')
             ->with('highlightId', $office->id);
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\CustomFieldTarget;
 use App\Enums\TaskStatus;
+use App\Http\Controllers\Concerns\ComputesHighlightPage;
 use App\Models\CustomFieldDefinition;
 use App\Models\ProcedureTask;
 use App\Models\ProcedureType;
@@ -18,6 +19,8 @@ use Inertia\Response;
 
 class ProcedureTaskController extends Controller
 {
+    use ComputesHighlightPage;
+
     /**
      * Display a listing of the resource.
      */
@@ -122,7 +125,9 @@ class ProcedureTaskController extends Controller
 
         $task = ProcedureTask::create($validated);
 
-        return redirect()->route('tasks.index')
+        $page = $this->pageContainingId(ProcedureTask::query()->orderBy('due_date'), $task->id);
+
+        return redirect()->route('tasks.index', $page > 1 ? ['page' => $page] : [])
             ->with('success', 'タスクを作成しました。')
             ->with('highlightId', $task->id);
     }
@@ -177,8 +182,18 @@ class ProcedureTaskController extends Controller
 
         $task->update($validated);
 
-        // 一覧やカレンダーなど、遷移元の画面に戻す（フィルタ条件・表示月等を保ったまま）
-        return redirect($returnTo ?? route('tasks.index'))
+        // 一覧やカレンダーなど、遷移元の画面に戻す（フィルタ条件・表示月等を保ったまま）。
+        // 一覧に戻る場合のみ、更新後のソート順で実際に表示されるページへ直接遷移させる
+        // （カレンダー等それ以外の遷移先ではページネーションの概念がないため対象外）。
+        if ($returnTo === null) {
+            $page = $this->pageContainingId(ProcedureTask::query()->orderBy('due_date'), $task->id);
+
+            return redirect()->route('tasks.index', $page > 1 ? ['page' => $page] : [])
+                ->with('success', 'タスクを更新しました。')
+                ->with('highlightId', $task->id);
+        }
+
+        return redirect($returnTo)
             ->with('success', 'タスクを更新しました。')
             ->with('highlightId', $task->id);
     }

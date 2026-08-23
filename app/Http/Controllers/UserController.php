@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Permission;
 use App\Enums\UserRole;
+use App\Http\Controllers\Concerns\ComputesHighlightPage;
 use App\Models\User;
 use App\Notifications\UserAccountCreated;
 use Illuminate\Http\Request;
@@ -15,6 +16,8 @@ use Inertia\Response;
 
 class UserController extends Controller
 {
+    use ComputesHighlightPage;
+
     /**
      * Display a listing of the resource.
      *
@@ -76,7 +79,12 @@ class UserController extends Controller
 
         $user->notify(new UserAccountCreated(Auth::user()->office));
 
-        return redirect()->route('users.index')
+        $page = $this->pageContainingId(
+            Auth::user()->office->users()->orderBy('role')->orderBy('name'),
+            $user->id,
+        );
+
+        return redirect()->route('users.index', $page > 1 ? ['page' => $page] : [])
             ->with('success', 'ユーザーを登録しました。')
             ->with('highlightId', $user->id);
     }
@@ -129,7 +137,12 @@ class UserController extends Controller
 
         $user->update($validated);
 
-        return redirect()->route('users.index')
+        $page = $this->pageContainingId(
+            Auth::user()->office->users()->orderBy('role')->orderBy('name'),
+            $user->id,
+        );
+
+        return redirect()->route('users.index', $page > 1 ? ['page' => $page] : [])
             ->with('success', 'ユーザー情報を更新しました。')
             ->with('highlightId', $user->id);
     }
