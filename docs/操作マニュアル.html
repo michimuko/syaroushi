@@ -59,13 +59,14 @@ html, body {
 .toc-title { color: #1e293b; font-weight: 600; }
 
 /* ---------- chapters ---------- */
-.chapter { width: 210mm; min-height: 297mm; padding: 14mm 16mm 18mm; page-break-after: always; }
-.chapter:last-child { page-break-after: auto; }
+.chapter { width: 210mm; padding: 14mm 16mm 18mm; page-break-before: always; }
+.chapter:first-of-type { page-break-before: avoid; }
 
 .chapter-band {
   display: flex; align-items: center; gap: 5mm;
   background: linear-gradient(120deg, #312e81, #4f46e5);
   color: #fff; border-radius: 3mm; padding: 6mm 8mm; margin-bottom: 8mm;
+  break-inside: avoid; page-break-inside: avoid; break-after: avoid;
 }
 .chapter-num {
   width: 14mm; height: 14mm; border-radius: 50%;
@@ -80,13 +81,14 @@ h2.h2 {
   display: flex; align-items: center; gap: 3mm;
   font-size: 12pt; font-weight: 700; color: #1e1b4b;
   margin: 7mm 0 3.5mm; padding-bottom: 1.8mm; border-bottom: 0.5mm solid #c7d2fe;
+  break-after: avoid; page-break-after: avoid;
 }
 h2.h2 .h2-tag {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 9mm; height: 6mm; padding: 0 1.5mm; border-radius: 1.2mm;
   background: #eef2ff; color: #4338ca; font-size: 8.5pt; font-weight: 700;
 }
-h3.h3 { font-size: 10.5pt; font-weight: 700; color: #4338ca; margin: 5mm 0 2.5mm; }
+h3.h3 { font-size: 10.5pt; font-weight: 700; color: #4338ca; margin: 5mm 0 2.5mm; break-after: avoid; page-break-after: avoid; }
 
 p.body-text { margin: 0 0 3mm; color: #334155; }
 .bullets { margin: 0 0 4mm; padding-left: 5mm; color: #334155; }
@@ -96,6 +98,7 @@ p.body-text { margin: 0 0 3mm; color: #334155; }
 .numbered-steps li {
   display: flex; gap: 3mm; align-items: flex-start;
   padding: 2.5mm 0; border-bottom: 0.2mm solid #f1f5f9;
+  break-inside: avoid; page-break-inside: avoid;
 }
 .numbered-steps li:last-child { border-bottom: none; }
 .num-badge {
@@ -106,7 +109,7 @@ p.body-text { margin: 0 0 3mm; color: #334155; }
 .num-text { color: #334155; }
 
 /* ---------- callouts ---------- */
-.callout { border-radius: 2mm; padding: 3.5mm 4.5mm; margin: 0 0 4mm; border: 0.3mm solid; }
+.callout { border-radius: 2mm; padding: 3.5mm 4.5mm; margin: 0 0 4mm; border: 0.3mm solid; break-inside: avoid; page-break-inside: avoid; }
 .callout-head {
   font-size: 8.2pt; font-weight: 700; margin-bottom: 1.8mm;
   display: inline-flex; align-items: center;
@@ -131,19 +134,22 @@ p.body-text { margin: 0 0 3mm; color: #334155; }
 .callout-info .callout-body    { color: #334155; }
 
 /* ---------- tables ---------- */
-table.data-table { width: 100%; border-collapse: collapse; font-size: 8.8pt; margin: 0 0 4mm; }
+table.data-table { width: 100%; border-collapse: collapse; font-size: 8.8pt; margin: 0 0 4mm; break-inside: avoid; page-break-inside: avoid; }
+table.data-table thead { display: table-header-group; }
+table.data-table tr { break-inside: avoid; page-break-inside: avoid; }
 table.data-table th {
   background: #4338ca; color: #fff; text-align: left; padding: 2.3mm 3mm; font-weight: 700;
 }
 table.data-table td {
   padding: 2.3mm 3mm; border-bottom: 0.2mm solid #e2e8f0; color: #334155; vertical-align: top;
 }
-table.data-table tr:nth-child(even) td { background: #f8fafc; }
+table.data-table tbody tr:nth-child(even) td { background: #f8fafc; }
 
 /* ---------- image placeholder ---------- */
 .image-placeholder {
   border: 0.5mm dashed #94a3b8; border-radius: 2mm; background: #f8fafc;
   padding: 6mm; text-align: center; margin: 0 0 4mm;
+  break-inside: avoid; page-break-inside: avoid;
 }
 .ph-label {
   display: inline-block; font-size: 8pt; font-weight: 700; color: #64748b;
@@ -162,12 +168,12 @@ table.data-table tr:nth-child(even) td { background: #f8fafc; }
 .btn-link    { background: #f8fafc; color: #4338ca; border: 0.25mm solid #e2e8f0; text-decoration: underline; }
 
 /* ---------- status legend ---------- */
-.legend-row { display: flex; flex-wrap: wrap; gap: 4mm; margin: 0 0 4mm; padding: 3mm 4mm; background: #f8fafc; border-radius: 2mm; }
+.legend-row { display: flex; flex-wrap: wrap; gap: 4mm; margin: 0 0 4mm; padding: 3mm 4mm; background: #f8fafc; border-radius: 2mm; break-inside: avoid; page-break-inside: avoid; }
 .legend-item { display: flex; align-items: center; gap: 1.8mm; font-size: 8.8pt; color: #334155; }
 .swatch { width: 3.2mm; height: 3.2mm; border-radius: 50%; display: inline-block; }
 
 /* ---------- faq ---------- */
-.faq-item { margin-bottom: 4mm; }
+.faq-item { margin-bottom: 4mm; break-inside: avoid; page-break-inside: avoid; }
 .faq-q, .faq-a { display: flex; gap: 2.5mm; font-size: 9.3pt; align-items: flex-start; margin-bottom: 1mm; }
 .qa-tag {
   flex-shrink: 0; width: 5.5mm; height: 5.5mm; border-radius: 1mm; font-size: 8pt; font-weight: 700;

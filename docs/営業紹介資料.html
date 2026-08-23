@@ -14,15 +14,45 @@
     line-height: 1.6;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+    background: #fff;
   }
-  .page {
-    width: 210mm;
-    min-height: 297mm;
-    padding: 14mm 16mm;
-    position: relative;
+
+  /* ---------- cover ---------- */
+  .cover {
+    width: 210mm; height: 297mm;
+    background: linear-gradient(150deg, #1e1b4b 0%, #312e81 45%, #4338ca 100%);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
     page-break-after: always;
   }
-  .page:last-child { page-break-after: auto; }
+  .cover-inner { text-align: center; padding: 0 20mm; }
+  .cover .brand-mark { display: flex; align-items: center; justify-content: center; gap: 4mm; margin-bottom: 14mm; }
+  .cover .brand-mark .icon {
+    width: 12mm; height: 12mm; border-radius: 3mm;
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4);
+    display: flex; align-items: center; justify-content: center; font-size: 16pt; font-weight: 700;
+  }
+  .cover .brand-mark .name { font-size: 13pt; font-weight: 700; letter-spacing: 0.03em; }
+  .cover-badge {
+    display: inline-block; font-size: 9pt; font-weight: 700; letter-spacing: 0.1em;
+    background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 999px; padding: 1.5mm 6mm; margin-bottom: 8mm;
+  }
+  .cover-title { font-size: 25pt; font-weight: 700; line-height: 1.5; margin: 0 0 10mm; }
+  .cover-sub { font-size: 11pt; color: #e0e7ff; margin: 0 0 12mm; max-width: 140mm; margin-left: auto; margin-right: auto; }
+  .cover-trial {
+    display: inline-flex; align-items: center; gap: 3mm;
+    background: linear-gradient(120deg, #f59e0b, #f97316);
+    border-radius: 999px; padding: 3mm 8mm; font-size: 11pt; font-weight: 700; margin-bottom: 12mm;
+  }
+  .cover-version { font-size: 9.5pt; color: #a5b4fc; }
+
+  /* ---------- page wrapper ---------- */
+  .page {
+    width: 210mm;
+    padding: 12mm 16mm 14mm;
+    page-break-before: always;
+  }
 
   /* ---------- header band ---------- */
   .brand-header {
@@ -30,6 +60,7 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 6mm;
+    break-after: avoid; page-break-after: avoid;
   }
   .brand-mark {
     display: flex;
@@ -56,38 +87,6 @@
     color: #64748b;
   }
 
-  /* ---------- hero ---------- */
-  .hero {
-    background: linear-gradient(135deg, #312e81 0%, #4338ca 55%, #4f46e5 100%);
-    color: #fff;
-    border-radius: 4mm;
-    padding: 10mm 12mm;
-    margin-bottom: 8mm;
-  }
-  .hero .eyebrow {
-    display: inline-block;
-    font-size: 8pt;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    background: rgba(255,255,255,0.16);
-    border: 1px solid rgba(255,255,255,0.35);
-    border-radius: 999px;
-    padding: 1.2mm 4mm;
-    margin-bottom: 4mm;
-  }
-  .hero h1 {
-    font-size: 19pt;
-    line-height: 1.4;
-    margin: 0 0 3mm;
-    font-weight: 700;
-  }
-  .hero p {
-    font-size: 10pt;
-    margin: 0;
-    color: #e0e7ff;
-    max-width: 140mm;
-  }
-
   h2.section-title {
     display: flex;
     align-items: center;
@@ -98,6 +97,7 @@
     margin: 0 0 5mm;
     padding-bottom: 2.5mm;
     border-bottom: 0.6mm solid #4f46e5;
+    break-after: avoid; page-break-after: avoid;
   }
   h2.section-title .num {
     display: inline-flex;
@@ -126,6 +126,7 @@
     padding: 3.5mm 4mm;
     font-size: 9.3pt;
     color: #7c2d12;
+    break-inside: avoid; page-break-inside: avoid;
   }
   .pain-lead {
     font-size: 9.5pt;
@@ -140,6 +141,7 @@
     font-size: 9.3pt;
     color: #312e81;
     border: 0.3mm solid #c7d2fe;
+    break-inside: avoid; page-break-inside: avoid;
   }
 
   /* ---------- feature cards ---------- */
@@ -154,6 +156,7 @@
     border-radius: 2.5mm;
     padding: 4mm 4.5mm;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    break-inside: avoid; page-break-inside: avoid;
   }
   .feature-card .badge {
     display: inline-flex;
@@ -182,7 +185,10 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 8.8pt;
+    break-inside: avoid; page-break-inside: avoid;
   }
+  .core-table thead { display: table-header-group; }
+  .core-table tr { break-inside: avoid; page-break-inside: avoid; }
   .core-table th {
     background: #4338ca;
     color: #fff;
@@ -196,7 +202,7 @@
     color: #334155;
     vertical-align: top;
   }
-  .core-table tr:nth-child(even) td { background: #f8fafc; }
+  .core-table tbody tr:nth-child(even) td { background: #f8fafc; }
   .core-table td.col-name { font-weight: 700; color: #1e1b4b; white-space: nowrap; }
 
   /* ---------- before / after ---------- */
@@ -213,6 +219,7 @@
     padding: 0 3.5mm 1.5mm;
   }
   .change-table th.after-col { color: #15803d; }
+  .change-row { break-inside: avoid; page-break-inside: avoid; }
   .change-row td {
     padding: 3mm 3.5mm;
     vertical-align: top;
@@ -252,6 +259,7 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 5mm;
+    break-inside: avoid; page-break-inside: avoid;
   }
   .trial-banner .big {
     font-size: 15pt;
@@ -276,6 +284,7 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 8.8pt;
+    break-inside: avoid; page-break-inside: avoid;
   }
   .price-table th, .price-table td {
     border: 0.25mm solid #e2e8f0;
@@ -301,6 +310,7 @@
     display: flex;
     justify-content: space-between;
     gap: 2mm;
+    break-inside: avoid; page-break-inside: avoid;
   }
   .flow-step {
     flex: 1;
@@ -329,6 +339,7 @@
     border-radius: 3mm;
     padding: 6mm 7mm;
     text-align: center;
+    break-inside: avoid; page-break-inside: avoid;
   }
   .cta-footer h3 {
     font-size: 12pt;
@@ -341,12 +352,24 @@
   }
 
   .list-plain { margin: 0; padding-left: 4.5mm; font-size: 9.2pt; color: #334155; }
-  .list-plain li { margin-bottom: 1.5mm; }
+  .list-plain li { margin-bottom: 2.5mm; break-inside: avoid; page-break-inside: avoid; }
 </style>
 </head>
 <body>
 
-<!-- ============ PAGE 1 ============ -->
+<!-- ============ COVER ============ -->
+<div class="cover">
+  <div class="cover-inner">
+    <div class="brand-mark"><div class="icon">✓</div><div class="name">社労士業務進捗管理</div></div>
+    <div class="cover-badge">社労士事務所向けご紹介資料</div>
+    <h1 class="cover-title">顧問先ごとの法定手続き、進捗と期限を、<br>もっとシンプルに一元管理する。</h1>
+    <p class="cover-sub">算定基礎届・労働保険年度更新・36協定届など、事務所が抱える大量の期限管理を自動アラートと一元台帳で支え、期限漏れゼロと業務の標準化を実現します。</p>
+    <div class="cover-trial">まずは1ヶ月間、無料でお試しいただけます</div>
+    <div class="cover-version">2026年8月版</div>
+  </div>
+</div>
+
+<!-- ============ PAGE: 1. 課題 ============ -->
 <div class="page">
   <div class="brand-header">
     <div class="brand-mark">
@@ -354,12 +377,6 @@
       <div class="name">社労士業務進捗管理</div>
     </div>
     <div class="doc-meta">社労士事務所向けご紹介資料<br>2026年8月版</div>
-  </div>
-
-  <div class="hero">
-    <span class="eyebrow">業務進捗・期限管理SaaS</span>
-    <h1>顧問先ごとの法定手続き、進捗と期限を、<br>もっとシンプルに一元管理する。</h1>
-    <p>算定基礎届・労働保険年度更新・36協定届など、事務所が抱える大量の期限管理を自動アラートと一元台帳で支え、期限漏れゼロと業務の標準化を実現します。</p>
   </div>
 
   <div class="section">
@@ -375,21 +392,34 @@
     </div>
     <div class="pain-conclusion">本サービスは、こうした「地味だが日々発生する」業務負担を、事務所の規模を問わず軽量・低コストで解消することに特化したSaaSです。特定の給与・会計ソフトとの連携を前提にしない独立設計のため、顧問先の環境を問わず即日で導入いただけます。</div>
   </div>
+</div>
+
+<!-- ============ PAGE: 2. できること ============ -->
+<div class="page">
+  <div class="brand-header">
+    <div class="brand-mark">
+      <div class="icon">✓</div>
+      <div class="name">社労士業務進捗管理</div>
+    </div>
+    <div class="doc-meta">社労士事務所向けご紹介資料<br>2026年8月版</div>
+  </div>
 
   <div class="section">
     <h2 class="section-title"><span class="num">2</span>システムの概要とできること</h2>
     <table class="core-table">
-      <tr><th style="width:32mm;">機能</th><th>できること</th></tr>
+      <thead><tr><th style="width:32mm;">機能</th><th>できること</th></tr></thead>
+      <tbody>
       <tr><td class="col-name">ダッシュボード</td><td>期限超過／7日以内／30日以内の件数、担当者別ワークロード、手続き種別ごとの内訳をひと目で確認</td></tr>
       <tr><td class="col-name">顧問先・タスク管理</td><td>顧問先ごとの基本情報と対象手続きを登録。周期に応じて次回分のタスクを自動生成し、ステータス（未着手〜完了）を一元管理</td></tr>
       <tr><td class="col-name">カレンダー表示</td><td>全タスクをステータス別に色分けした月表示カレンダーで俯瞰</td></tr>
       <tr><td class="col-name">自動アラート通知</td><td>期限の90日前・30日前・7日前など、手続きごとに設定したタイミングでメール／ブラウザ／デスクトップへ自動通知</td></tr>
       <tr><td class="col-name">書類チェックリスト</td><td>必要書類の収集状況を管理。暗号化ストレージ保存・保存期限管理・アクセスログ記録に対応</td></tr>
+      </tbody>
     </table>
   </div>
 </div>
 
-<!-- ============ PAGE 2 ============ -->
+<!-- ============ PAGE: 3+4. 差別化機能 + 安心設計 ============ -->
 <div class="page">
   <div class="brand-header">
     <div class="brand-mark">
@@ -441,7 +471,7 @@
   </div>
 </div>
 
-<!-- ============ PAGE 3 ============ -->
+<!-- ============ PAGE: 5. 期待できる変化 ============ -->
 <div class="page">
   <div class="brand-header">
     <div class="brand-mark">
@@ -454,11 +484,14 @@
   <div class="section">
     <h2 class="section-title"><span class="num">5</span>システム導入後の期待できる変化</h2>
     <table class="change-table">
+      <thead>
       <tr>
         <th style="width:44%;">導入前</th>
         <th style="width:8%;"></th>
         <th class="after-col" style="width:48%;">導入後</th>
       </tr>
+      </thead>
+      <tbody>
       <tr class="change-row">
         <td class="before-cell">Excelで期限を管理し、更新・確認が特定の担当者に依存</td>
         <td class="arrow-cell">→</td>
@@ -484,7 +517,19 @@
         <td class="arrow-cell">→</td>
         <td class="after-cell">暗号化保存・期限管理・アクセス履歴が自動化され、対応品質が底上げされる</td>
       </tr>
+      </tbody>
     </table>
+  </div>
+</div>
+
+<!-- ============ PAGE: 6. 料金プラン ============ -->
+<div class="page">
+  <div class="brand-header">
+    <div class="brand-mark">
+      <div class="icon">✓</div>
+      <div class="name">社労士業務進捗管理</div>
+    </div>
+    <div class="doc-meta">社労士事務所向けご紹介資料<br>2026年8月版</div>
   </div>
 
   <div class="section">
@@ -499,9 +544,12 @@
     </div>
 
     <table class="price-table">
+      <thead>
       <tr>
         <th>プラン</th><th>月額</th><th>顧問先数上限</th><th>ユーザー数上限</th>
       </tr>
+      </thead>
+      <tbody>
       <tr>
         <td class="plan-name">スターター</td><td class="plan-price">2,800円</td><td>15件</td><td>3名</td>
       </tr>
@@ -514,6 +562,7 @@
       <tr>
         <td class="plan-name">エンタープライズ</td><td class="plan-price">個別見積り</td><td>無制限</td><td>無制限</td>
       </tr>
+      </tbody>
     </table>
     <p class="price-note">※ Excel移行アシスタント・PDFレポート・計算アシスタント・カスタムフィールドなどのオプション機能は、追加料金なくすべてのプランでご利用いただけます。※ 表示は税別の月額料金です。</p>
   </div>
