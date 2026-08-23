@@ -11,6 +11,7 @@ import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { containsMyNumberLikeString } from '@/Composables/useMyNumberDetection';
 import { initialCustomFieldValues } from '@/Composables/useCustomFieldValues';
+import { todayDateString } from '@/Composables/useToday';
 
 const props = defineProps({
     staffOptions: Array,
@@ -23,7 +24,7 @@ const form = useForm({
     address: '',
     phone: '',
     email: '',
-    contract_start_date: '',
+    contract_start_date: todayDateString(),
     status: 'active',
     assigned_user_id: '',
     notes: '',

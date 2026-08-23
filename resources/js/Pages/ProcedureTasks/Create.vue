@@ -11,6 +11,7 @@ import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { containsMyNumberLikeString } from '@/Composables/useMyNumberDetection';
 import { initialCustomFieldValues } from '@/Composables/useCustomFieldValues';
+import { todayDateString } from '@/Composables/useToday';
 
 const props = defineProps({
     clientOptions: Array,
@@ -18,14 +19,6 @@ const props = defineProps({
     procedureTypeOptions: Array,
     customFieldDefinitions: Array,
 });
-
-// <input type="date">に渡すため、UTC変換によるずれが出ないローカル日付から組み立てる
-function todayDateString() {
-    const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${now.getFullYear()}-${month}-${day}`;
-}
 
 const form = useForm({
     client_id: '',
