@@ -170,6 +170,13 @@ watch(
                     >
                         デスクトップ通知アプリ
                     </Link>
+                    <a
+                        :href="route('manual.download')"
+                        target="_blank"
+                        class="block rounded-md px-2 py-1.5 text-sm text-gray-600 transition duration-150 ease-in-out hover:bg-gray-50 hover:text-gray-900"
+                    >
+                        操作マニュアル
+                    </a>
                     <Link
                         :href="route('logout')"
                         method="post"
