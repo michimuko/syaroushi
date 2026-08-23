@@ -1,6 +1,9 @@
 <?php
 
 use App\Models\Office;
+use App\Models\PlatformAdmin;
+use App\Notifications\StripePaymentFailed;
+use Illuminate\Support\Facades\Notification;
 use Stripe\WebhookSignature;
 
 beforeEach(function () {
@@ -102,6 +105,137 @@ test('customer.subscription.deleted marks the office subscription as canceled', 
 
     $response->assertOk();
     expect($office->refresh()->stripe_subscription_status)->toBe('canceled');
+});
+
+test('invoice.payment_failed flags the office and notifies every platform admin', function () {
+    Notification::fake();
+
+    $office = Office::factory()->create([
+        'stripe_customer_id' => 'cus_abc',
+        'stripe_subscription_id' => 'sub_1',
+        'stripe_subscription_status' => 'active',
+        'stripe_payment_failed_at' => null,
+    ]);
+    $adminA = PlatformAdmin::factory()->create();
+    $adminB = PlatformAdmin::factory()->create();
+
+    [$body, $signature] = signedStripeWebhookRequest([
+        'id' => 'evt_6',
+        'object' => 'event',
+        'type' => 'invoice.payment_failed',
+        'data' => [
+            'object' => [
+                'id' => 'in_1',
+                'object' => 'invoice',
+                'customer' => 'cus_abc',
+                'amount_due' => 6800,
+                'hosted_invoice_url' => 'https://invoice.stripe.com/i/in_1',
+            ],
+        ],
+    ]);
+
+    $response = $this->call('POST', route('webhooks.stripe'), [], [], [], [
+        'HTTP_STRIPE_SIGNATURE' => $signature,
+        'CONTENT_TYPE' => 'application/json',
+    ], $body);
+
+    $response->assertOk();
+    expect($office->refresh()->stripe_payment_failed_at)->not->toBeNull();
+
+    Notification::assertSentTo([$adminA, $adminB], StripePaymentFailed::class, function ($notification) use ($office) {
+        return $notification->office->is($office)
+            && $notification->amountDue === 6800
+            && $notification->hostedInvoiceUrl === 'https://invoice.stripe.com/i/in_1';
+    });
+});
+
+test('invoice.payment_failed for an unknown customer does not error and sends no notification', function () {
+    Notification::fake();
+    PlatformAdmin::factory()->create();
+
+    [$body, $signature] = signedStripeWebhookRequest([
+        'id' => 'evt_7',
+        'object' => 'event',
+        'type' => 'invoice.payment_failed',
+        'data' => [
+            'object' => [
+                'id' => 'in_2',
+                'object' => 'invoice',
+                'customer' => 'cus_unknown',
+                'amount_due' => 1000,
+            ],
+        ],
+    ]);
+
+    $response = $this->call('POST', route('webhooks.stripe'), [], [], [], [
+        'HTTP_STRIPE_SIGNATURE' => $signature,
+        'CONTENT_TYPE' => 'application/json',
+    ], $body);
+
+    $response->assertOk();
+    Notification::assertNothingSent();
+});
+
+test('invoice.paid clears a previously flagged payment issue', function () {
+    $office = Office::factory()->create([
+        'stripe_customer_id' => 'cus_abc',
+        'stripe_subscription_id' => 'sub_1',
+        'stripe_subscription_status' => 'active',
+        'stripe_payment_failed_at' => now(),
+    ]);
+
+    [$body, $signature] = signedStripeWebhookRequest([
+        'id' => 'evt_8',
+        'object' => 'event',
+        'type' => 'invoice.paid',
+        'data' => [
+            'object' => [
+                'id' => 'in_3',
+                'object' => 'invoice',
+                'customer' => 'cus_abc',
+                'amount_due' => 6800,
+            ],
+        ],
+    ]);
+
+    $response = $this->call('POST', route('webhooks.stripe'), [], [], [], [
+        'HTTP_STRIPE_SIGNATURE' => $signature,
+        'CONTENT_TYPE' => 'application/json',
+    ], $body);
+
+    $response->assertOk();
+    expect($office->refresh()->stripe_payment_failed_at)->toBeNull();
+});
+
+test('invoice.paid is a no-op when the office had no payment issue flagged', function () {
+    $office = Office::factory()->create([
+        'stripe_customer_id' => 'cus_abc',
+        'stripe_subscription_id' => 'sub_1',
+        'stripe_subscription_status' => 'active',
+        'stripe_payment_failed_at' => null,
+    ]);
+
+    [$body, $signature] = signedStripeWebhookRequest([
+        'id' => 'evt_9',
+        'object' => 'event',
+        'type' => 'invoice.paid',
+        'data' => [
+            'object' => [
+                'id' => 'in_4',
+                'object' => 'invoice',
+                'customer' => 'cus_abc',
+                'amount_due' => 6800,
+            ],
+        ],
+    ]);
+
+    $response = $this->call('POST', route('webhooks.stripe'), [], [], [], [
+        'HTTP_STRIPE_SIGNATURE' => $signature,
+        'CONTENT_TYPE' => 'application/json',
+    ], $body);
+
+    $response->assertOk();
+    expect($office->refresh()->stripe_payment_failed_at)->toBeNull();
 });
 
 test('a request with an invalid signature is rejected', function () {

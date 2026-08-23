@@ -38,6 +38,7 @@ class OfficeController extends Controller
     {
         $validated = $request->validate([
             'search' => 'nullable|string|max:255',
+            'attention_only' => 'nullable|boolean',
         ]);
 
         $offices = Office::query()
@@ -50,6 +51,10 @@ class OfficeController extends Controller
                     ->orWhere('office_code', 'like', "%{$search}%")
                 ),
             )
+            ->when(
+                $validated['attention_only'] ?? false,
+                fn ($query) => $query->needsBillingAttention(),
+            )
             ->orderBy('name')
             ->paginate(20)
             ->withQueryString();
@@ -58,7 +63,9 @@ class OfficeController extends Controller
             'offices' => $offices,
             'filters' => [
                 'search' => $validated['search'] ?? '',
+                'attention_only' => $validated['attention_only'] ?? false,
             ],
+            'attentionCount' => Office::query()->needsBillingAttention()->count(),
         ]);
     }
 

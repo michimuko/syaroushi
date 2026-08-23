@@ -55,6 +55,33 @@ test('a platform admin can search offices by name or office_code', function () {
     );
 });
 
+test('a platform admin can filter the office list to only offices needing billing attention', function () {
+    $admin = PlatformAdmin::factory()->create();
+    $needsAttention = Office::factory()->create(['stripe_payment_failed_at' => now()]);
+    Office::factory()->create(['trial_ends_at' => now()->addDays(20)]);
+
+    $response = $this->actingAs($admin, 'platform')
+        ->get(route('platform.offices.index', ['attention_only' => true]));
+
+    $response->assertInertia(fn ($page) => $page
+        ->component('Platform/Offices/Index')
+        ->has('offices.data', 1)
+        ->where('offices.data.0.id', $needsAttention->id)
+        ->where('attentionCount', 1)
+    );
+});
+
+test('the office list reports attentionCount across all offices regardless of the current filter or page', function () {
+    $admin = PlatformAdmin::factory()->create();
+    Office::factory()->create(['stripe_payment_failed_at' => now()]);
+    Office::factory()->create(['trial_ends_at' => now()->subDay(), 'billing_plan_id' => null, 'custom_monthly_price' => null]);
+    Office::factory()->create(['trial_ends_at' => now()->addDays(20)]);
+
+    $response = $this->actingAs($admin, 'platform')->get(route('platform.offices.index'));
+
+    $response->assertInertia(fn ($page) => $page->where('attentionCount', 2));
+});
+
 test('a platform admin creating an office keeps the new owner in the new office even if a web guard session for another office is active in the same browser', function () {
     $admin = PlatformAdmin::factory()->create();
     $existingOffice = Office::factory()->create();

@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Office;
+use App\Models\PlatformAdmin;
+use App\Notifications\StripePaymentFailed;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Stripe\Event;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Webhook;
@@ -38,6 +41,8 @@ class StripeWebhookController extends Controller
             'checkout.session.completed' => $this->handleCheckoutCompleted($event),
             'customer.subscription.created', 'customer.subscription.updated' => $this->handleSubscriptionUpdated($event),
             'customer.subscription.deleted' => $this->handleSubscriptionDeleted($event),
+            'invoice.payment_failed' => $this->handleInvoicePaymentFailed($event),
+            'invoice.paid' => $this->handleInvoicePaid($event),
             default => null,
         };
 
@@ -75,5 +80,46 @@ class StripeWebhookController extends Controller
         Office::where('stripe_customer_id', $subscription->customer)->first()?->update([
             'stripe_subscription_status' => 'canceled',
         ]);
+    }
+
+    /**
+     * 定期購読の決済失敗を運営者へ能動的に知らせる。stripe_subscription_statusは
+     * 別途customer.subscription.updatedでpast_due等に追従するが、そちらは検知のための
+     * 通知を出さないため、このイベントを運営者への一次アラートとして使う。
+     */
+    private function handleInvoicePaymentFailed(Event $event): void
+    {
+        $invoice = $event->data->object;
+
+        $office = Office::where('stripe_customer_id', $invoice->customer)->first();
+
+        if ($office === null) {
+            return;
+        }
+
+        $office->update(['stripe_payment_failed_at' => now()]);
+
+        $admins = PlatformAdmin::all();
+
+        if ($admins->isNotEmpty()) {
+            Notification::send($admins, new StripePaymentFailed(
+                office: $office,
+                amountDue: $invoice->amount_due ?? null,
+                hostedInvoiceUrl: $invoice->hosted_invoice_url ?? null,
+            ));
+        }
+    }
+
+    /**
+     * 支払いが成功（再試行での回収を含む）したら「支払いエラー」表示を解消する。
+     */
+    private function handleInvoicePaid(Event $event): void
+    {
+        $invoice = $event->data->object;
+
+        Office::where('stripe_customer_id', $invoice->customer)
+            ->whereNotNull('stripe_payment_failed_at')
+            ->first()
+            ?->update(['stripe_payment_failed_at' => null]);
     }
 }

@@ -10,16 +10,21 @@ useHighlightRow();
 const props = defineProps({
     offices: Object,
     filters: Object,
+    attentionCount: Number,
 });
 
 const search = ref(props.filters.search);
+const attentionOnly = ref(props.filters.attention_only);
 
 let searchDebounce = null;
 
 function applyFilters() {
     router.get(
         route('platform.offices.index'),
-        { search: search.value || undefined },
+        {
+            search: search.value || undefined,
+            attention_only: attentionOnly.value || undefined,
+        },
         { preserveState: true, replace: true },
     );
 }
@@ -29,9 +34,18 @@ watch(search, () => {
     searchDebounce = setTimeout(applyFilters, 300);
 });
 
+watch(attentionOnly, applyFilters);
+
 function resetFilters() {
     search.value = '';
+    attentionOnly.value = false;
 }
+
+const attentionLabels = {
+    payment_failed: { text: '支払いエラー', class: 'bg-red-100 text-red-800' },
+    no_plan: { text: 'プラン未設定', class: 'bg-amber-100 text-amber-800' },
+    trial_ending_soon: { text: 'トライアル終了間近', class: 'bg-blue-100 text-blue-800' },
+};
 
 // バックエンド（billing:generate-invoices／請求確定ボタン）と同じ優先順位：
 // 個別価格が設定されていればそれ、無ければプランの月額。
@@ -59,6 +73,23 @@ function actualBilledAmount(office) {
 
         <div class="py-8">
             <div class="mx-auto max-w-5xl sm:px-6 lg:px-8">
+                <div
+                    v-if="attentionCount > 0"
+                    class="mb-4 flex items-center justify-between rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-800"
+                >
+                    <span>
+                        請求まわりで確認が必要な事務所が{{ attentionCount }}件あります（支払いエラー・プラン未設定・トライアル終了間近）。
+                    </span>
+                    <button
+                        v-if="!attentionOnly"
+                        type="button"
+                        class="font-medium underline hover:text-amber-900"
+                        @click="attentionOnly = true"
+                    >
+                        絞り込んで確認する
+                    </button>
+                </div>
+
                 <!-- Filters -->
                 <div class="mb-4 flex flex-wrap items-center gap-3">
                     <input
@@ -67,8 +98,16 @@ function actualBilledAmount(office) {
                         placeholder="事務所名・事業所IDで検索"
                         class="w-64 rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     />
+                    <label class="flex items-center gap-1.5 text-sm text-gray-700">
+                        <input
+                            v-model="attentionOnly"
+                            type="checkbox"
+                            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                        />
+                        要対応のみ表示
+                    </label>
                     <button
-                        v-if="search"
+                        v-if="search || attentionOnly"
                         type="button"
                         class="text-sm text-gray-500 underline hover:text-gray-700"
                         @click="resetFilters"
@@ -116,6 +155,11 @@ function actualBilledAmount(office) {
                                         class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                                     >
                                         トライアル終了日
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                                    >
+                                        要対応
                                     </th>
                                     <th class="px-4 py-3" />
                                 </tr>
@@ -185,6 +229,22 @@ function actualBilledAmount(office) {
                                                 : '-'
                                         }}
                                     </td>
+                                    <td class="px-4 py-3">
+                                        <div
+                                            v-if="office.billing_attention_reasons.length > 0"
+                                            class="flex flex-wrap gap-1"
+                                        >
+                                            <span
+                                                v-for="reason in office.billing_attention_reasons"
+                                                :key="reason"
+                                                class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                                                :class="attentionLabels[reason].class"
+                                            >
+                                                {{ attentionLabels[reason].text }}
+                                            </span>
+                                        </div>
+                                        <span v-else class="text-gray-300">-</span>
+                                    </td>
                                     <td class="px-4 py-3 text-right">
                                         <Link
                                             :href="
@@ -201,12 +261,12 @@ function actualBilledAmount(office) {
                                 </tr>
                                 <tr v-if="offices.data.length === 0">
                                     <td
-                                        colspan="8"
+                                        colspan="9"
                                         class="px-4 py-12 text-center text-sm text-gray-500"
                                     >
                                         条件に一致する事務所がありません。
                                         <button
-                                            v-if="search"
+                                            v-if="search || attentionOnly"
                                             type="button"
                                             class="ml-1 text-indigo-600 underline hover:text-indigo-800"
                                             @click="resetFilters"

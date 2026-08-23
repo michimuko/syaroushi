@@ -88,6 +88,15 @@ const presets = {
     premium: props.availableModules.map((m) => m.value),
 };
 
+const attentionMessages = {
+    payment_failed:
+        'Stripeでの決済に失敗しています。カード情報や請求書の状況を確認してください（支払いが成功すると自動的に解消されます）。',
+    no_plan:
+        'トライアルが終了していますが、料金プランが割り当てられていません。下のフォームでプランまたは個別価格を設定してください（設定しないと月次の請求記録が生成されません）。',
+    trial_ending_soon:
+        'トライアル終了日が近づいています（7日以内）。契約継続の意思確認や、必要に応じたトライアル延長を検討してください。',
+};
+
 const applyPreset = (key) => {
     form.enabled_modules = [...presets[key]];
 };
@@ -117,6 +126,19 @@ const submit = () => {
 
         <div class="py-8">
             <div class="mx-auto max-w-2xl sm:px-6 lg:px-8">
+                <div
+                    v-if="office.billing_attention_reasons.length > 0"
+                    class="mb-4 space-y-2"
+                >
+                    <div
+                        v-for="reason in office.billing_attention_reasons"
+                        :key="reason"
+                        class="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-800"
+                    >
+                        {{ attentionMessages[reason] }}
+                    </div>
+                </div>
+
                 <div class="rounded-lg bg-white p-6 shadow-sm">
                     <div class="mb-6 text-sm text-gray-500">
                         事務所番号：

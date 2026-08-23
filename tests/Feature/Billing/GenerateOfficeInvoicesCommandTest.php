@@ -101,6 +101,7 @@ test('it skips offices with an active Stripe subscription (Stripe is the source 
         'is_active' => true,
         'trial_ends_at' => null,
         'billing_plan_id' => $plan->id,
+        'stripe_subscription_id' => 'sub_1',
         'stripe_subscription_status' => 'active',
     ]);
     Client::factory()->for($office)->create(['status' => ClientStatus::Active]);
@@ -108,6 +109,39 @@ test('it skips offices with an active Stripe subscription (Stripe is the source 
     $this->artisan('billing:generate-invoices')->assertExitCode(0);
 
     expect(OfficeInvoice::where('office_id', $office->id)->exists())->toBeFalse();
+});
+
+test('it still skips offices whose Stripe subscription is past_due (Stripe already invoiced them, avoids a duplicate DB invoice)', function () {
+    $plan = BillingPlan::factory()->create(['monthly_price' => 14800]);
+    $office = Office::factory()->create([
+        'is_active' => true,
+        'trial_ends_at' => null,
+        'billing_plan_id' => $plan->id,
+        'stripe_subscription_id' => 'sub_1',
+        'stripe_subscription_status' => 'past_due',
+    ]);
+    Client::factory()->for($office)->create(['status' => ClientStatus::Active]);
+
+    $this->artisan('billing:generate-invoices')->assertExitCode(0);
+
+    expect(OfficeInvoice::where('office_id', $office->id)->exists())->toBeFalse();
+});
+
+test('it resumes generating DB invoices once a Stripe subscription is canceled', function () {
+    $plan = BillingPlan::factory()->create(['name' => 'スタンダード', 'monthly_price' => 6800]);
+    $office = Office::factory()->create([
+        'is_active' => true,
+        'trial_ends_at' => null,
+        'billing_plan_id' => $plan->id,
+        'stripe_subscription_id' => 'sub_1',
+        'stripe_subscription_status' => 'canceled',
+    ]);
+    Client::factory()->for($office)->create(['status' => ClientStatus::Active]);
+
+    $this->artisan('billing:generate-invoices')->assertExitCode(0);
+
+    $invoice = OfficeInvoice::where('office_id', $office->id)->sole();
+    expect($invoice->amount)->toBe(6800);
 });
 
 test('running it twice does not duplicate invoices for the same period', function () {
