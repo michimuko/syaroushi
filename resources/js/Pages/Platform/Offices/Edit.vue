@@ -1,8 +1,11 @@
 <script setup>
+import { ref } from 'vue';
 import PlatformAuthenticatedLayout from '@/Layouts/PlatformAuthenticatedLayout.vue';
 import Checkbox from '@/Components/Checkbox.vue';
+import DangerButton from '@/Components/DangerButton.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
+import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
@@ -14,7 +17,29 @@ const props = defineProps({
     assignableBillingPlans: Array,
     usage: Object,
     exceededLimits: Array,
+    canConfirmBilling: Boolean,
 });
+
+const effectiveMonthlyPrice =
+    props.office.custom_monthly_price ?? props.office.billing_plan?.monthly_price ?? null;
+
+const confirmingBillingSync = ref(false);
+const billingSyncForm = useForm({});
+
+const confirmBillingSync = () => {
+    confirmingBillingSync.value = true;
+};
+
+const closeBillingSyncModal = () => {
+    confirmingBillingSync.value = false;
+};
+
+const syncBilling = () => {
+    billingSyncForm.post(route('platform.offices.sync-billing', props.office.id), {
+        preserveScroll: true,
+        onSuccess: () => closeBillingSyncModal(),
+    });
+};
 
 const form = useForm({
     name: props.office.name,
@@ -315,7 +340,76 @@ const submit = () => {
                         </div>
                     </form>
                 </div>
+
+                <div
+                    v-if="canConfirmBilling"
+                    class="mt-6 rounded-lg bg-white p-6 shadow-sm"
+                >
+                    <h3 class="text-sm font-semibold text-gray-700">
+                        Stripe請求
+                    </h3>
+                    <p class="mt-1 text-xs text-gray-500">
+                        Stripeで定期契約中の事務所です。「請求確定」を押すと、現在保存されている
+                        設定金額（個別値引きがあればそちら優先、無ければ選択中プランの月額）を
+                        Stripeのサブスクリプション価格に反映し、差額をその場で即時請求します。
+                        プラン・個別価格を変更した場合は、先に上のフォームで保存してから実行してください。
+                    </p>
+
+                    <div
+                        class="mt-3 flex items-center justify-between rounded-md bg-gray-50 p-3"
+                    >
+                        <span class="text-sm text-gray-600">
+                            現在の設定金額（保存済みの値）
+                        </span>
+                        <span class="text-lg font-semibold text-gray-900">
+                            {{
+                                effectiveMonthlyPrice !== null
+                                    ? `¥${effectiveMonthlyPrice.toLocaleString()}/月`
+                                    : '未設定'
+                            }}
+                        </span>
+                    </div>
+
+                    <div class="mt-4 flex justify-end">
+                        <DangerButton
+                            type="button"
+                            :disabled="effectiveMonthlyPrice === null"
+                            @click="confirmBillingSync"
+                        >
+                            請求確定
+                        </DangerButton>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <Modal :show="confirmingBillingSync" @close="closeBillingSyncModal">
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900">
+                    「{{ office.name }}」に¥{{
+                        effectiveMonthlyPrice?.toLocaleString()
+                    }}/月を請求確定しますか？
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-600">
+                    Stripeのサブスクリプション価格をこの金額に同期し、差額をその場で
+                    保存済みの支払い方法へ即時請求します。この操作は取り消せません。
+                </p>
+
+                <div class="mt-6 flex justify-end gap-3">
+                    <SecondaryButton @click="closeBillingSyncModal">
+                        キャンセル
+                    </SecondaryButton>
+
+                    <DangerButton
+                        :class="{ 'opacity-25': billingSyncForm.processing }"
+                        :disabled="billingSyncForm.processing"
+                        @click="syncBilling"
+                    >
+                        請求確定を実行する
+                    </DangerButton>
+                </div>
+            </div>
+        </Modal>
     </PlatformAuthenticatedLayout>
 </template>

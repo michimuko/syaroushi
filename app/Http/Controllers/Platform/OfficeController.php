@@ -10,6 +10,7 @@ use App\Models\BillingPlan;
 use App\Models\BillingSetting;
 use App\Models\Office;
 use App\Models\User;
+use App\Services\Stripe\StripeSubscriptionGateway;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 /**
  * 運営者(platformガード)が顧客(office)を管理するコントローラー。
@@ -143,6 +145,7 @@ class OfficeController extends Controller
                 'userCount' => $office->currentUserCount(),
             ],
             'exceededLimits' => $office->exceedsPlanLimits(),
+            'canConfirmBilling' => $office->hasActiveStripeSubscription(),
         ]);
     }
 
@@ -171,5 +174,62 @@ class OfficeController extends Controller
         return redirect()->route('platform.offices.index', $page > 1 ? ['page' => $page] : [])
             ->with('success', '事務所情報を更新しました。')
             ->with('highlightId', $office->id);
+    }
+
+    /**
+     * 「請求確定」：現在設定されている金額（個別値引きがあればそれ、無ければプラン標準額）を
+     * Stripeのサブスクリプション価格に同期し、差額をその場でプロレーション請求する。
+     * Stripeで定期契約が始まっていない事務所（未契約・トライアル中）は対象外
+     * （月次請求バッチ側でDB上の請求記録を作る運用のまま）。
+     */
+    public function syncBilling(Office $office, StripeSubscriptionGateway $gateway): RedirectResponse
+    {
+        $office->loadMissing('billingPlan');
+
+        if (! $office->hasActiveStripeSubscription() || $office->stripe_subscription_id === null) {
+            return back()->with('error', 'この事務所はStripeで定期契約されていないため、請求確定はできません。');
+        }
+
+        $amount = $office->custom_monthly_price ?? $office->billingPlan?->monthly_price;
+
+        if ($amount === null) {
+            return back()->with('error', '請求金額を決定できません。料金プランまたは個別価格を設定してください。');
+        }
+
+        $priceId = $office->custom_monthly_price === null ? $office->billingPlan?->stripe_price_id : null;
+
+        if ($priceId === null && $office->custom_monthly_price === null) {
+            return back()->with('error', '割り当てられているプランにStripeの価格が設定されていません。');
+        }
+
+        $productId = null;
+        if ($priceId === null && $office->billingPlan?->stripe_price_id !== null) {
+            $productId = $gateway->productIdForPrice($office->billingPlan->stripe_price_id);
+        }
+
+        try {
+            $result = $gateway->syncSubscriptionPrice(
+                subscriptionId: $office->stripe_subscription_id,
+                priceId: $priceId,
+                unitAmountYen: $priceId === null ? $amount : null,
+                productId: $productId,
+                productFallbackName: $office->name.' - '.($office->billingPlan?->name ?? 'カスタムプラン'),
+            );
+        } catch (Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Stripeへの反映に失敗しました：'.$e->getMessage());
+        }
+
+        $formattedAmount = number_format($amount);
+
+        if ($result['invoice_status'] === 'paid') {
+            return back()->with('success', "設定金額（¥{$formattedAmount}/月）をStripeの請求に反映し、即時決済しました。");
+        }
+
+        return back()->with(
+            'error',
+            "Stripeの請求には反映しましたが、即時決済は完了していません（請求書ステータス：{$result['invoice_status']}）。支払い方法をご確認ください。",
+        );
     }
 }

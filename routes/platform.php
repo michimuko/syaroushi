@@ -19,6 +19,7 @@ Route::prefix('admin')->name('platform.')->group(function () {
     Route::middleware('auth:platform')->group(function () {
         Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
         Route::resource('offices', OfficeController::class)->except(['show', 'destroy']);
+        Route::post('offices/{office}/sync-billing', [OfficeController::class, 'syncBilling'])->name('offices.sync-billing');
         Route::resource('billing-plans', BillingPlanController::class)->only(['index', 'store', 'update']);
         Route::put('billing-settings', [BillingSettingController::class, 'update'])->name('billing-settings.update');
     });
