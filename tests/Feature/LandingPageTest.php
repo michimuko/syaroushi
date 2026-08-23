@@ -25,3 +25,11 @@ test('the manual PDF can be downloaded from the landing page without authenticat
     $response->assertOk();
     $response->assertHeader('content-type', 'application/pdf');
 });
+
+test('the "導入について問い合わせる" button pre-fills a mailto body with a greeting and a request for questions', function () {
+    $response = $this->get('/');
+
+    $response->assertOk();
+    $response->assertSee(urlencode("キゲンバン管理者様\n"), false);
+    $response->assertSee(urlencode('（ご質問、ご要望等ございましたら、以下にご記載ください。）'), false);
+});

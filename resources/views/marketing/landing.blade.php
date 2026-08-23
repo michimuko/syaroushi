@@ -510,6 +510,12 @@
             </div>
         </section>
 
+        @php
+            $inquirySubject = '導入についての問い合わせ';
+            $inquiryBody = "キゲンバン管理者様\n"
+                ."（ご質問、ご要望等ございましたら、以下にご記載ください。）\n";
+            $inquiryMailto = 'mailto:'.$contactEmail.'?subject='.urlencode($inquirySubject).'&body='.urlencode($inquiryBody);
+        @endphp
         {{-- 最終CTA --}}
         <section class="mx-auto max-w-6xl px-6 py-20">
             <div class="reveal relative overflow-hidden rounded-2xl bg-indigo-600 px-8 py-14 text-center sm:px-16">
@@ -525,7 +531,7 @@
                         <a href="{{ route('register') }}" class="w-full rounded-md bg-white px-8 py-3 text-center text-sm font-semibold text-indigo-700 shadow-sm hover:bg-indigo-50 sm:w-auto transition hover:-translate-y-0.5">
                             無料トライアルを始める
                         </a>
-                        <a href="mailto:{{ $contactEmail }}?subject={{ urlencode('導入についての問い合わせ') }}" class="w-full rounded-md border border-indigo-300 px-8 py-3 text-center text-sm font-semibold text-white hover:bg-indigo-500 sm:w-auto transition hover:-translate-y-0.5">
+                        <a href="{{ $inquiryMailto }}" class="w-full rounded-md border border-indigo-300 px-8 py-3 text-center text-sm font-semibold text-white hover:bg-indigo-500 sm:w-auto transition hover:-translate-y-0.5">
                             導入について問い合わせる
                         </a>
                     </div>
