@@ -32,6 +32,14 @@ watch(search, () => {
 function resetFilters() {
     search.value = '';
 }
+
+// バックエンド（billing:generate-invoices／請求確定ボタン）と同じ優先順位：
+// 個別価格が設定されていればそれ、無ければプランの月額。
+function actualBilledAmount(office) {
+    const amount = office.custom_monthly_price ?? office.billing_plan?.monthly_price ?? null;
+
+    return amount !== null ? `¥${amount.toLocaleString()}/月` : '未確定';
+}
 </script>
 
 <template>
@@ -143,7 +151,10 @@ function resetFilters() {
                                         </Link>
                                     </td>
                                     <td class="px-4 py-3 text-gray-600">
-                                        {{ office.billing_plan?.name || '-' }}
+                                        <div>{{ office.billing_plan?.name || '-' }}</div>
+                                        <div class="text-xs text-gray-400">
+                                            実際請求額：{{ actualBilledAmount(office) }}
+                                        </div>
                                     </td>
                                     <td class="px-4 py-3 text-gray-600">
                                         {{ office.users_count }}

@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import PlatformAuthenticatedLayout from '@/Layouts/PlatformAuthenticatedLayout.vue';
 import Checkbox from '@/Components/Checkbox.vue';
 import DangerButton from '@/Components/DangerButton.vue';
@@ -20,7 +20,8 @@ const props = defineProps({
     canConfirmBilling: Boolean,
 });
 
-const effectiveMonthlyPrice =
+// 「Stripe請求」欄・確認モーダル用：DBに保存済みの値から計算する（sync-billingが実際に読むのはこちら）
+const savedMonthlyPrice =
     props.office.custom_monthly_price ?? props.office.billing_plan?.monthly_price ?? null;
 
 const confirmingBillingSync = ref(false);
@@ -54,6 +55,20 @@ const form = useForm({
         props.availableModules.map((m) => m.value),
     billing_plan_id: props.office.billing_plan_id,
     custom_monthly_price: props.office.custom_monthly_price ?? '',
+});
+
+// 「実際請求額」：フォームの現在の入力内容（保存前でも）に基づくリアルタイム計算。
+// バックエンドと同じ優先順位：個別価格が入力されていればそれ、無ければ選択中プランの月額。
+const actualBilledAmount = computed(() => {
+    if (form.custom_monthly_price !== '' && form.custom_monthly_price !== null) {
+        return Number(form.custom_monthly_price);
+    }
+
+    const plan = props.assignableBillingPlans.find(
+        (p) => p.id === form.billing_plan_id,
+    );
+
+    return plan?.monthly_price ?? null;
 });
 
 const planLabel = (plan) => {
@@ -288,6 +303,24 @@ const submit = () => {
                                 />
                             </div>
 
+                            <div
+                                class="mt-4 flex items-center justify-between rounded-md bg-indigo-50 p-3"
+                            >
+                                <span class="text-sm font-medium text-indigo-900">
+                                    実際請求額
+                                </span>
+                                <span class="text-lg font-semibold text-indigo-900">
+                                    {{
+                                        actualBilledAmount !== null
+                                            ? `¥${actualBilledAmount.toLocaleString()}/月`
+                                            : '未確定'
+                                    }}
+                                </span>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">
+                                上記のプラン・個別価格の入力内容から計算した金額です（未保存の変更もこの場で反映されます）。「更新する」で保存すると、月次の請求記録やStripeへの反映もこの金額が基準になります。
+                            </p>
+
                             <div class="mt-4 rounded-md bg-gray-50 p-3 text-sm">
                                 <div class="flex items-center justify-between">
                                     <span class="text-gray-600">
@@ -359,12 +392,12 @@ const submit = () => {
                         class="mt-3 flex items-center justify-between rounded-md bg-gray-50 p-3"
                     >
                         <span class="text-sm text-gray-600">
-                            現在の設定金額（保存済みの値）
+                            実際請求額（保存済みの値）
                         </span>
                         <span class="text-lg font-semibold text-gray-900">
                             {{
-                                effectiveMonthlyPrice !== null
-                                    ? `¥${effectiveMonthlyPrice.toLocaleString()}/月`
+                                savedMonthlyPrice !== null
+                                    ? `¥${savedMonthlyPrice.toLocaleString()}/月`
                                     : '未設定'
                             }}
                         </span>
@@ -373,7 +406,7 @@ const submit = () => {
                     <div class="mt-4 flex justify-end">
                         <DangerButton
                             type="button"
-                            :disabled="effectiveMonthlyPrice === null"
+                            :disabled="savedMonthlyPrice === null"
                             @click="confirmBillingSync"
                         >
                             請求確定
@@ -387,7 +420,7 @@ const submit = () => {
             <div class="p-6">
                 <h2 class="text-lg font-medium text-gray-900">
                     「{{ office.name }}」に¥{{
-                        effectiveMonthlyPrice?.toLocaleString()
+                        savedMonthlyPrice?.toLocaleString()
                     }}/月を請求確定しますか？
                 </h2>
 
