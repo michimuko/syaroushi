@@ -46,7 +46,16 @@ const saveToTask = () => {
 <template>
     <Head title="年次有給休暇の付与日数計算" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            {
+                label: '計算アシスタント',
+                href: route('calc-assistant.index'),
+            },
+            { label: '年次有給休暇の付与日数計算' },
+        ]"
+    >
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 年次有給休暇の付与日数計算

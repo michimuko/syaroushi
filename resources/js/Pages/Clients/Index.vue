@@ -73,7 +73,12 @@ function resetFilters() {
 <template>
     <Head title="顧問先一覧" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            { label: '顧問先' },
+        ]"
+    >
         <template #header>
             <div class="flex items-center justify-between">
                 <h2

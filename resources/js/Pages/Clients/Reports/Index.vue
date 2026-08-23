@@ -41,7 +41,14 @@ const submit = () => {
 <template>
     <Head :title="`${client.name}の進捗レポート`" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            { label: '顧問先', href: route('clients.index') },
+            { label: client.name, href: route('clients.edit', client.id) },
+            { label: '進捗レポート' },
+        ]"
+    >
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 {{ client.name }}の進捗レポート

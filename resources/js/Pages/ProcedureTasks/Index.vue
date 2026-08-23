@@ -142,7 +142,12 @@ function cancelRevert() {
 <template>
     <Head title="タスク一覧" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            { label: 'タスク' },
+        ]"
+    >
         <template #header>
             <div class="flex items-center justify-between">
                 <h2

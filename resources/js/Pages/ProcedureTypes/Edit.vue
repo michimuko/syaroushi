@@ -61,7 +61,16 @@ const submit = () => {
 <template>
     <Head :title="`${procedureType.name}の編集`" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            {
+                label: '手続き種別マスタ',
+                href: route('procedure-types.index'),
+            },
+            { label: procedureType.name },
+        ]"
+    >
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 {{ procedureType.name }}の編集

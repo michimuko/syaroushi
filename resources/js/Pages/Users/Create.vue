@@ -46,7 +46,13 @@ const submit = () => {
 <template>
     <Head title="ユーザーの新規登録" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            { label: 'ユーザー管理', href: route('users.index') },
+            { label: '新規登録' },
+        ]"
+    >
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 ユーザーの新規登録

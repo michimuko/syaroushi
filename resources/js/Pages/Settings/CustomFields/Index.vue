@@ -19,7 +19,12 @@ const taskFields = computed(() =>
 <template>
     <Head title="カスタムフィールド設定" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            { label: 'カスタムフィールド設定' },
+        ]"
+    >
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 カスタムフィールド設定

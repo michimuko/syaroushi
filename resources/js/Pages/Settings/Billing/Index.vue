@@ -33,7 +33,12 @@ const startCheckout = () => {
 <template>
     <Head title="契約・請求" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            { label: '契約・請求' },
+        ]"
+    >
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 契約・請求

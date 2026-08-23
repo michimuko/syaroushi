@@ -60,7 +60,15 @@ const submit = () => {
 <template>
     <Head title="事務所情報の編集" />
 
-    <PlatformAuthenticatedLayout>
+    <PlatformAuthenticatedLayout
+        :breadcrumbs="[
+            {
+                label: '顧客事務所一覧',
+                href: route('platform.offices.index'),
+            },
+            { label: office.name },
+        ]"
+    >
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 事務所情報の編集

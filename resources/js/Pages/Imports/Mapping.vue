@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
@@ -14,6 +15,20 @@ const props = defineProps({
     validateRoute: String,
     backRoute: String,
 });
+
+const parentLabel = computed(() =>
+    props.title.includes('顧問先') ? '顧問先' : 'タスク',
+);
+
+const breadcrumbs = computed(() => [
+    { label: 'ダッシュボード', href: route('dashboard') },
+    {
+        label: parentLabel.value,
+        href: route(parentLabel.value === '顧問先' ? 'clients.index' : 'tasks.index'),
+    },
+    { label: 'Excelインポート', href: props.backRoute },
+    { label: '列の割り当て' },
+]);
 
 const initialMapping = {};
 props.headers.forEach((_, index) => {
@@ -33,7 +48,7 @@ function submit() {
 <template>
     <Head :title="title" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout :breadcrumbs="breadcrumbs">
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 {{ title }}

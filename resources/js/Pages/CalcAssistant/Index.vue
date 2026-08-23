@@ -30,7 +30,12 @@ const tools = [
 <template>
     <Head title="計算アシスタント" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            { label: '計算アシスタント' },
+        ]"
+    >
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 計算アシスタント

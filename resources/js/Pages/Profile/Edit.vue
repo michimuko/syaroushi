@@ -18,7 +18,12 @@ defineProps({
 <template>
     <Head title="プロフィール" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            { label: 'プロフィール' },
+        ]"
+    >
         <template #header>
             <h2
                 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200"

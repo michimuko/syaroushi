@@ -1,9 +1,17 @@
 <script setup>
 import { ref, watch } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
+import Breadcrumbs from '@/Components/Breadcrumbs.vue';
 import PushNotificationToggle from '@/Components/PushNotificationToggle.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link, usePage } from '@inertiajs/vue3';
+
+defineProps({
+    breadcrumbs: {
+        type: Array,
+        default: () => [],
+    },
+});
 
 const showingSidebar = ref(false);
 
@@ -240,8 +248,12 @@ watch(
             </div>
 
             <!-- Page Heading -->
-            <header class="bg-white shadow" v-if="$slots.header">
+            <header
+                class="bg-white shadow"
+                v-if="$slots.header || breadcrumbs.length > 0"
+            >
                 <div class="px-4 py-6 sm:px-6 lg:px-8">
+                    <Breadcrumbs :items="breadcrumbs" />
                     <slot name="header" />
                 </div>
             </header>

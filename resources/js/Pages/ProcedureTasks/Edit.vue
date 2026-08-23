@@ -73,7 +73,13 @@ function save() {
 <template>
     <Head :title="`${task.title}の詳細`" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            { label: 'タスク', href: route('tasks.index') },
+            { label: task.title },
+        ]"
+    >
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 {{ task.title }}

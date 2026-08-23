@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -11,6 +12,16 @@ const props = defineProps({
     uploadRoute: String,
     backRoute: String,
 });
+
+const parentLabel = computed(() =>
+    props.title.includes('顧問先') ? '顧問先' : 'タスク',
+);
+
+const breadcrumbs = computed(() => [
+    { label: 'ダッシュボード', href: route('dashboard') },
+    { label: parentLabel.value, href: props.backRoute },
+    { label: 'Excelインポート' },
+]);
 
 const form = useForm({
     file: null,
@@ -28,7 +39,7 @@ function submit() {
 <template>
     <Head :title="title" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout :breadcrumbs="breadcrumbs">
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 {{ title }}

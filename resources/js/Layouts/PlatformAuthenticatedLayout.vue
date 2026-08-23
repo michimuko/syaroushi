@@ -1,6 +1,14 @@
 <script setup>
 import { ref, watch } from 'vue';
+import Breadcrumbs from '@/Components/Breadcrumbs.vue';
 import { Link, usePage } from '@inertiajs/vue3';
+
+defineProps({
+    breadcrumbs: {
+        type: Array,
+        default: () => [],
+    },
+});
 
 const page = usePage();
 const flashMessage = ref('');
@@ -65,8 +73,12 @@ watch(
             </div>
         </nav>
 
-        <header class="bg-white shadow" v-if="$slots.header">
+        <header
+            class="bg-white shadow"
+            v-if="$slots.header || breadcrumbs.length > 0"
+        >
             <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                <Breadcrumbs :items="breadcrumbs" />
                 <slot name="header" />
             </div>
         </header>

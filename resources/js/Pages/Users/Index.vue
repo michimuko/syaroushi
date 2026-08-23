@@ -68,7 +68,12 @@ function destroyUser() {
 <template>
     <Head title="ユーザー一覧" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            { label: 'ユーザー管理' },
+        ]"
+    >
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">

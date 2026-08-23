@@ -42,7 +42,12 @@ const filteredProcedureTypes = computed(() => {
 <template>
     <Head title="手続き種別マスタ" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            { label: '手続き種別マスタ' },
+        ]"
+    >
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 手続き種別マスタ

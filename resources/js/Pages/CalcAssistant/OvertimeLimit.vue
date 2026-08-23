@@ -75,7 +75,16 @@ const badgeClass = (violated) =>
 <template>
     <Head title="時間外労働時間・36協定上限チェック" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            {
+                label: '計算アシスタント',
+                href: route('calc-assistant.index'),
+            },
+            { label: '時間外労働時間・36協定上限チェック' },
+        ]"
+    >
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 時間外労働時間・36協定上限チェック

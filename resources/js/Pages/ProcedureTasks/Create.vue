@@ -61,7 +61,13 @@ const submit = () => {
 <template>
     <Head title="タスクの新規作成" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            { label: 'タスク', href: route('tasks.index') },
+            { label: '新規作成' },
+        ]"
+    >
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 タスクの新規作成

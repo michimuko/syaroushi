@@ -45,7 +45,13 @@ const submit = () => {
 <template>
     <Head title="ユーザー情報の編集" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            { label: 'ユーザー管理', href: route('users.index') },
+            { label: targetUser.name },
+        ]"
+    >
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 ユーザー情報の編集

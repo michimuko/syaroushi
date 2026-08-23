@@ -82,7 +82,12 @@ function revokeToken() {
 <template>
     <Head title="デスクトップ通知アプリ" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            { label: 'デスクトップ通知アプリ' },
+        ]"
+    >
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 デスクトップ通知アプリ

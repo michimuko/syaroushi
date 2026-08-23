@@ -80,7 +80,16 @@ function weekdayLabel(dateStr) {
 <template>
     <Head title="勤務シフト表作成支援" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+        :breadcrumbs="[
+            { label: 'ダッシュボード', href: route('dashboard') },
+            {
+                label: '計算アシスタント',
+                href: route('calc-assistant.index'),
+            },
+            { label: '勤務シフト表作成支援' },
+        ]"
+    >
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 勤務シフト表作成支援
