@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>業務進捗・期限管理SaaS 操作マニュアル</title>
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  font-family: "Noto Sans CJK JP", "Noto Sans JP", sans-serif;
+  color: #1e293b;
+  font-size: 10pt;
+  line-height: 1.65;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  background: #ffffff;
+}
+.content-wrap { width: 210mm; }
+
+/* ---------- cover ---------- */
+.cover {
+  width: 210mm; height: 297mm;
+  background: linear-gradient(150deg, #1e1b4b 0%, #312e81 45%, #4338ca 100%);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  page-break-after: always;
+}
+.cover-inner { text-align: center; padding: 0 20mm; }
+.cover .brand-mark { display: flex; align-items: center; justify-content: center; gap: 4mm; margin-bottom: 14mm; }
+.cover .brand-mark .icon {
+  width: 12mm; height: 12mm; border-radius: 3mm;
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4);
+  display: flex; align-items: center; justify-content: center; font-size: 16pt; font-weight: 700;
+}
+.cover .brand-mark .name { font-size: 13pt; font-weight: 700; letter-spacing: 0.03em; }
+.cover-badge {
+  display: inline-block; font-size: 9pt; font-weight: 700; letter-spacing: 0.1em;
+  background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 999px; padding: 1.5mm 6mm; margin-bottom: 8mm;
+}
+.cover-title { font-size: 26pt; font-weight: 700; line-height: 1.5; margin: 0 0 10mm; }
+.cover-sub { font-size: 11pt; color: #e0e7ff; margin: 0 0 3mm; }
+.cover-version { font-size: 9.5pt; color: #a5b4fc; }
+
+/* ---------- toc ---------- */
+.toc-page { width: 210mm; min-height: 297mm; padding: 22mm 22mm; page-break-after: always; }
+.toc-heading { font-size: 18pt; color: #1e1b4b; border-bottom: 0.8mm solid #4f46e5; padding-bottom: 3mm; margin-bottom: 8mm; }
+.toc-list { list-style: none; margin: 0; padding: 0; }
+.toc-list li {
+  display: flex; align-items: baseline; gap: 4mm;
+  padding: 3.2mm 2mm; border-bottom: 0.2mm dashed #cbd5e1; font-size: 11pt;
+}
+.toc-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 8mm; height: 8mm; border-radius: 50%; background: #4f46e5; color: #fff;
+  font-size: 9pt; font-weight: 700; flex-shrink: 0;
+}
+.toc-title { color: #1e293b; font-weight: 600; }
+
+/* ---------- chapters ---------- */
+.chapter { width: 210mm; min-height: 297mm; padding: 14mm 16mm 18mm; page-break-after: always; }
+.chapter:last-child { page-break-after: auto; }
+
+.chapter-band {
+  display: flex; align-items: center; gap: 5mm;
+  background: linear-gradient(120deg, #312e81, #4f46e5);
+  color: #fff; border-radius: 3mm; padding: 6mm 8mm; margin-bottom: 8mm;
+}
+.chapter-num {
+  width: 14mm; height: 14mm; border-radius: 50%;
+  background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.5);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14pt; font-weight: 700; flex-shrink: 0;
+}
+.chapter-title-wrap h1 { font-size: 15pt; margin: 0; font-weight: 700; }
+.chapter-sub { font-size: 9pt; color: #e0e7ff; margin: 1mm 0 0; }
+
+h2.h2 {
+  display: flex; align-items: center; gap: 3mm;
+  font-size: 12pt; font-weight: 700; color: #1e1b4b;
+  margin: 7mm 0 3.5mm; padding-bottom: 1.8mm; border-bottom: 0.5mm solid #c7d2fe;
+}
+h2.h2 .h2-tag {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 9mm; height: 6mm; padding: 0 1.5mm; border-radius: 1.2mm;
+  background: #eef2ff; color: #4338ca; font-size: 8.5pt; font-weight: 700;
+}
+h3.h3 { font-size: 10.5pt; font-weight: 700; color: #4338ca; margin: 5mm 0 2.5mm; }
+
+p.body-text { margin: 0 0 3mm; color: #334155; }
+.bullets { margin: 0 0 4mm; padding-left: 5mm; color: #334155; }
+.bullets li { margin-bottom: 1.8mm; }
+
+.numbered-steps { list-style: none; margin: 0 0 4mm; padding: 0; counter-reset: step; }
+.numbered-steps li {
+  display: flex; gap: 3mm; align-items: flex-start;
+  padding: 2.5mm 0; border-bottom: 0.2mm solid #f1f5f9;
+}
+.numbered-steps li:last-child { border-bottom: none; }
+.num-badge {
+  flex-shrink: 0; width: 6.5mm; height: 6.5mm; border-radius: 50%;
+  background: #4f46e5; color: #fff; font-size: 8.5pt; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; margin-top: 0.3mm;
+}
+.num-text { color: #334155; }
+
+/* ---------- callouts ---------- */
+.callout { border-radius: 2mm; padding: 3.5mm 4.5mm; margin: 0 0 4mm; border: 0.3mm solid; }
+.callout-head {
+  font-size: 8.2pt; font-weight: 700; margin-bottom: 1.8mm;
+  display: inline-flex; align-items: center;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 0.6mm 2.5mm; border-radius: 999px;
+}
+.callout-body { font-size: 9.2pt; }
+.callout-tip     { background: #f0fdf4; border-color: #bbf7d0; }
+.callout-tip .callout-head     { color: #fff; background: #16a34a; }
+.callout-tip .callout-body     { color: #166534; }
+.callout-warn    { background: #fef2f2; border-color: #fecaca; }
+.callout-warn .callout-head    { color: #fff; background: #dc2626; }
+.callout-warn .callout-body    { color: #7f1d1d; }
+.callout-perm    { background: #eff6ff; border-color: #bfdbfe; }
+.callout-perm .callout-head    { color: #fff; background: #2563eb; }
+.callout-perm .callout-body    { color: #1e3a8a; }
+.callout-privacy { background: #faf5ff; border-color: #e9d5ff; }
+.callout-privacy .callout-head { color: #fff; background: #9333ea; }
+.callout-privacy .callout-body { color: #581c87; }
+.callout-info    { background: #f8fafc; border-color: #e2e8f0; }
+.callout-info .callout-head    { color: #fff; background: #64748b; }
+.callout-info .callout-body    { color: #334155; }
+
+/* ---------- tables ---------- */
+table.data-table { width: 100%; border-collapse: collapse; font-size: 8.8pt; margin: 0 0 4mm; }
+table.data-table th {
+  background: #4338ca; color: #fff; text-align: left; padding: 2.3mm 3mm; font-weight: 700;
+}
+table.data-table td {
+  padding: 2.3mm 3mm; border-bottom: 0.2mm solid #e2e8f0; color: #334155; vertical-align: top;
+}
+table.data-table tr:nth-child(even) td { background: #f8fafc; }
+
+/* ---------- image placeholder ---------- */
+.image-placeholder {
+  border: 0.5mm dashed #94a3b8; border-radius: 2mm; background: #f8fafc;
+  padding: 6mm; text-align: center; margin: 0 0 4mm;
+}
+.ph-label {
+  display: inline-block; font-size: 8pt; font-weight: 700; color: #64748b;
+  background: #e2e8f0; border-radius: 999px; padding: 0.8mm 3mm; margin-bottom: 2mm;
+  letter-spacing: 0.04em;
+}
+.ph-text { font-size: 9pt; color: #475569; }
+
+/* ---------- inline refs ---------- */
+.btn-ref {
+  display: inline-block; font-size: 8.6pt; font-weight: 700; padding: 0.3mm 2.2mm;
+  border-radius: 1mm; margin: 0 0.5mm; white-space: nowrap;
+}
+.btn-primary { background: #eef2ff; color: #3730a3; border: 0.25mm solid #c7d2fe; }
+.btn-danger  { background: #fef2f2; color: #b91c1c; border: 0.25mm solid #fecaca; }
+.btn-link    { background: #f8fafc; color: #4338ca; border: 0.25mm solid #e2e8f0; text-decoration: underline; }
+
+/* ---------- status legend ---------- */
+.legend-row { display: flex; flex-wrap: wrap; gap: 4mm; margin: 0 0 4mm; padding: 3mm 4mm; background: #f8fafc; border-radius: 2mm; }
+.legend-item { display: flex; align-items: center; gap: 1.8mm; font-size: 8.8pt; color: #334155; }
+.swatch { width: 3.2mm; height: 3.2mm; border-radius: 50%; display: inline-block; }
+
+/* ---------- faq ---------- */
+.faq-item { margin-bottom: 4mm; }
+.faq-q, .faq-a { display: flex; gap: 2.5mm; font-size: 9.3pt; align-items: flex-start; margin-bottom: 1mm; }
+.qa-tag {
+  flex-shrink: 0; width: 5.5mm; height: 5.5mm; border-radius: 1mm; font-size: 8pt; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; color: #fff;
+}
+.q-tag { background: #4f46e5; }
+.a-tag { background: #16a34a; }
+.faq-q { font-weight: 700; color: #1e1b4b; }
+.faq-a { color: #475569; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="cover-inner">
+    <div class="brand-mark"><div class="icon">✓</div><div class="name">社労士業務進捗管理</div></div>
+    <div class="cover-badge">操作マニュアル</div>
+    <h1 class="cover-title">業務進捗・期限管理SaaS<br>操作マニュアル</h1>
+    <p class="cover-sub">対象：ご契約事務所の所長（オーナー）・スタッフの皆様</p>
+    <p class="cover-version">2026年8月版</p>
+  </div>
+</div>
+
+<div class="toc-page"><h2 class="toc-heading">目次</h2><ol class="toc-list">
+<li><span class="toc-num">1</span><span class="toc-title">はじめに</span></li>
+<li><span class="toc-num">2</span><span class="toc-title">ログインと初期設定</span></li>
+<li><span class="toc-num">3</span><span class="toc-title">ダッシュボード</span></li>
+<li><span class="toc-num">4</span><span class="toc-title">顧問先管理</span></li>
+<li><span class="toc-num">5</span><span class="toc-title">手続き種別マスタ</span></li>
+<li><span class="toc-num">6</span><span class="toc-title">手続きタスクの管理</span></li>
+<li><span class="toc-num">7</span><span class="toc-title">カレンダー</span></li>
+<li><span class="toc-num">8</span><span class="toc-title">通知（期限アラート）</span></li>
+<li><span class="toc-num">9</span><span class="toc-title">計算アシスタント</span></li>
+<li><span class="toc-num">10</span><span class="toc-title">顧問先向け進捗レポート（PDF）</span></li>
+<li><span class="toc-num">11</span><span class="toc-title">Excelデータの移行</span></li>
+<li><span class="toc-num">12</span><span class="toc-title">カスタムフィールド設定</span></li>
+<li><span class="toc-num">13</span><span class="toc-title">ユーザー管理と権限</span></li>
+<li><span class="toc-num">14</span><span class="toc-title">契約・請求（オーナー向け）</span></li>
+<li><span class="toc-num">15</span><span class="toc-title">よくある質問・トラブルシューティング</span></li>
+</ol></div>
+
+<div class="chapter">
+  <div class="chapter-band">
+    <div class="chapter-num">1</div>
+    <div class="chapter-title-wrap">
+      <h1>はじめに</h1>
+      
+    </div>
+  </div>
+
+<h2 class="h2"><span class="h2-tag">1.1</span>本書について</h2>
+
+<p class="body-text">本書は、顧問先ごとの法定手続き（算定基礎届、労働保険年度更新、36協定届など）の進捗と期限を一元管理する業務進捗・期限管理SaaSの操作マニュアルです。画面ごとに、表示内容だけでなく<strong>「どのボタンを押すと何が起こるか」</strong>まで具体的に説明します。初めてお使いになる方は「2. ログインと初期設定」から順に読み進めてください。</p>
+
+<h2 class="h2"><span class="h2-tag">1.2</span>ご利用にあたっての前提</h2>
+
+<ul class="bullets"><li>本サービスは複数の社労士事務所が共通のシステムを利用する<strong>マルチテナントSaaS</strong>です。他事務所のデータが閲覧・混在することは構造的にありません。</li><li>アカウントには「<strong>オーナー</strong>（所長・管理者）」と「<strong>スタッフ</strong>（担当者）」の2種類があり、操作できる範囲が異なります（詳細は13章）。</li><li>推奨環境：Google Chrome または Microsoft Edge の最新版。スマートフォン・タブレットでも閲覧可能ですが、書類のアップロードやカレンダー編集はPCでの操作を推奨します。</li><li>利用できる機能（Excel移行・PDFレポート・計算アシスタント・カスタムフィールド等）は事務所ごとに運営者が設定しています。本書に記載の機能がサイドバーに見当たらない場合は、運営者までお問い合わせください。</li></ul>
+
+<h2 class="h2"><span class="h2-tag">1.3</span>画面全体の構成</h2>
+
+<p class="body-text">ログイン後は画面左側のサイドバーから各機能へアクセスします。サイドバーの主なメニューは以下のとおりです。</p>
+
+<table class="data-table"><thead><tr><th>メニュー</th><th>内容</th><th>対象</th></tr></thead><tbody><tr><td class="">ダッシュボード</td><td class="">期限が近いタスクの件数や担当者別の状況を一覧表示</td><td class="">全員</td></tr><tr><td class="">顧問先</td><td class="">顧問先企業の登録・編集・対象手続きの設定</td><td class="">全員</td></tr><tr><td class="">タスク</td><td class="">個別の手続き案件（タスク）の一覧・詳細・書類管理</td><td class="">全員</td></tr><tr><td class="">カレンダー</td><td class="">タスクを期限日ベースでカレンダー表示</td><td class="">全員</td></tr><tr><td class="">計算アシスタント</td><td class="">有給付与日数・36協定上限・シフト表の計算ツール</td><td class="">オプション機能有効時</td></tr><tr><td class="">手続き種別マスタ</td><td class="">全事務所共通の手続きルール（周期・通知タイミング）の確認・編集</td><td class="">全員（編集はオーナー等）</td></tr><tr><td class="">ユーザー管理</td><td class="">事務所内のアカウント管理</td><td class="">オーナー限定</td></tr><tr><td class="">カスタムフィールド設定</td><td class="">顧問先・タスクへの独自項目追加</td><td class="">オプション機能有効時・オーナー等</td></tr><tr><td class="">契約・請求</td><td class="">契約プラン・お支払い状況・請求履歴の確認</td><td class="">オーナー限定</td></tr></tbody></table>
+
+<div class="callout callout-tip">
+  <div class="callout-head">活用のヒント</div>
+  <div class="callout-body">画面右上または左下のアカウントメニューから<span class="btn-ref btn-primary">プロフィール</span><span class="btn-ref btn-primary">デスクトップ通知アプリ</span><span class="btn-ref btn-primary">ログアウト</span>を選択できます。</div>
+</div>
+
+</div>
+
+
+<div class="chapter">
+  <div class="chapter-band">
+    <div class="chapter-num">2</div>
+    <div class="chapter-title-wrap">
+      <h1>ログインと初期設定</h1>
+      
+    </div>
+  </div>
+
+<p class="body-text">事務所のオーナーアカウントは、運営者による契約手続き時に発行されます。スタッフのアカウントはオーナーが「ユーザー管理」画面から追加してください（13章参照）。</p>
+
+<ol class="numbered-steps"><li><span class="num-badge">1</span><span class="num-text">発行された<strong>事業所ID・ユーザーID・パスワード</strong>でログイン画面からログインします。<span class="btn-ref btn-primary">ログイン</span>ボタンを押すと、入力内容が正しければダッシュボード画面へ遷移します。事業所ID・ユーザーID・パスワードのいずれかが誤っている場合は、どの項目が誤っているかを特定できないよう、共通のエラーメッセージが表示されます（不正アクセス対策）。</span></li><li><span class="num-badge">2</span><span class="num-text">初回ログイン後、画面右上のアカウントメニューから<span class="btn-ref btn-primary">プロフィール</span>を開き、氏名・メールアドレス・パスワードを必要に応じて変更してください。<span class="btn-ref btn-primary">更新する</span>を押すと即座に反映され、画面右下に完了メッセージが一瞬表示されます。</span></li><li><span class="num-badge">3</span><span class="num-text">期限通知をブラウザのプッシュ通知でも受け取りたい場合は、サイドバー下部の通知トグルから許可を行ってください（8章参照）。</span></li></ol>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">ログイン画面（事業所ID・ユーザーID・パスワードを入力）</div>
+</div>
+
+</div>
+
+
+<div class="chapter">
+  <div class="chapter-band">
+    <div class="chapter-num">3</div>
+    <div class="chapter-title-wrap">
+      <h1>ダッシュボード</h1>
+      
+    </div>
+  </div>
+
+<p class="body-text">ログイン後、最初に表示される画面です。事務所全体の進捗状況を俯瞰できます。</p>
+
+<h2 class="h2"><span class="h2-tag">3.1</span>表示される情報</h2>
+
+<ul class="bullets"><li><strong>期限サマリ：</strong>「期限超過」「7日以内」「30日以内」の3つのカードに、未完了タスクの件数が表示されます。カードを<strong>クリックすると</strong>、該当するタスクだけに絞り込んだ一覧画面に自動的に遷移します。</li><li><strong>ステータス別件数：</strong>未着手／進行中／書類収集済／提出済／完了の5区分で、タスクの件数をバッジ表示します。</li><li><strong>担当者別ワークロード：</strong>担当者ごとの未完了タスク件数を横棒グラフで表示し、期限超過分は赤色で内訳表示します。担当者名を<strong>クリックすると</strong>、その担当者のタスク一覧に絞り込めます。</li><li><strong>手続き種別ごとの内訳：</strong>どの手続きが多く滞留しているかを横棒グラフで確認できます。項目を<strong>クリックすると</strong>該当する手続き種別のタスク一覧へ絞り込んだ状態で遷移します。</li><li><strong>期限が近いタスク：</strong>直近8件を、顧問先名・手続き名・期限日・ステータス・担当者とともに一覧表示します。行を<strong>クリックすると</strong>タスク詳細画面に移動します。</li></ul>
+
+<div class="callout callout-tip">
+  <div class="callout-head">活用のヒント</div>
+  <div class="callout-body">朝一番にダッシュボードを開き、「期限超過」件数がゼロであることを確認する運用にすると、期限漏れの早期発見につながります。</div>
+</div>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">ダッシュボード（期限サマリ・担当者別ワークロード等）</div>
+</div>
+
+</div>
+
+
+<div class="chapter">
+  <div class="chapter-band">
+    <div class="chapter-num">4</div>
+    <div class="chapter-title-wrap">
+      <h1>顧問先管理</h1>
+      
+    </div>
+  </div>
+
+<h2 class="h2"><span class="h2-tag">4.1</span>顧問先の一覧・検索</h2>
+
+<p class="body-text">サイドバー「顧問先」から一覧画面を開きます。顧問先名での検索、契約状況（契約中／契約終了）での絞り込みができます。</p>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">顧問先一覧画面</div>
+</div>
+
+<h2 class="h2"><span class="h2-tag">4.2</span>顧問先の新規登録</h2>
+
+<p class="body-text">一覧画面右上の<span class="btn-ref btn-primary">新規登録</span>ボタンから登録します。入力項目は以下のとおりです。</p>
+
+<table class="data-table"><thead><tr><th>項目</th><th>必須</th><th>備考</th></tr></thead><tbody><tr><td class="">顧問先名</td><td class="">○</td><td class=""></td></tr><tr><td class="">代表者名</td><td class=""></td><td class=""></td></tr><tr><td class="">契約開始日</td><td class=""></td><td class="">新規登録画面を開いた時点で<strong>本日の日付が初期値</strong>として自動入力されます。実際の契約開始日が異なる場合は変更してください。</td></tr><tr><td class="">電話番号</td><td class=""></td><td class=""></td></tr><tr><td class="">メールアドレス</td><td class=""></td><td class=""></td></tr><tr><td class="">住所</td><td class=""></td><td class=""></td></tr><tr><td class="">ステータス</td><td class=""></td><td class="">契約中／契約終了。初期値は「契約中」</td></tr><tr><td class="">担当者</td><td class=""></td><td class="">自事務所のスタッフ・オーナーから選択。未割当も可</td></tr><tr><td class="">メモ</td><td class=""></td><td class="">自由入力。マイナンバーらしき文字列を入力すると警告が表示されます（入力自体は禁止されません）</td></tr><tr><td class="">カスタムフィールド</td><td class=""></td><td class="">事務所ごとに追加した独自項目（12章参照）</td></tr></tbody></table>
+
+<p class="body-text">必須項目を入力し<span class="btn-ref btn-primary">登録する</span>ボタンを押すと、新しい顧問先が作成され<strong>顧問先一覧画面へ自動的に戻ります</strong>。このとき、今登録したばかりの顧問先の行が一覧内で一瞬<strong>薄紫色にハイライト表示</strong>され、どの行が新規に追加されたかがひと目で分かるようになっています（一覧が複数ページにまたがる場合は、該当の顧問先が含まれるページへ自動的に切り替わります）。画面右下には「顧問先を登録しました。」という完了メッセージも表示されます。</p>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">顧問先の新規登録画面</div>
+</div>
+
+<h2 class="h2"><span class="h2-tag">4.3</span>対象手続き（購読設定）</h2>
+
+<p class="body-text">顧問先の編集画面下部に「対象手続き」セクションがあります。ここでカテゴリ別にチェックボックスで手続き種別を選択し、保存すると、選択した手続きが以後この顧問先向けに自動でタスク生成される対象になります。新規に顧問先を登録したら、必ずこの設定を行ってください。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-head">注意</div>
+  <div class="callout-body">対象手続きにチェックを入れていない手続きは、期限が近づいても自動的にタスクが作られません。導入時・契約変更時は対象手続きの見直しを忘れずに行ってください。</div>
+</div>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">顧問先編集画面（対象手続きの購読状況が反映された状態）</div>
+</div>
+
+<h2 class="h2"><span class="h2-tag">4.4</span>顧問先の編集・削除</h2>
+
+<ul class="bullets"><li><strong>編集：</strong>顧問先一覧から対象行をクリックし、編集画面で各項目を修正して<span class="btn-ref btn-primary">保存する</span>を押します。保存後は一覧画面へ戻り、編集した行がハイライト表示されます（新規登録時と同じ挙動）。</li><li><strong>削除：</strong>編集画面の<span class="btn-ref btn-danger">削除</span>ボタンから行います。押すと確認モーダルが表示され、「削除する」を選ぶまでは実際には削除されません。削除は取り消せません。削除操作はオーナーのみ実行できます。</li></ul>
+
+<h2 class="h2"><span class="h2-tag">4.5</span>Excelエクスポート・インポート</h2>
+
+<p class="body-text">一覧画面から現在の顧問先データをExcel（xlsx）またはCSV形式で書き出せます。Excelで管理していたデータを本サービスへ取り込みたい場合は「11. Excelデータの移行」を参照してください。</p>
+
+</div>
+
+
+<div class="chapter">
+  <div class="chapter-band">
+    <div class="chapter-num">5</div>
+    <div class="chapter-title-wrap">
+      <h1>手続き種別マスタ</h1>
+      
+    </div>
+  </div>
+
+<p class="body-text">算定基礎届、労働保険年度更新、36協定届など、法定手続きの種類を管理する画面です。全事務所で共通のマスタデータのため、法改正等があった場合は運営者側で更新されます。</p>
+
+<h2 class="h2"><span class="h2-tag">5.1</span>事前に用意されている手続き</h2>
+
+<p class="body-text">導入時点で以下の主要な法定手続きがあらかじめ登録されています。</p>
+
+<ul class="bullets"><li>算定基礎届（定時決定）</li><li>労働保険年度更新</li><li>36協定届</li><li>就業規則（変更）届</li><li>賞与支払届</li><li>月額変更届</li><li>労働者名簿の整備</li><li>雇用保険資格取得・喪失届</li><li>健保厚年資格取得・喪失届</li><li>産前産後休業取得者申出書</li><li>育児休業等取得者申出書</li><li>高年齢雇用継続給付支給申請</li><li>労働保険概算保険料分割納付（第2期）　ほか</li></ul>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">手続き種別マスタ一覧</div>
+</div>
+
+<h2 class="h2"><span class="h2-tag">5.2</span>通知タイミングの編集</h2>
+
+<p class="body-text">一覧画面から対象の手続きをクリックし、編集画面を開きます。周期（毎年・毎月・都度・カスタム）に応じて必要な入力項目（基準月日、間隔など）が切り替わります。通知タイミング（期限の何日前に通知するか、カンマ区切りで複数指定可）も設定できます。例えば「90, 30, 7」と設定すると、期限の90日前・30日前・7日前の3回、担当者へ通知が送られます。<span class="btn-ref btn-primary">更新する</span>を押すと一覧画面へ戻り、編集した行がハイライト表示されます。</p>
+
+<div class="callout callout-perm">
+  <div class="callout-head">権限について</div>
+  <div class="callout-body">この画面の編集はオーナー、またはオーナーから個別に「手続き種別マスタ編集」権限を付与されたスタッフのみ操作できます（13章参照）。</div>
+</div>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">手続き種別マスタの編集画面</div>
+</div>
+
+</div>
+
+
+<div class="chapter">
+  <div class="chapter-band">
+    <div class="chapter-num">6</div>
+    <div class="chapter-title-wrap">
+      <h1>手続きタスクの管理</h1>
+      
+    </div>
+  </div>
+
+<p class="body-text">「タスク」は、ある顧問先について、ある手続き種別を、いつまでに対応するかという個別の案件です。自動生成バッチにより、対象手続きに設定された周期に沿って自動的に作成されるほか、手動でも追加できます。</p>
+
+<h2 class="h2"><span class="h2-tag">6.1</span>タスク一覧</h2>
+
+<ul class="bullets"><li>ステータス・顧問先・担当者・手続き種別・期限日の範囲で絞り込み検索ができます（画面上部に常時表示）。</li><li>一覧の各行で<strong>ステータスをその場で変更</strong>できます（自分が担当のタスク、またはオーナーのみ）。プルダウンを変更すると即座に保存され、画面を再読み込みする必要はありません。</li><li>「完了」から他のステータスへ戻す場合は、誤操作防止のため<strong>確認ダイアログ</strong>が表示されます。「OK」を選ぶまでステータスは変更されません。</li><li>ダッシュボードの各カードやカレンダーからも、絞り込み済みの状態でこの一覧に遷移できます。</li></ul>
+
+<div class="legend-row"><div class="legend-item"><span class="swatch" style="background:#9ca3af"></span>未着手</div><div class="legend-item"><span class="swatch" style="background:#3b82f6"></span>進行中</div><div class="legend-item"><span class="swatch" style="background:#4f46e5"></span>書類収集済</div><div class="legend-item"><span class="swatch" style="background:#f59e0b"></span>提出済</div><div class="legend-item"><span class="swatch" style="background:#22c55e"></span>完了</div><div class="legend-item"><span class="swatch" style="background:#ef4444"></span>期限超過</div></div>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">タスク一覧画面（絞り込みUI）</div>
+</div>
+
+<h2 class="h2"><span class="h2-tag">6.2</span>タスクの新規作成</h2>
+
+<p class="body-text">一覧画面右上の<span class="btn-ref btn-primary">新規作成</span>から、顧問先・手続き種別・タイトル・期限日・担当者・メモを入力して作成します。<strong>期限日は画面を開いた時点で本日の日付が初期値として入力済み</strong>のため、実際の期限日に変更したうえで登録してください。自動生成の対象外の単発案件（顧問先からの個別依頼など）を管理したい場合にご利用ください。</p>
+
+<p class="body-text"><span class="btn-ref btn-primary">作成する</span>を押すと、作成したタスクがタスク一覧に反映され、期限日順で該当のページへ自動的に切り替わったうえで、そのタスクの行がハイライト表示されます。</p>
+
+<h2 class="h2"><span class="h2-tag">6.3</span>タスク詳細画面</h2>
+
+<p class="body-text">顧問先・手続き種別・期限日（期限超過は赤字で強調表示）・現在のステータスを確認できます。自動生成時の期限から日付を修正した場合は「元の期限：〇〇」として表示され、変更履歴が分かるようになっています。</p>
+
+<p class="body-text">編集できる項目（担当者本人またはオーナーのみ）：</p>
+
+<ul class="bullets"><li>期限日</li><li>ステータス（未着手／進行中／書類収集済／提出済／完了）</li><li>担当者</li><li>メモ（マイナンバーらしき文字列は警告表示されます）</li><li>カスタムフィールドの値</li></ul>
+
+<p class="body-text"><span class="btn-ref btn-primary">保存する</span>を押すと、変更元の画面（タスク一覧・カレンダー等）へ戻ります。一覧に戻る場合は編集した行がハイライト表示されます。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-head">注意</div>
+  <div class="callout-body">自分が担当者から外れると、それ以降そのタスクは編集できなくなります（閲覧のみ可能）。担当変更の際はご注意ください。</div>
+</div>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">タスク詳細・編集画面</div>
+</div>
+
+<h2 class="h2"><span class="h2-tag">6.4</span>書類チェックリスト</h2>
+
+<p class="body-text">タスク詳細画面内で、必要書類の収集状況を管理できます。</p>
+
+<ol class="numbered-steps"><li><span class="num-badge">1</span><span class="num-text"><span class="btn-ref btn-primary">追加</span>から、書類名・必須かどうか・保存年数を入力して項目を追加します。押すとその場でチェックリストに1行追加されます。</span></li><li><span class="num-badge">2</span><span class="num-text">書類を受領したら<span class="btn-ref btn-primary">ファイルを選択</span>からファイルをアップロードします（対応形式：PDF／JPG／PNG／Word／Excel、最大10MB）。アップロードが完了すると、ファイル名がリンク表示に変わります。</span></li><li><span class="num-badge">3</span><span class="num-text">収集チェックをONにすると、受領日と、保存年数から自動計算された保存期限が記録されます。</span></li><li><span class="num-badge">4</span><span class="num-text">アップロード済みファイルはファイル名のリンクからダウンロード可能です（閲覧・ダウンロードは記録として保存されます）。</span></li></ol>
+
+<div class="callout callout-privacy">
+  <div class="callout-head">個人情報保護について</div>
+  <div class="callout-body">書類ファイルは暗号化されたストレージに保存され、ダウンロードのたびに有効期限付きの一時URLが発行されます。保存期限が過ぎた書類は自動削除されず、オーナーへ通知が届きますので、内容を確認のうえ手動で削除してください（誤削除防止のための仕様です）。</div>
+</div>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">タスク詳細画面の書類チェックリスト</div>
+</div>
+
+</div>
+
+
+<div class="chapter">
+  <div class="chapter-band">
+    <div class="chapter-num">7</div>
+    <div class="chapter-title-wrap">
+      <h1>カレンダー</h1>
+      
+    </div>
+  </div>
+
+<p class="body-text">全タスクを期限日ベースの月表示カレンダーで確認できます。ステータスごとに色分けされます（色の凡例は6.1参照）。</p>
+
+<p class="body-text">カレンダー上のイベントを<strong>クリックすると</strong>、そのタスクの詳細画面に移動します。詳細画面からは<strong>「カレンダーに戻る」リンク</strong>で元の表示（同じ月）に戻れます。</p>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">カレンダー画面（ステータス別に色分け表示）</div>
+</div>
+
+</div>
+
+
+<div class="chapter">
+  <div class="chapter-band">
+    <div class="chapter-num">8</div>
+    <div class="chapter-title-wrap">
+      <h1>通知（期限アラート）</h1>
+      
+    </div>
+  </div>
+
+<p class="body-text">期限漏れを防ぐため、設定されたタイミングで自動的に通知が届きます。通知先は担当者（未割当の場合は事務所のオーナー全員）です。</p>
+
+<h2 class="h2"><span class="h2-tag">8.1</span>メール通知</h2>
+
+<p class="body-text">登録済みのメールアドレス宛に、常に自動送信されます。特別な設定操作は不要です。</p>
+
+<h2 class="h2"><span class="h2-tag">8.2</span>ブラウザのプッシュ通知（Web Push）</h2>
+
+<p class="body-text">ブラウザを閉じていても、パソコンの通知センターにOS標準の通知として届く機能です。サイドバーの通知トグルから有効化してください。</p>
+
+<ol class="numbered-steps"><li><span class="num-badge">1</span><span class="num-text">サイドバーの通知アイコン（トグル）をクリックします。</span></li><li><span class="num-badge">2</span><span class="num-text">ブラウザから通知の許可を求められるので「許可」を選択します。トグルがON表示に変わります。</span></li><li><span class="num-badge">3</span><span class="num-text">以降、設定した通知タイミングでブラウザ通知が届きます。不要になった場合は同じトグルから解除できます（OFFにするとその場で購読が解除されます）。</span></li></ol>
+
+<h2 class="h2"><span class="h2-tag">8.3</span>デスクトップ常駐アプリでの通知</h2>
+
+<p class="body-text">ブラウザを起動していなくても、パソコンにインストールした専用アプリが常駐し、OS通知センターに直接通知を表示する機能です（Windows／Mac／Linux対応）。以下、設定画面での操作からアプリのインストール・初期設定まで、順を追って説明します。</p>
+
+<h3 class="h3">8.3.1　アクセストークンの発行（Web側の操作）</h3>
+
+<ol class="numbered-steps"><li><span class="num-badge">1</span><span class="num-text">画面右上または左下のアカウントメニューから<span class="btn-ref btn-primary">デスクトップ通知アプリ</span>を選び、設定画面を開きます。</span></li><li><span class="num-badge">2</span><span class="num-text"><span class="btn-ref btn-primary">トークンを発行する</span>ボタンを押します。確認は不要で、押すと即座に新しいトークンが発行されます。</span></li><li><span class="num-badge">3</span><span class="num-text">発行された<strong>平文のトークン文字列</strong>が画面に一度だけ表示されます。<strong>この画面を離れると二度と表示されない</strong>ため、必ずこの時点でコピーしてください（コピーし忘れた場合は再発行が必要です。8.3.4参照）。</span></li></ol>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">デスクトップ通知アプリ連携画面（トークン発行直後、平文トークンが表示された状態）</div>
+</div>
+
+<h3 class="h3">8.3.2　インストーラーのダウンロード</h3>
+
+<p class="body-text">同じ画面の「1. アプリをダウンロードしてインストールする」セクションから、お使いのパソコンのOSに応じたインストーラーをダウンロードします。</p>
+
+<ul class="bullets"><li><strong>Windows：</strong>「Windows用をダウンロード」ボタンから .msi ファイルをダウンロードします。</li><li><strong>Mac：</strong>「Mac用をダウンロード」ボタンから .dmg ファイルをダウンロードします。</li><li><strong>Linux：</strong>「Linux用をダウンロード」ボタンから .AppImage ファイルをダウンロードします。</li></ul>
+
+<p class="body-text">アクセスした端末のOSが自動判定され、該当するボタンがハイライト表示（「お使いのPC向け」）されます。開発ツールのインストールなどは不要で、ダウンロードしたインストーラーを実行するだけでセットアップが完了します。</p>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">OS別ダウンロードボタン（Windows／Mac／Linux）の表示</div>
+</div>
+
+<h3 class="h3">8.3.3　インストールとアプリ初回設定</h3>
+
+<ol class="numbered-steps"><li><span class="num-badge">1</span><span class="num-text">ダウンロードしたインストーラーを実行します（Windowsは.msiをダブルクリック、Macは.dmgをマウントしてアプリをApplicationsフォルダへドラッグ、Linuxは.AppImageに実行権限を付与して起動）。</span></li><li><span class="num-badge">2</span><span class="num-text">インストール後、アプリを起動すると設定画面が表示されます。</span></li><li><span class="num-badge">3</span><span class="num-text">「事務所のURL」欄に、デスクトップ通知アプリ連携画面に表示されているURL（このページ自体のURLではなく、ドメイン部分のみのURL）を貼り付けます。</span></li><li><span class="num-badge">4</span><span class="num-text">「APIトークン」欄に、8.3.1でコピーした平文トークンを貼り付けます。</span></li><li><span class="num-badge">5</span><span class="num-text">「確認間隔」（通知を何分おきに確認しに行くか。デフォルト5分、最小1分）を必要に応じて変更します。</span></li><li><span class="num-badge">6</span><span class="num-text">「自動起動」（パソコン起動時にアプリも自動的に起動するか）を必要に応じてON／OFFします。初回起動時はデフォルトでONになっています。</span></li><li><span class="num-badge">7</span><span class="num-text">設定を保存すると、アプリはOSのタスクトレイ（Windowsは画面右下、Macは画面右上、Linuxはデスクトップ環境により異なる）に常駐アイコンとして表示され、以後バックグラウンドで通知を確認し続けます。</span></li></ol>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">デスクトップアプリの初回設定画面（事務所のURL・APIトークン・確認間隔・自動起動の入力欄）</div>
+</div>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">タスクトレイに常駐したアプリのアイコンとメニュー</div>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-head">補足</div>
+  <div class="callout-body">アプリのウィンドウを閉じても、アプリ自体は終了せずタスクトレイに常駐し続けます。完全に終了したい場合は、トレイアイコンを右クリックして表示されるメニューから終了操作を行ってください。</div>
+</div>
+
+<h3 class="h3">8.3.4　トークンの再発行・失効</h3>
+
+<p class="body-text">デスクトップ通知アプリ連携画面には、発行済みトークンの発行日時・最終利用日時が表示されます。<span class="btn-ref btn-primary">再発行する</span>を押すと確認ダイアログが表示され、承諾すると<strong>新しいトークンが発行されると同時に、現在使用中の古いトークンは自動的に無効になります</strong>。再発行後は、パソコン側のデスクトップアプリの設定画面でも新しいトークンに入力し直す必要があります。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-head">注意</div>
+  <div class="callout-body">トークンは他人に共有しないでください。第三者に知られた場合は速やかに再発行してください（1ユーザーにつき常に1つのトークンのみが有効です）。</div>
+</div>
+
+</div>
+
+
+<div class="chapter">
+  <div class="chapter-band">
+    <div class="chapter-num">9</div>
+    <div class="chapter-title-wrap">
+      <h1>計算アシスタント</h1>
+      
+    </div>
+  </div>
+
+<p class="body-text">現場で頻繁に必要となる3つの計算を、法令の基準に沿って自動で行うツールです。サイドバー<span class="btn-ref btn-primary">計算アシスタント</span>から利用するほか、タスク詳細画面から呼び出して計算結果をそのタスクに保存することもできます。</p>
+
+<h2 class="h2"><span class="h2-tag">9.1</span>年次有給休暇の付与日数計算</h2>
+
+<p class="body-text">労働基準法39条・同法施行規則別表第一に基づき計算します。</p>
+
+<ul class="bullets"><li>入力：入社日、所定労働日数の区分（フルタイム、または週1〜4日の比例付与）</li><li>出力：勤続6ヶ月・1年6ヶ月・2年6ヶ月……と、以降1年ごとの基準日7回分について、付与日数の一覧を表示します。</li></ul>
+
+<div class="callout callout-info">
+  <div class="callout-head">補足</div>
+  <div class="callout-body">各基準日で全労働日の8割以上出勤していることが前提です。出勤率の判定自体は本ツールでは行いませんので、別途ご確認ください。</div>
+</div>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">年次有給休暇の付与日数計算結果</div>
+</div>
+
+<h2 class="h2"><span class="h2-tag">9.2</span>時間外労働時間・36協定上限チェック</h2>
+
+<p class="body-text">特別条項付き36協定であっても超えることができない上限（単月100時間未満、複数月平均80時間以内、年720時間以内、月45時間超は年6回まで）に照らして、入力した月次データを自動判定します。</p>
+
+<ul class="bullets"><li>入力：年月ごとの時間外労働時間・休日労働時間（直近12ヶ月が自動入力され、最大24ヶ月まで編集可能）</li><li>出力：月別の実績と違反バッジ、および「月45時間超の回数」「年間合計」「単月100時間到達の有無」「複数月平均80時間超過の有無」のサマリ</li></ul>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">時間外労働・36協定上限チェックの計算結果（上限超過を検出した例）</div>
+</div>
+
+<h2 class="h2"><span class="h2-tag">9.3</span>勤務シフト表作成支援</h2>
+
+<p class="body-text">1年単位の変形労働時間制（労働基準法32条の4）の要件に照らして、シフト表を自動チェックします。</p>
+
+<ul class="bullets"><li>入力：日付ごとの労働時間（デフォルトで本日から14日分、8時間/日を自動生成。休日は0時間で入力。最大400件まで入力可能）</li><li>出力：週別の合計労働時間（52時間超の判定）、日別の労働時間（1日10時間超・連続勤務日数6日超の判定）、対象期間の総労働日数（280日超の判定）</li></ul>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">勤務シフト表作成支援の入力画面</div>
+</div>
+
+<h2 class="h2"><span class="h2-tag">9.4</span>計算結果をタスクに保存する</h2>
+
+<p class="body-text">タスク詳細画面の計算アシスタント欄から各ツールを開くと、計算結果をそのままタスクに紐づけて保存できます。計算後、画面に表示される<span class="btn-ref btn-primary">このタスクに保存する</span>ボタンを押すと即座に保存され、完了メッセージが表示されます。保存した結果は、顧問先向け進捗レポート作成時の参考資料としても活用できます。</p>
+
+</div>
+
+
+<div class="chapter">
+  <div class="chapter-band">
+    <div class="chapter-num">10</div>
+    <div class="chapter-title-wrap">
+      <h1>顧問先向け進捗レポート（PDF）</h1>
+      
+    </div>
+  </div>
+
+<p class="body-text">顧問先に「今どこまで手続きが進んでいるか」を報告するためのPDFを自動生成する機能です。</p>
+
+<ol class="numbered-steps"><li><span class="num-badge">1</span><span class="num-text">顧問先の編集画面右上にある<span class="btn-ref btn-primary">進捗レポート</span>リンクから一覧画面を開きます。</span></li><li><span class="num-badge">2</span><span class="num-text">対象期間（開始日・終了日）を指定し、必要であれば所感コメント（最大2000字）を入力して<span class="btn-ref btn-primary">PDFを生成する</span>を押します。</span></li><li><span class="num-badge">3</span><span class="num-text">生成されたPDFには、事務所名・顧問先名・対象期間、対象期間内の手続き一覧（手続き名・期限日・ステータス・完了日）、所感コメント、作成日・作成者が記載されます。生成が完了すると一覧に新しい行が追加されます。</span></li><li><span class="num-badge">4</span><span class="num-text">生成履歴は一覧から<span class="btn-ref btn-primary">ダウンロード</span>リンクを押すことでいつでも再ダウンロードできます。</span></li></ol>
+
+<div class="callout callout-perm">
+  <div class="callout-head">権限について</div>
+  <div class="callout-body">オーナーは全顧問先分を、スタッフは自分が担当している顧問先分のみ生成できます。</div>
+</div>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">顧問先向け進捗レポートの一覧画面</div>
+</div>
+
+</div>
+
+
+<div class="chapter">
+  <div class="chapter-band">
+    <div class="chapter-num">11</div>
+    <div class="chapter-title-wrap">
+      <h1>Excelデータの移行</h1>
+      
+    </div>
+  </div>
+
+<p class="body-text">Excelで管理していた顧問先・タスクの情報を、本サービスへ取り込むための機能です。顧問先一覧・タスク一覧のそれぞれの画面から利用できます。</p>
+
+<h2 class="h2"><span class="h2-tag">11.1</span>インポートの4ステップ</h2>
+
+<ol class="numbered-steps"><li><span class="num-badge">1</span><span class="num-text"><span class="btn-ref btn-primary">アップロード</span>：xlsx／xls／csv形式のファイル（最大5MB）を選択し、次へ進みます。</span></li><li><span class="num-badge">2</span><span class="num-text"><span class="btn-ref btn-primary">列マッピング</span>：アップロードしたファイルの見出し・プレビューを見ながら、各列がどの項目（顧問先名・期限日・担当者名など）に対応するかをプルダウンで手動選択します。自動での推測は行われないため、内容を確認しながら正確に選択してください。</span></li><li><span class="num-badge">3</span><span class="num-text">確認：全行について、取り込み可能／警告あり／エラー（取り込み不可）の判定結果とプレビューが表示されます。エラーの原因（必須項目の未入力、存在しない顧問先名など）もあわせて確認できます。</span></li><li><span class="num-badge">4</span><span class="num-text"><span class="btn-ref btn-primary">確定してインポート</span>：ボタンを押すと、エラーのない行のみが登録されます。エラーがあった行は個別にスキップされ、後から手動で追加・修正できます。処理が完了すると結果件数（成功／スキップ）が表示されます。</span></li></ol>
+
+<div class="callout callout-perm">
+  <div class="callout-head">権限について</div>
+  <div class="callout-body">インポートの実行はオーナー、またはオーナーから個別に「Excel移行ウィザード実行」権限を付与されたスタッフのみ操作できます。</div>
+</div>
+
+<div class="callout callout-privacy">
+  <div class="callout-head">個人情報保護について</div>
+  <div class="callout-body">メモ欄にマイナンバーらしき文字列が含まれる場合は確認画面で警告が表示されます（取り込み自体は可能です）。書類に該当するものは、インポートではなく各タスクの書類チェックリストからアップロードしてください。</div>
+</div>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">Excelインポートウィザード（アップロード画面）</div>
+</div>
+
+<h2 class="h2"><span class="h2-tag">11.2</span>エクスポート（ロックイン防止）</h2>
+
+<p class="body-text">一覧画面からいつでも現在のデータをExcel（xlsx）またはCSV形式で書き出せます。他システムへの切り替えを検討される場合にも、データを自由に持ち出していただけます。</p>
+
+</div>
+
+
+<div class="chapter">
+  <div class="chapter-band">
+    <div class="chapter-num">12</div>
+    <div class="chapter-title-wrap">
+      <h1>カスタムフィールド設定</h1>
+      
+    </div>
+  </div>
+
+<p class="body-text">管理番号、契約プラン、業界フラグなど、事務所ごとに管理したい独自の項目を、開発の追加改修なしに追加できる機能です。</p>
+
+<ol class="numbered-steps"><li><span class="num-badge">1</span><span class="num-text">「カスタムフィールド設定」画面を開きます。顧問先用・タスク用のそれぞれで設定できます。</span></li><li><span class="num-badge">2</span><span class="num-text">項目名と種類（テキスト・数値・日付・選択肢・チェックボックス）を選んで<span class="btn-ref btn-primary">追加する</span>を押します。選択肢の場合は選択肢のリストもあわせて入力します（未入力・重複がある場合はエラーが表示され追加されません）。</span></li><li><span class="num-badge">3</span><span class="num-text">追加した項目は、顧問先・タスクの登録／編集画面に自動的に反映され、以後値を入力できるようになります。一覧に追加した行が一瞬ハイライト表示されます。</span></li><li><span class="num-badge">4</span><span class="num-text">項目の種類は作成後に変更できません（項目名・選択肢の変更は可能です）。</span></li></ol>
+
+<div class="callout callout-perm">
+  <div class="callout-head">権限について</div>
+  <div class="callout-body">オーナー、またはオーナーから個別に「カスタムフィールド設定」権限を付与されたスタッフのみ操作できます。</div>
+</div>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">作成したカスタムフィールドが顧問先登録画面に反映された状態</div>
+</div>
+
+</div>
+
+
+<div class="chapter">
+  <div class="chapter-band">
+    <div class="chapter-num">13</div>
+    <div class="chapter-title-wrap">
+      <h1>ユーザー管理と権限</h1>
+      
+    </div>
+  </div>
+
+<h2 class="h2"><span class="h2-tag">13.1</span>アカウントの追加・編集・削除</h2>
+
+<p class="body-text">オーナーのみ「ユーザー管理」画面から操作できます。<span class="btn-ref btn-primary">新規登録</span>から、氏名・メールアドレス・ロール（オーナー／スタッフ）・パスワードを指定して新規スタッフを登録します。登録すると自動生成されたパスワードではなく、指定したパスワードでスタッフ本人がすぐにログインできます。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-head">注意</div>
+  <div class="callout-body">自分自身のアカウント、および事務所に最後の1人しかいないオーナーは削除・降格できません（事務所が管理者不在にならないようにするための制限です）。</div>
+</div>
+
+<h2 class="h2"><span class="h2-tag">13.2</span>権限の考え方</h2>
+
+<p class="body-text">アカウントには「オーナー」と「スタッフ」の2種類があります。オーナーは常にすべての操作が可能です。スタッフは自分が担当するタスク・顧問先を中心に操作でき、事務所全体に影響する一部の操作（下表）は、オーナーが個別に権限を付与した場合のみ利用できます。</p>
+
+<p class="body-text">ユーザー編集画面で、ロールを「スタッフ」に設定すると3つの権限チェックボックスが表示されますので、必要な権限のみをオーナーが個別に付与してください。</p>
+
+<table class="data-table"><thead><tr><th>委譲可能な権限</th><th>内容</th></tr></thead><tbody><tr><td class="">手続き種別マスタ編集</td><td class="">手続きの周期・通知タイミングの変更</td></tr><tr><td class="">カスタムフィールド設定</td><td class="">独自項目の追加・編集・削除</td></tr><tr><td class="">Excel移行ウィザード実行</td><td class="">Excelデータのインポート実行</td></tr></tbody></table>
+
+<div class="callout callout-warn">
+  <div class="callout-head">委譲できない操作</div>
+  <div class="callout-body">顧問先の削除、ユーザー管理、契約・請求情報の閲覧、デスクトップ通知トークンの発行は、影響範囲が大きいためスタッフへの委譲対象外とし、常にオーナー限定（デスクトップ通知トークンは本人限定）です。</div>
+</div>
+
+<h2 class="h2"><span class="h2-tag">13.3</span>権限早見表</h2>
+
+<table class="data-table"><thead><tr><th>機能</th><th>オーナー</th><th>スタッフ（権限なし）</th><th>スタッフ（権限付与時）</th></tr></thead><tbody><tr><td class="">顧問先の閲覧・作成・編集</td><td class="">○</td><td class="">○（全顧問先）</td><td class="">-</td></tr><tr><td class="">顧問先の削除</td><td class="">○</td><td class="">×</td><td class="">×（委譲対象外）</td></tr><tr><td class="">タスクの閲覧</td><td class="">○</td><td class="">○（全タスク）</td><td class="">-</td></tr><tr><td class="">タスクのステータス・担当変更</td><td class="">○（全件）</td><td class="">○（自分の担当分のみ）</td><td class="">-</td></tr><tr><td class="">手続き種別マスタの編集</td><td class="">○</td><td class="">×</td><td class="">○（付与時のみ）</td></tr><tr><td class="">カスタムフィールド設定</td><td class="">○</td><td class="">×</td><td class="">○（付与時のみ）</td></tr><tr><td class="">Excel移行ウィザードの実行</td><td class="">○</td><td class="">×</td><td class="">○（付与時のみ）</td></tr><tr><td class="">ユーザー管理</td><td class="">○</td><td class="">×</td><td class="">×（委譲対象外）</td></tr><tr><td class="">契約・請求の閲覧</td><td class="">○</td><td class="">×</td><td class="">×（委譲対象外）</td></tr></tbody></table>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">ユーザー管理画面（オーナーのみアクセス可能）</div>
+</div>
+
+</div>
+
+
+<div class="chapter">
+  <div class="chapter-band">
+    <div class="chapter-num">14</div>
+    <div class="chapter-title-wrap">
+      <h1>契約・請求（オーナー向け）</h1>
+      
+    </div>
+  </div>
+
+<p class="body-text">「契約・請求」画面（オーナー限定）では、契約プラン・お支払い状況・現在の利用状況・見込み金額・過去の請求履歴を確認できるほか、Stripe（決済代行サービス）を通じたお申し込み・お支払い方法の変更もこの画面から行えます。</p>
+
+<h2 class="h2"><span class="h2-tag">14.1</span>契約プランと料金</h2>
+
+<p class="body-text">料金は顧問先数・ユーザー数の上限に応じた<strong>月額固定制</strong>です。プランは「スターター」「スタンダード」「プロフェッショナル」「エンタープライズ（個別見積り）」の4段階があり、運営者が事務所ごとに割り当てます。ご契約から一定期間はトライアル期間として、すべての機能を制限なくご利用いただけます。</p>
+
+<table class="data-table"><thead><tr><th>表示項目</th><th>内容</th></tr></thead><tbody><tr><td class="">ステータス</td><td class="">「トライアル中（○年○月○日まで）」または「本契約」のバッジ表示</td></tr><tr><td class="">ご契約プラン</td><td class="">プラン名と、顧問先／ユーザーの上限件数</td></tr><tr><td class="">決済状況</td><td class="">後述14.3のバッジ表示</td></tr><tr><td class="">現在の課金対象顧問先数／ユーザー数</td><td class="">契約中ステータスの顧問先数、および現在のユーザー数</td></tr><tr><td class="">今月の見込み金額</td><td class="">契約プランの月額（個別に値引き設定がある場合はその金額）</td></tr></tbody></table>
+
+<div class="callout callout-warn">
+  <div class="callout-head">注意</div>
+  <div class="callout-body">顧問先数またはユーザー数がご契約プランの上限を超えている場合、画面上部に警告バナーが表示されます。表示された場合はプランのアップグレードについて運営者までお問い合わせください。</div>
+</div>
+
+<h2 class="h2"><span class="h2-tag">14.2</span>オンラインでのお申し込み（Stripe Checkout）</h2>
+
+<p class="body-text">ご契約プランに決済用の設定がある場合、画面に<span class="btn-ref btn-primary">このプランでお申し込みする</span>ボタンが表示されます。押すと、Stripe（決済代行サービス）がホストする安全な決済ページへ画面が遷移します。</p>
+
+<ol class="numbered-steps"><li><span class="num-badge">1</span><span class="num-text"><span class="btn-ref btn-primary">このプランでお申し込みする</span>を押します。</span></li><li><span class="num-badge">2</span><span class="num-text">Stripeのホスト型Checkoutページへ遷移します（クレジットカード情報などはStripe側で安全に処理され、本サービス側には保存されません）。</span></li><li><span class="num-badge">3</span><span class="num-text">カード情報を入力し決済を完了すると、「契約・請求」画面へ自動的に戻り、決済状況が「契約中」に切り替わります。</span></li></ol>
+
+<div class="callout callout-info">
+  <div class="callout-head">補足</div>
+  <div class="callout-body">すでにお申し込み済みの場合、このボタンは表示されません。プランの変更・解約は14.3の「お支払い方法・請求書を管理する」から行ってください。</div>
+</div>
+
+<h2 class="h2"><span class="h2-tag">14.3</span>お支払い方法・請求書の管理（Stripe Customer Portal）</h2>
+
+<p class="body-text">決済を一度でも開始した事務所には、<span class="btn-ref btn-link">お支払い方法・請求書を管理する（Stripe）</span>リンクが表示されます。押すとStripeがホストする管理ポータルへ遷移し、お支払い方法（カード）の変更、請求書のダウンロード、解約などをご自身で行えます。ポータルでの変更内容は自動的に本サービス側の決済状況にも反映されます。</p>
+
+<p class="body-text">決済状況は以下のバッジで表示されます。</p>
+
+<table class="data-table"><thead><tr><th>バッジ表示</th><th>意味</th></tr></thead><tbody><tr><td class="">契約中（緑）</td><td class="">決済が有効な状態です</td></tr><tr><td class="">トライアル中／Stripe（緑）</td><td class="">Stripe側でもトライアル扱いになっている状態です</td></tr><tr><td class="">支払い遅延（赤）</td><td class="">お支払いに問題が発生しています。お支払い方法の確認をお願いします</td></tr><tr><td class="">解約済み（赤）</td><td class="">サブスクリプションが解約された状態です</td></tr><tr><td class="">未払い（赤）</td><td class="">複数回の決済試行に失敗した状態です</td></tr><tr><td class="">未お申し込み（灰）</td><td class="">まだオンラインでのお申し込みが行われていない状態です</td></tr></tbody></table>
+
+<h2 class="h2"><span class="h2-tag">14.4</span>請求履歴</h2>
+
+<p class="body-text">画面下部の請求履歴テーブルでは、対象期間ごとの課金対象顧問先数・ユーザー数・ご契約プラン・請求額を確認できます。実際の請求額は、毎月1日に確定するその時点の内容をもとに算出されます。画面上部の「見込み金額」は現時点の暫定値です。</p>
+
+<div class="image-placeholder">
+  <div class="ph-label">画像挿入</div>
+  <div class="ph-text">契約・請求画面（オーナー向け）</div>
+</div>
+
+</div>
+
+
+<div class="chapter">
+  <div class="chapter-band">
+    <div class="chapter-num">15</div>
+    <div class="chapter-title-wrap">
+      <h1>よくある質問・トラブルシューティング</h1>
+      
+    </div>
+  </div>
+
+<div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>担当していないタスクを編集できません。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>担当者以外（オーナーを除く）はタスクの内容を編集できない仕様です。担当者の変更が必要な場合は、現在の担当者またはオーナーに依頼してください。</div></div>
+<div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>期限が近いのに通知が来ません。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>手続き種別マスタの通知タイミング設定（5.2）と、ブラウザ通知・デスクトップ通知の有効化状況（8章）をご確認ください。メール通知は常時有効です。迷惑メールフォルダも合わせてご確認ください。</div></div>
+<div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>Excelインポートでエラーになる行があります。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>確認画面に表示されるエラー内容（必須項目の未入力、顧問先名・手続き名の不一致など）をご確認のうえ、元のExcelファイルを修正して再アップロードするか、該当行のみ手動で登録してください。</div></div>
+<div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>デスクトップ通知アプリのトークンを忘れてしまいました。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>トークンは発行直後の一度しか画面に表示されません。「デスクトップ通知アプリ」画面から再発行してください（既存のトークンは自動的に無効になります。8.3.4参照）。</div></div>
+<div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>デスクトップ通知アプリをインストールしたのに通知が来ません。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>設定画面の「事務所のURL」欄に、デスクトップ通知アプリ連携画面自体のURLではなく、ドメイン部分のみのURLが入力されているかご確認ください。また401／403エラーが表示される場合はトークンが失効している可能性があるため、再発行をお試しください。</div></div>
+<div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>顧問先を削除したい。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>顧問先の削除はオーナーのみ実行できます。スタッフの方はオーナーにご依頼ください。</div></div>
+<div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>マイナンバーの入力を警告されました。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>メモ欄やカスタムフィールドにマイナンバーとみられる文字列を入力すると警告が表示されます。入力自体は禁止されていませんが、マイナンバーを含む情報は原則としてタスクの書類チェックリストからファイルとしてアップロードしてください。</div></div>
+<div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>契約プランの上限を超えそうです。どうすればいいですか。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>「契約・請求」画面に警告バナーが表示されます（14.1参照）。プランのアップグレードについては運営者までお問い合わせください。</div></div>
+<div class="faq-item"><div class="faq-q"><span class="qa-tag q-tag">Q</span>サイドバーに載っているはずの機能が表示されません。</div><div class="faq-a"><span class="qa-tag a-tag">A</span>利用できるオプション機能（Excel移行・PDFレポート・計算アシスタント・カスタムフィールド等）は事務所ごとに運営者が設定しています。表示されない場合は運営者までお問い合わせください。</div></div>
+</div>
+
+</body>
+</html>

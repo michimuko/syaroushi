@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>業務進捗・期限管理SaaS ご紹介資料</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: "Noto Sans CJK JP", "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+    color: #1e293b;
+    font-size: 10.5pt;
+    line-height: 1.6;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 14mm 16mm;
+    position: relative;
+    page-break-after: always;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* ---------- header band ---------- */
+  .brand-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6mm;
+  }
+  .brand-mark {
+    display: flex;
+    align-items: center;
+    gap: 3mm;
+  }
+  .brand-mark .icon {
+    width: 9mm; height: 9mm;
+    border-radius: 2.2mm;
+    background: linear-gradient(135deg, #4f46e5, #4338ca);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13pt; font-weight: 700;
+  }
+  .brand-mark .name {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #1e1b4b;
+    letter-spacing: 0.02em;
+  }
+  .doc-meta {
+    text-align: right;
+    font-size: 8pt;
+    color: #64748b;
+  }
+
+  /* ---------- hero ---------- */
+  .hero {
+    background: linear-gradient(135deg, #312e81 0%, #4338ca 55%, #4f46e5 100%);
+    color: #fff;
+    border-radius: 4mm;
+    padding: 10mm 12mm;
+    margin-bottom: 8mm;
+  }
+  .hero .eyebrow {
+    display: inline-block;
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 999px;
+    padding: 1.2mm 4mm;
+    margin-bottom: 4mm;
+  }
+  .hero h1 {
+    font-size: 19pt;
+    line-height: 1.4;
+    margin: 0 0 3mm;
+    font-weight: 700;
+  }
+  .hero p {
+    font-size: 10pt;
+    margin: 0;
+    color: #e0e7ff;
+    max-width: 140mm;
+  }
+
+  h2.section-title {
+    display: flex;
+    align-items: center;
+    gap: 3mm;
+    font-size: 13pt;
+    font-weight: 700;
+    color: #1e1b4b;
+    margin: 0 0 5mm;
+    padding-bottom: 2.5mm;
+    border-bottom: 0.6mm solid #4f46e5;
+  }
+  h2.section-title .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 7mm; height: 7mm;
+    border-radius: 50%;
+    background: #4f46e5;
+    color: #fff;
+    font-size: 9pt;
+    flex-shrink: 0;
+  }
+  .section { margin-bottom: 8mm; }
+
+  /* ---------- pain point cards ---------- */
+  .pain-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3.5mm;
+  }
+  .pain-card {
+    background: #fff7ed;
+    border: 0.3mm solid #fed7aa;
+    border-left: 1.3mm solid #f97316;
+    border-radius: 2mm;
+    padding: 3.5mm 4mm;
+    font-size: 9.3pt;
+    color: #7c2d12;
+  }
+  .pain-lead {
+    font-size: 9.5pt;
+    color: #475569;
+    margin: 0 0 4mm;
+  }
+  .pain-conclusion {
+    margin-top: 4mm;
+    background: #eef2ff;
+    border-radius: 2mm;
+    padding: 3.5mm 4.5mm;
+    font-size: 9.3pt;
+    color: #312e81;
+    border: 0.3mm solid #c7d2fe;
+  }
+
+  /* ---------- feature cards ---------- */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4mm;
+  }
+  .feature-card {
+    background: #fff;
+    border: 0.3mm solid #e2e8f0;
+    border-radius: 2.5mm;
+    padding: 4mm 4.5mm;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  }
+  .feature-card .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 6.5mm; height: 6.5mm;
+    border-radius: 1.6mm;
+    background: #eef2ff;
+    color: #4338ca;
+    font-weight: 700;
+    font-size: 9pt;
+    margin-bottom: 2.5mm;
+  }
+  .feature-card h3 {
+    font-size: 10pt;
+    margin: 0 0 1.8mm;
+    color: #1e1b4b;
+  }
+  .feature-card p {
+    margin: 0;
+    font-size: 8.8pt;
+    color: #475569;
+  }
+
+  .core-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.8pt;
+  }
+  .core-table th {
+    background: #4338ca;
+    color: #fff;
+    text-align: left;
+    padding: 2.5mm 3.5mm;
+    font-weight: 700;
+  }
+  .core-table td {
+    padding: 2.5mm 3.5mm;
+    border-bottom: 0.2mm solid #e2e8f0;
+    color: #334155;
+    vertical-align: top;
+  }
+  .core-table tr:nth-child(even) td { background: #f8fafc; }
+  .core-table td.col-name { font-weight: 700; color: #1e1b4b; white-space: nowrap; }
+
+  /* ---------- before / after ---------- */
+  .change-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 2.5mm;
+    font-size: 9pt;
+  }
+  .change-table th {
+    text-align: left;
+    font-size: 9pt;
+    color: #64748b;
+    padding: 0 3.5mm 1.5mm;
+  }
+  .change-table th.after-col { color: #15803d; }
+  .change-row td {
+    padding: 3mm 3.5mm;
+    vertical-align: top;
+  }
+  .change-row .before-cell {
+    background: #f8fafc;
+    color: #64748b;
+    border-radius: 2mm 0 0 2mm;
+    border: 0.3mm solid #e2e8f0;
+    border-right: none;
+  }
+  .change-row .arrow-cell {
+    width: 8mm;
+    text-align: center;
+    color: #4f46e5;
+    font-weight: 700;
+    background: #fff;
+    border-top: 0.3mm solid #e2e8f0;
+    border-bottom: 0.3mm solid #e2e8f0;
+  }
+  .change-row .after-cell {
+    background: #f0fdf4;
+    color: #14532d;
+    font-weight: 600;
+    border-radius: 0 2mm 2mm 0;
+    border: 0.3mm solid #bbf7d0;
+    border-left: none;
+  }
+
+  /* ---------- trial / pricing ---------- */
+  .trial-banner {
+    background: linear-gradient(120deg, #f59e0b, #f97316);
+    color: #fff;
+    border-radius: 3mm;
+    padding: 5mm 6mm;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 5mm;
+  }
+  .trial-banner .big {
+    font-size: 15pt;
+    font-weight: 700;
+  }
+  .trial-banner .small {
+    font-size: 8.5pt;
+    margin-top: 1.5mm;
+    color: #fff7ed;
+  }
+  .trial-banner .stamp {
+    font-size: 8pt;
+    font-weight: 700;
+    background: rgba(255,255,255,0.22);
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 999px;
+    padding: 2mm 4.5mm;
+    white-space: nowrap;
+  }
+
+  .price-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.8pt;
+  }
+  .price-table th, .price-table td {
+    border: 0.25mm solid #e2e8f0;
+    padding: 2.8mm 3mm;
+    text-align: center;
+  }
+  .price-table th {
+    background: #eef2ff;
+    color: #312e81;
+    font-size: 8.8pt;
+  }
+  .price-table td.plan-name { font-weight: 700; color: #1e1b4b; text-align: left; }
+  .price-table td.plan-price { font-weight: 700; color: #4338ca; font-size: 10pt; }
+  .price-table tr.highlight td { background: #fdf4ff; }
+  .price-note {
+    font-size: 8pt;
+    color: #64748b;
+    margin-top: 2.5mm;
+  }
+
+  /* ---------- flow ---------- */
+  .flow {
+    display: flex;
+    justify-content: space-between;
+    gap: 2mm;
+  }
+  .flow-step {
+    flex: 1;
+    background: #fff;
+    border: 0.3mm solid #e2e8f0;
+    border-top: 1.2mm solid #4f46e5;
+    border-radius: 1.5mm;
+    padding: 3.5mm 2.8mm;
+    text-align: center;
+  }
+  .flow-step .n {
+    font-size: 12pt;
+    font-weight: 700;
+    color: #4f46e5;
+  }
+  .flow-step .t {
+    font-size: 8.3pt;
+    color: #334155;
+    margin-top: 1.5mm;
+  }
+
+  .cta-footer {
+    margin-top: 8mm;
+    background: #1e1b4b;
+    color: #fff;
+    border-radius: 3mm;
+    padding: 6mm 7mm;
+    text-align: center;
+  }
+  .cta-footer h3 {
+    font-size: 12pt;
+    margin: 0 0 2mm;
+  }
+  .cta-footer p {
+    font-size: 9pt;
+    color: #c7d2fe;
+    margin: 0;
+  }
+
+  .list-plain { margin: 0; padding-left: 4.5mm; font-size: 9.2pt; color: #334155; }
+  .list-plain li { margin-bottom: 1.5mm; }
+</style>
+</head>
+<body>
+
+<!-- ============ PAGE 1 ============ -->
+<div class="page">
+  <div class="brand-header">
+    <div class="brand-mark">
+      <div class="icon">✓</div>
+      <div class="name">社労士業務進捗管理</div>
+    </div>
+    <div class="doc-meta">社労士事務所向けご紹介資料<br>2026年8月版</div>
+  </div>
+
+  <div class="hero">
+    <span class="eyebrow">業務進捗・期限管理SaaS</span>
+    <h1>顧問先ごとの法定手続き、進捗と期限を、<br>もっとシンプルに一元管理する。</h1>
+    <p>算定基礎届・労働保険年度更新・36協定届など、事務所が抱える大量の期限管理を自動アラートと一元台帳で支え、期限漏れゼロと業務の標準化を実現します。</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="num">1</span>こんなお悩みはありませんか</h2>
+    <p class="pain-lead">日々の実務で「地味だが積み重なる」負担、心当たりはありませんか。</p>
+    <div class="pain-grid">
+      <div class="pain-card">顧問先ごとの手続き期限をExcelで管理していて、更新が属人化している</div>
+      <div class="pain-card">「あの手続き、期限いつだったか」を都度確認する手間が発生している</div>
+      <div class="pain-card">担当者が変わるたびに引き継ぎが大変で、抜け漏れが心配</div>
+      <div class="pain-card">顧問先へ進捗を報告するたびに、資料を一から作っている</div>
+      <div class="pain-card">有給付与日数や36協定の残業上限チェックを、毎年更新が必要なExcel関数に頼っている</div>
+      <div class="pain-card">マイナンバーなど特定個人情報を含む書類の管理・保存期限管理に不安がある</div>
+    </div>
+    <div class="pain-conclusion">本サービスは、こうした「地味だが日々発生する」業務負担を、事務所の規模を問わず軽量・低コストで解消することに特化したSaaSです。特定の給与・会計ソフトとの連携を前提にしない独立設計のため、顧問先の環境を問わず即日で導入いただけます。</div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="num">2</span>システムの概要とできること</h2>
+    <table class="core-table">
+      <tr><th style="width:32mm;">機能</th><th>できること</th></tr>
+      <tr><td class="col-name">ダッシュボード</td><td>期限超過／7日以内／30日以内の件数、担当者別ワークロード、手続き種別ごとの内訳をひと目で確認</td></tr>
+      <tr><td class="col-name">顧問先・タスク管理</td><td>顧問先ごとの基本情報と対象手続きを登録。周期に応じて次回分のタスクを自動生成し、ステータス（未着手〜完了）を一元管理</td></tr>
+      <tr><td class="col-name">カレンダー表示</td><td>全タスクをステータス別に色分けした月表示カレンダーで俯瞰</td></tr>
+      <tr><td class="col-name">自動アラート通知</td><td>期限の90日前・30日前・7日前など、手続きごとに設定したタイミングでメール／ブラウザ／デスクトップへ自動通知</td></tr>
+      <tr><td class="col-name">書類チェックリスト</td><td>必要書類の収集状況を管理。暗号化ストレージ保存・保存期限管理・アクセスログ記録に対応</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============ PAGE 2 ============ -->
+<div class="page">
+  <div class="brand-header">
+    <div class="brand-mark">
+      <div class="icon">✓</div>
+      <div class="name">社労士業務進捗管理</div>
+    </div>
+    <div class="doc-meta">社労士事務所向けご紹介資料<br>2026年8月版</div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="num">3</span>選ばれる理由：5つの差別化機能</h2>
+    <p class="pain-lead">大型ツールにありがちな「高機能だが複雑・高コスト」ではなく、必要な機能だけをシンプルに使える設計です。</p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="badge">A</div>
+        <h3>Excel移行アシスタント</h3>
+        <p>現在Excelで管理しているデータを、列マッピング→確認→確定の3ステップで取り込み。逆方向のエクスポートも常に可能で「乗り換えたらデータを取り出せない」という不安がありません。</p>
+      </div>
+      <div class="feature-card">
+        <div class="badge">B</div>
+        <h3>顧問先向け進捗レポート自動生成</h3>
+        <p>「今どこまで進んでいるか」をワンクリックでPDFにまとめて顧問先へ報告。顧客満足度向上・営業差別化のための成果物として活用できます。</p>
+      </div>
+      <div class="feature-card">
+        <div class="badge">C</div>
+        <h3>リアルタイム通知</h3>
+        <p>メールに加え、ブラウザのプッシュ通知・パソコン常駐のデスクトップアプリ（Win／Mac／Linux）からもOS標準の通知センターへ直接アラート。見落としを構造的に防ぎます。</p>
+      </div>
+      <div class="feature-card">
+        <div class="badge">D</div>
+        <h3>現場発想の計算アシスタント</h3>
+        <p>有給休暇の付与日数、36協定の時間外上限、変形労働時間制のシフトチェックを法令基準で自動計算。Excel関数のように壊れたり法改正のたびに手直しが必要になる心配がありません。</p>
+      </div>
+    </div>
+    <div class="feature-card" style="margin-top:4mm;">
+      <div class="badge">E</div>
+      <h3>カスタムフィールドによる高い汎用性</h3>
+      <p>管理番号・契約プラン・業界フラグなど、事務所ごとに管理したい独自項目を、開発の追加改修なしに設定画面から自由に追加できます。顧問先・タスクの登録画面にも自動的に反映されます。</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="num">4</span>安心してお使いいただける設計</h2>
+    <ul class="list-plain">
+      <li><strong>事務所単位の厳密なデータ分離：</strong>複数事務所が同一システムを利用するマルチテナントSaaSですが、他事務所のデータには一切アクセスできない構造です。</li>
+      <li><strong>柔軟な権限管理：</strong>所長（オーナー）とスタッフの権限を分け、事務所全体に影響する操作はオーナーがスタッフへ個別に権限を委譲できます。</li>
+      <li><strong>特定個人情報（マイナンバー）への配慮：</strong>書類は暗号化ストレージ保存・有効期限付きURLでのみダウンロード可能。保存期限超過時はオーナーへ通知し、自由入力欄への入力時は警告表示を行います。</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============ PAGE 3 ============ -->
+<div class="page">
+  <div class="brand-header">
+    <div class="brand-mark">
+      <div class="icon">✓</div>
+      <div class="name">社労士業務進捗管理</div>
+    </div>
+    <div class="doc-meta">社労士事務所向けご紹介資料<br>2026年8月版</div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="num">5</span>システム導入後の期待できる変化</h2>
+    <table class="change-table">
+      <tr>
+        <th style="width:44%;">導入前</th>
+        <th style="width:8%;"></th>
+        <th class="after-col" style="width:48%;">導入後</th>
+      </tr>
+      <tr class="change-row">
+        <td class="before-cell">Excelで期限を管理し、更新・確認が特定の担当者に依存</td>
+        <td class="arrow-cell">→</td>
+        <td class="after-cell">期限は自動アラートで先回り通知。誰が見ても状況が分かる状態に</td>
+      </tr>
+      <tr class="change-row">
+        <td class="before-cell">担当者交代のたびに引き継ぎ漏れの不安がつきまとう</td>
+        <td class="arrow-cell">→</td>
+        <td class="after-cell">タスク・履歴がシステム上に残るため、引き継ぎ漏れが構造的に防止される</td>
+      </tr>
+      <tr class="change-row">
+        <td class="before-cell">顧問先への進捗報告資料を都度ゼロから作成</td>
+        <td class="arrow-cell">→</td>
+        <td class="after-cell">進捗レポートPDFをワンクリック生成。報告業務が営業差別化の武器に変わる</td>
+      </tr>
+      <tr class="change-row">
+        <td class="before-cell">有給・36協定のチェックをExcel関数や手計算に依存</td>
+        <td class="arrow-cell">→</td>
+        <td class="after-cell">法令基準の自動計算で、属人チェックや法改正対応の負担から解放される</td>
+      </tr>
+      <tr class="change-row">
+        <td class="before-cell">マイナンバー書類の保存期限・アクセス管理に不安がある</td>
+        <td class="arrow-cell">→</td>
+        <td class="after-cell">暗号化保存・期限管理・アクセス履歴が自動化され、対応品質が底上げされる</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="num">6</span>料金プラン</h2>
+
+    <div class="trial-banner">
+      <div>
+        <div class="big">まずは1ヶ月間、無料でお試しいただけます</div>
+        <div class="small">ご契約日から30日間のトライアル期間中は、すべての機能を制限なくご利用いただけます</div>
+      </div>
+      <div class="stamp">FREE TRIAL 1ヶ月</div>
+    </div>
+
+    <table class="price-table">
+      <tr>
+        <th>プラン</th><th>月額</th><th>顧問先数上限</th><th>ユーザー数上限</th>
+      </tr>
+      <tr>
+        <td class="plan-name">スターター</td><td class="plan-price">2,800円</td><td>15件</td><td>3名</td>
+      </tr>
+      <tr class="highlight">
+        <td class="plan-name">スタンダード</td><td class="plan-price">6,800円</td><td>50件</td><td>8名</td>
+      </tr>
+      <tr>
+        <td class="plan-name">プロフェッショナル</td><td class="plan-price">14,800円</td><td>150件</td><td>20名</td>
+      </tr>
+      <tr>
+        <td class="plan-name">エンタープライズ</td><td class="plan-price">個別見積り</td><td>無制限</td><td>無制限</td>
+      </tr>
+    </table>
+    <p class="price-note">※ Excel移行アシスタント・PDFレポート・計算アシスタント・カスタムフィールドなどのオプション機能は、追加料金なくすべてのプランでご利用いただけます。※ 表示は税別の月額料金です。</p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="num">7</span>導入までの流れ</h2>
+    <div class="flow">
+      <div class="flow-step"><div class="n">1</div><div class="t">お問い合わせ<br>・ご相談</div></div>
+      <div class="flow-step"><div class="n">2</div><div class="t">ご契約・<br>アカウント発行</div></div>
+      <div class="flow-step"><div class="n">3</div><div class="t">初期データ移行<br>（Excel移行）</div></div>
+      <div class="flow-step"><div class="n">4</div><div class="t">対象手続きの<br>設定</div></div>
+      <div class="flow-step"><div class="n">5</div><div class="t">運用開始<br>（自動アラート開始）</div></div>
+    </div>
+  </div>
+
+  <div class="cta-footer">
+    <h3>まずは1ヶ月間の無料トライアルからお試しください</h3>
+    <p>本サービスに関するご質問・デモのご依頼は、担当までお気軽にお問い合わせください。</p>
+  </div>
+</div>
+
+</body>
+</html>
