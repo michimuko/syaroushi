@@ -1,6 +1,9 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { useHighlightRow } from '@/Composables/useHighlightRow';
 import { Head, Link, usePage } from '@inertiajs/vue3';
+
+useHighlightRow();
 
 defineProps({
     procedureTypes: Array,
@@ -74,6 +77,7 @@ const recurrenceLabels = {
                             <tbody class="divide-y divide-gray-100 bg-white">
                                 <tr
                                     v-for="procedureType in procedureTypes"
+                                    :id="`row-${procedureType.id}`"
                                     :key="procedureType.id"
                                     class="hover:bg-gray-50"
                                 >

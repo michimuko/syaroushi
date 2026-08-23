@@ -6,7 +6,10 @@ import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TaskStatusBadge from '@/Components/TaskStatusBadge.vue';
+import { useHighlightRow } from '@/Composables/useHighlightRow';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
+
+useHighlightRow();
 
 const props = defineProps({
     tasks: Object,
@@ -316,6 +319,7 @@ function cancelRevert() {
                             <tbody class="divide-y divide-gray-100 bg-white">
                                 <tr
                                     v-for="task in tasks.data"
+                                    :id="`row-${task.id}`"
                                     :key="task.id"
                                     class="cursor-pointer hover:bg-gray-50"
                                     @click="goToEdit(task)"

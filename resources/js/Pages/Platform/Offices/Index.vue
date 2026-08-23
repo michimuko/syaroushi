@@ -1,7 +1,10 @@
 <script setup>
 import PlatformAuthenticatedLayout from '@/Layouts/PlatformAuthenticatedLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import { useHighlightRow } from '@/Composables/useHighlightRow';
 import { Head, Link } from '@inertiajs/vue3';
+
+useHighlightRow();
 
 defineProps({
     offices: Object,
@@ -71,6 +74,7 @@ defineProps({
                             <tbody class="divide-y divide-gray-100 bg-white">
                                 <tr
                                     v-for="office in offices.data"
+                                    :id="`row-${office.id}`"
                                     :key="office.id"
                                     class="hover:bg-gray-50"
                                 >

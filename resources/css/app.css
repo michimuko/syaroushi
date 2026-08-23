@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* 登録・編集直後に一覧へ戻った際、対象行を一瞬ハイライトする（Composables/useHighlightRow.js） */
+@keyframes row-highlight-fade {
+    0% {
+        background-color: theme('colors.indigo.100');
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+.row-highlight {
+    animation: row-highlight-fade 2s ease-out;
+}

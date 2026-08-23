@@ -7,7 +7,10 @@ import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
+import { useHighlightRow } from '@/Composables/useHighlightRow';
 import { useForm } from '@inertiajs/vue3';
+
+useHighlightRow();
 
 const props = defineProps({
     title: String,
@@ -126,7 +129,7 @@ function destroyField() {
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 text-sm text-gray-700">
-                <tr v-for="field in fields" :key="field.id">
+                <tr v-for="field in fields" :id="`row-${field.id}`" :key="field.id">
                     <td class="py-2">{{ field.label }}</td>
                     <td class="py-2">{{ fieldTypeLabels[field.field_type] }}</td>
                     <td class="py-2">

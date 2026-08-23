@@ -67,7 +67,7 @@ class OfficeController extends Controller
             'owner_password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $office = DB::transaction(function () use ($validated) {
             $office = Office::create([
                 'name' => $validated['office_name'],
                 'office_code' => Str::lower($validated['office_code']),
@@ -85,9 +85,13 @@ class OfficeController extends Controller
                 'password' => Hash::make($validated['owner_password']),
                 'role' => UserRole::Owner,
             ]));
+
+            return $office;
         });
 
-        return redirect()->route('platform.offices.index')->with('success', '事務所を作成しました。');
+        return redirect()->route('platform.offices.index')
+            ->with('success', '事務所を作成しました。')
+            ->with('highlightId', $office->id);
     }
 
     /**
@@ -140,6 +144,8 @@ class OfficeController extends Controller
 
         $office->update($validated);
 
-        return redirect()->route('platform.offices.index')->with('success', '事務所情報を更新しました。');
+        return redirect()->route('platform.offices.index')
+            ->with('success', '事務所情報を更新しました。')
+            ->with('highlightId', $office->id);
     }
 }

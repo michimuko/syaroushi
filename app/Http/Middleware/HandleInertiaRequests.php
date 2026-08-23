@@ -42,6 +42,9 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
                 'desktopAppToken' => fn () => $request->session()->get('desktopAppToken'),
+                // 直前の登録・編集で対象になったレコードのID。一覧系画面はこれを見て
+                // 該当行までスクロール・ハイライトする（Composables/useHighlightRow.js参照）。
+                'highlightId' => fn () => $request->session()->get('highlightId'),
             ],
             'vapidPublicKey' => config('webpush.vapid.public_key'),
         ];

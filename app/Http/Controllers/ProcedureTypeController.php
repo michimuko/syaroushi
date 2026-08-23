@@ -69,7 +69,9 @@ class ProcedureTypeController extends Controller
 
         $procedureType->update($validated);
 
-        return redirect()->route('procedure-types.index')->with('success', '手続き種別を更新しました。');
+        return redirect()->route('procedure-types.index')
+            ->with('success', '手続き種別を更新しました。')
+            ->with('highlightId', $procedureType->id);
     }
 
     /**

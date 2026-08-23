@@ -6,7 +6,10 @@ import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import UserRoleBadge from '@/Components/UserRoleBadge.vue';
+import { useHighlightRow } from '@/Composables/useHighlightRow';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+
+useHighlightRow();
 
 defineProps({
     users: Object,
@@ -83,6 +86,7 @@ function destroyUser() {
                             <tbody class="divide-y divide-gray-100 bg-white">
                                 <tr
                                     v-for="targetUser in users.data"
+                                    :id="`row-${targetUser.id}`"
                                     :key="targetUser.id"
                                     class="hover:bg-gray-50"
                                 >

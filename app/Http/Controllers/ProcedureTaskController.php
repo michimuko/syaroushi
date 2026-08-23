@@ -120,9 +120,11 @@ class ProcedureTaskController extends Controller
         $validated['status'] = TaskStatus::NotStarted;
         $validated['original_due_date'] = $validated['due_date'];
 
-        ProcedureTask::create($validated);
+        $task = ProcedureTask::create($validated);
 
-        return redirect()->route('tasks.index')->with('success', 'タスクを作成しました。');
+        return redirect()->route('tasks.index')
+            ->with('success', 'タスクを作成しました。')
+            ->with('highlightId', $task->id);
     }
 
     /**
@@ -176,7 +178,9 @@ class ProcedureTaskController extends Controller
         $task->update($validated);
 
         // 一覧やカレンダーなど、遷移元の画面に戻す（フィルタ条件・表示月等を保ったまま）
-        return redirect($returnTo ?? route('tasks.index'))->with('success', 'タスクを更新しました。');
+        return redirect($returnTo ?? route('tasks.index'))
+            ->with('success', 'タスクを更新しました。')
+            ->with('highlightId', $task->id);
     }
 
     /**

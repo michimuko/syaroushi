@@ -76,7 +76,9 @@ class UserController extends Controller
 
         $user->notify(new UserAccountCreated(Auth::user()->office));
 
-        return redirect()->route('users.index')->with('success', 'ユーザーを登録しました。');
+        return redirect()->route('users.index')
+            ->with('success', 'ユーザーを登録しました。')
+            ->with('highlightId', $user->id);
     }
 
     /**
@@ -127,7 +129,9 @@ class UserController extends Controller
 
         $user->update($validated);
 
-        return redirect()->route('users.index')->with('success', 'ユーザー情報を更新しました。');
+        return redirect()->route('users.index')
+            ->with('success', 'ユーザー情報を更新しました。')
+            ->with('highlightId', $user->id);
     }
 
     /**

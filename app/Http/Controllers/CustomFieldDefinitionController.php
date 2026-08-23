@@ -40,14 +40,16 @@ class CustomFieldDefinitionController extends Controller
             'options.*' => 'nullable|required_if:field_type,select|string|max:255|distinct',
         ]);
 
-        CustomFieldDefinition::create([
+        $definition = CustomFieldDefinition::create([
             'target' => $validated['target'],
             'label' => $validated['label'],
             'field_type' => $validated['field_type'],
             'options' => $validated['field_type'] === CustomFieldType::Select->value ? $validated['options'] : null,
         ]);
 
-        return back()->with('success', 'カスタムフィールドを追加しました。');
+        return back()
+            ->with('success', 'カスタムフィールドを追加しました。')
+            ->with('highlightId', $definition->id);
     }
 
     public function update(Request $request, CustomFieldDefinition $customFieldDefinition): RedirectResponse
@@ -69,7 +71,9 @@ class CustomFieldDefinitionController extends Controller
             ...($isSelect ? ['options' => $validated['options']] : []),
         ]);
 
-        return back()->with('success', 'カスタムフィールドを更新しました。');
+        return back()
+            ->with('success', 'カスタムフィールドを更新しました。')
+            ->with('highlightId', $customFieldDefinition->id);
     }
 
     public function destroy(CustomFieldDefinition $customFieldDefinition): RedirectResponse

@@ -34,9 +34,11 @@ class BillingPlanController extends Controller
     {
         $validated = $request->validate($this->rules());
 
-        BillingPlan::create($validated);
+        $billingPlan = BillingPlan::create($validated);
 
-        return redirect()->route('platform.billing-plans.index')->with('success', 'プランを追加しました。');
+        return redirect()->route('platform.billing-plans.index')
+            ->with('success', 'プランを追加しました。')
+            ->with('highlightId', $billingPlan->id);
     }
 
     public function update(Request $request, BillingPlan $billing_plan): RedirectResponse
@@ -45,7 +47,9 @@ class BillingPlanController extends Controller
 
         $billing_plan->update($validated);
 
-        return redirect()->route('platform.billing-plans.index')->with('success', 'プランを更新しました。');
+        return redirect()->route('platform.billing-plans.index')
+            ->with('success', 'プランを更新しました。')
+            ->with('highlightId', $billing_plan->id);
     }
 
     /**

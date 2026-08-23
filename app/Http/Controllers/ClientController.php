@@ -70,9 +70,11 @@ class ClientController extends Controller
 
         $validated = $this->validateClient($request);
 
-        Client::create($validated);
+        $client = Client::create($validated);
 
-        return redirect()->route('clients.index')->with('success', '顧問先を登録しました。');
+        return redirect()->route('clients.index')
+            ->with('success', '顧問先を登録しました。')
+            ->with('highlightId', $client->id);
     }
 
     /**
@@ -111,7 +113,9 @@ class ClientController extends Controller
 
         $client->update($validated);
 
-        return redirect()->route('clients.index')->with('success', '顧問先を更新しました。');
+        return redirect()->route('clients.index')
+            ->with('success', '顧問先を更新しました。')
+            ->with('highlightId', $client->id);
     }
 
     /**

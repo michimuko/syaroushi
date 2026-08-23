@@ -8,7 +8,10 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
+import { useHighlightRow } from '@/Composables/useHighlightRow';
 import { Head, useForm } from '@inertiajs/vue3';
+
+useHighlightRow();
 
 const props = defineProps({
     billingPlans: Array,
@@ -215,6 +218,7 @@ const formatYen = (value) =>
                             <tbody class="divide-y divide-gray-100 bg-white">
                                 <tr
                                     v-for="plan in billingPlans"
+                                    :id="`row-${plan.id}`"
                                     :key="plan.id"
                                     class="hover:bg-gray-50"
                                     :class="{ 'opacity-50': !plan.is_active }"
