@@ -1,1 +1,0 @@
-PASS BATCH-013: active事務所の前月分請求=1件(期待1件, period_start=2026-07-01)

@@ -1,1 +1,0 @@
-PASS BATCH-002: 非active購読=0, 非active顧問先=0, 非active手続種別=0 (期待いずれも0), 正常系=1(期待1)

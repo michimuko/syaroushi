@@ -1,1 +1,0 @@
-PASS BATCH-005: monthly生成=4件(期待>0), one_time生成=0件(期待0), custom生成=0件(期待0)
