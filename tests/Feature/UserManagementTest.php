@@ -22,6 +22,29 @@ test('owner can list only their own office\'s users', function () {
     );
 });
 
+test('owner can search users by name or email within their own office', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create(['name' => '事務所オーナー']);
+    $target = User::factory()->for($office)->create([
+        'name' => '山田太郎',
+        'email' => 'yamada@example.com',
+    ]);
+    User::factory()->for($office)->create(['name' => '鈴木花子']);
+
+    $byName = $this->actingAs($owner)->get(route('users.index', ['search' => '山田']));
+    $byName->assertInertia(fn ($page) => $page
+        ->component('Users/Index')
+        ->has('users.data', 1)
+        ->where('users.data.0.id', $target->id)
+    );
+
+    $byEmail = $this->actingAs($owner)->get(route('users.index', ['search' => 'yamada@']));
+    $byEmail->assertInertia(fn ($page) => $page
+        ->has('users.data', 1)
+        ->where('users.data.0.id', $target->id)
+    );
+});
+
 test('staff cannot access any user management action', function () {
     $office = Office::factory()->create();
     $staff = User::factory()->for($office)->create();

@@ -28,6 +28,33 @@ test('a platform admin can create an office with its first owner in one go', fun
         ->and($owner->role->value)->toBe('owner');
 });
 
+test('a platform admin can search offices by name or office_code', function () {
+    $admin = PlatformAdmin::factory()->create();
+    $target = Office::factory()->create([
+        'name' => '新宿社会保険労務士事務所',
+        'office_code' => 'shinjuku-office',
+    ]);
+    Office::factory()->create([
+        'name' => '渋谷社会保険労務士事務所',
+        'office_code' => 'shibuya-office',
+    ]);
+
+    $byName = $this->actingAs($admin, 'platform')
+        ->get(route('platform.offices.index', ['search' => '新宿']));
+    $byName->assertInertia(fn ($page) => $page
+        ->component('Platform/Offices/Index')
+        ->has('offices.data', 1)
+        ->where('offices.data.0.id', $target->id)
+    );
+
+    $byCode = $this->actingAs($admin, 'platform')
+        ->get(route('platform.offices.index', ['search' => 'shinjuku']));
+    $byCode->assertInertia(fn ($page) => $page
+        ->has('offices.data', 1)
+        ->where('offices.data.0.id', $target->id)
+    );
+});
+
 test('a platform admin creating an office keeps the new owner in the new office even if a web guard session for another office is active in the same browser', function () {
     $admin = PlatformAdmin::factory()->create();
     $existingOffice = Office::factory()->create();

@@ -32,14 +32,31 @@ class OfficeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $validated = $request->validate([
+            'search' => 'nullable|string|max:255',
+        ]);
+
+        $offices = Office::query()
+            ->withCount('users')
+            ->with('billingPlan')
+            ->when(
+                $validated['search'] ?? null,
+                fn ($query, $search) => $query->where(fn ($q) => $q
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('office_code', 'like', "%{$search}%")
+                ),
+            )
+            ->orderBy('name')
+            ->paginate(20)
+            ->withQueryString();
+
         return Inertia::render('Platform/Offices/Index', [
-            'offices' => Office::query()
-                ->withCount('users')
-                ->with('billingPlan')
-                ->orderBy('name')
-                ->paginate(20),
+            'offices' => $offices,
+            'filters' => [
+                'search' => $validated['search'] ?? '',
+            ],
         ]);
     }
 

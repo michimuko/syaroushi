@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import Modal from '@/Components/Modal.vue';
@@ -7,16 +7,38 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import UserRoleBadge from '@/Components/UserRoleBadge.vue';
 import { useHighlightRow } from '@/Composables/useHighlightRow';
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 
 useHighlightRow();
 
-defineProps({
+const props = defineProps({
     users: Object,
+    filters: Object,
 });
 
 const page = usePage();
 const currentUserId = () => page.props.auth.user.id;
+
+const search = ref(props.filters.search);
+
+let searchDebounce = null;
+
+function applyFilters() {
+    router.get(
+        route('users.index'),
+        { search: search.value || undefined },
+        { preserveState: true, replace: true },
+    );
+}
+
+watch(search, () => {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(applyFilters, 300);
+});
+
+function resetFilters() {
+    search.value = '';
+}
 
 const permissionLabels = {
     manage_procedure_types: '手続き種別マスタ',
@@ -60,6 +82,24 @@ function destroyUser() {
 
         <div class="py-8">
             <div class="mx-auto max-w-5xl sm:px-6 lg:px-8">
+                <!-- Filters -->
+                <div class="mb-4 flex flex-wrap items-center gap-3">
+                    <input
+                        v-model="search"
+                        type="text"
+                        placeholder="氏名・メールアドレスで検索"
+                        class="w-64 rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    />
+                    <button
+                        v-if="search"
+                        type="button"
+                        class="text-sm text-gray-500 underline hover:text-gray-700"
+                        @click="resetFilters"
+                    >
+                        フィルタをリセット
+                    </button>
+                </div>
+
                 <div class="overflow-hidden rounded-lg bg-white shadow-sm">
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
@@ -168,7 +208,15 @@ function destroyUser() {
                                         colspan="4"
                                         class="px-4 py-12 text-center text-sm text-gray-500"
                                     >
-                                        登録されているユーザーがいません。
+                                        条件に一致するユーザーがいません。
+                                        <button
+                                            v-if="search"
+                                            type="button"
+                                            class="ml-1 text-indigo-600 underline hover:text-indigo-800"
+                                            @click="resetFilters"
+                                        >
+                                            フィルタをリセット
+                                        </button>
                                     </td>
                                 </tr>
                             </tbody>

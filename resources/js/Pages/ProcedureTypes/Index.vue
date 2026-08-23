@@ -1,11 +1,12 @@
 <script setup>
+import { computed, ref } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { useHighlightRow } from '@/Composables/useHighlightRow';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 
 useHighlightRow();
 
-defineProps({
+const props = defineProps({
     procedureTypes: Array,
 });
 
@@ -23,6 +24,19 @@ const recurrenceLabels = {
     one_time: '都度',
     custom: 'カスタム',
 };
+
+const search = ref('');
+
+const filteredProcedureTypes = computed(() => {
+    const keyword = search.value.trim().toLowerCase();
+    if (!keyword) return props.procedureTypes;
+
+    return props.procedureTypes.filter(
+        (procedureType) =>
+            procedureType.name.toLowerCase().includes(keyword) ||
+            procedureType.category.toLowerCase().includes(keyword),
+    );
+});
 </script>
 
 <template>
@@ -40,6 +54,24 @@ const recurrenceLabels = {
                 <p class="mb-4 text-sm text-gray-500">
                     全事務所で共有される法定手続きのマスタデータです。周期・通知タイミングの編集は管理者のみ行えます。
                 </p>
+
+                <!-- Filters -->
+                <div class="mb-4 flex flex-wrap items-center gap-3">
+                    <input
+                        v-model="search"
+                        type="text"
+                        placeholder="手続き名・カテゴリで検索"
+                        class="w-64 rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    />
+                    <button
+                        v-if="search"
+                        type="button"
+                        class="text-sm text-gray-500 underline hover:text-gray-700"
+                        @click="search = ''"
+                    >
+                        フィルタをリセット
+                    </button>
+                </div>
 
                 <div class="overflow-hidden rounded-lg bg-white shadow-sm">
                     <div class="overflow-x-auto">
@@ -76,7 +108,7 @@ const recurrenceLabels = {
                             </thead>
                             <tbody class="divide-y divide-gray-100 bg-white">
                                 <tr
-                                    v-for="procedureType in procedureTypes"
+                                    v-for="procedureType in filteredProcedureTypes"
                                     :id="`row-${procedureType.id}`"
                                     :key="procedureType.id"
                                     class="hover:bg-gray-50"
@@ -132,6 +164,22 @@ const recurrenceLabels = {
                                         >
                                             編集
                                         </Link>
+                                    </td>
+                                </tr>
+                                <tr v-if="filteredProcedureTypes.length === 0">
+                                    <td
+                                        colspan="6"
+                                        class="px-4 py-12 text-center text-sm text-gray-500"
+                                    >
+                                        条件に一致する手続き種別がありません。
+                                        <button
+                                            v-if="search"
+                                            type="button"
+                                            class="ml-1 text-indigo-600 underline hover:text-indigo-800"
+                                            @click="search = ''"
+                                        >
+                                            フィルタをリセット
+                                        </button>
                                     </td>
                                 </tr>
                             </tbody>

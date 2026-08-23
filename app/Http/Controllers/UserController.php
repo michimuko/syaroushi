@@ -25,17 +25,32 @@ class UserController extends Controller
      * 必ずAuth::user()->office->users()経由でクエリし、他事務所のユーザーが
      * 一覧に混ざらないようにする。
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $this->authorize('viewAny', User::class);
 
+        $validated = $request->validate([
+            'search' => 'nullable|string|max:255',
+        ]);
+
         $users = Auth::user()->office->users()
+            ->when(
+                $validated['search'] ?? null,
+                fn ($query, $search) => $query->where(fn ($q) => $q
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                ),
+            )
             ->orderBy('role')
             ->orderBy('name')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
         return Inertia::render('Users/Index', [
             'users' => $users,
+            'filters' => [
+                'search' => $validated['search'] ?? '',
+            ],
         ]);
     }
 
