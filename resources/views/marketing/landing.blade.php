@@ -460,6 +460,56 @@
             </div>
         </section>
 
+        {{-- 資料請求・マニュアル --}}
+        @php
+            $materialsSubject = '【資料請求】'.config('app.name');
+            $materialsBody = "資料請求を希望します。\n"
+                ."\n"
+                ."【事務所名】\n"
+                ."\n"
+                ."【ご担当者名】\n"
+                ."\n"
+                ."【その他ご要望があればご記載ください】\n"
+                ."\n";
+            $materialsMailto = 'mailto:'.$contactEmail.'?subject='.urlencode($materialsSubject).'&body='.urlencode($materialsBody);
+        @endphp
+        <section class="border-t border-slate-100 bg-slate-50">
+            <div class="mx-auto max-w-6xl px-6 py-20">
+                <div class="mx-auto max-w-2xl text-center">
+                    <h2 class="reveal text-2xl font-bold text-slate-900 sm:text-3xl">資料でじっくりご検討いただけます</h2>
+                    <p class="reveal mt-3 text-sm text-slate-600 sm:text-base">
+                        導入のご検討に役立つ資料をご用意しています。お気軽にご請求ください。
+                    </p>
+                </div>
+                <div class="mx-auto mt-12 grid max-w-3xl gap-6 sm:grid-cols-2">
+                    <div class="reveal flex flex-col rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+                        <div class="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 7l8 6 8-6"/></svg>
+                        </div>
+                        <h3 class="font-semibold text-slate-900">サービス資料を請求する</h3>
+                        <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-600">
+                            事務所名・ご要望を記入するだけのメールをその場で作成できます。担当より資料をお送りします。
+                        </p>
+                        <a href="{{ $materialsMailto }}" class="mt-6 block w-full rounded-md bg-indigo-600 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-indigo-700">
+                            資料請求メールを作成する
+                        </a>
+                    </div>
+                    <div class="reveal flex flex-col rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-100" style="transition-delay: .1s;">
+                        <div class="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-sky-50 text-sky-600">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/></svg>
+                        </div>
+                        <h3 class="font-semibold text-slate-900">操作マニュアルを見る</h3>
+                        <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-600">
+                            実際の画面操作やボタンの動作までまとめた詳細マニュアルをPDFでご覧いただけます。
+                        </p>
+                        <a href="{{ route('manual.download') }}" class="mt-6 block w-full rounded-md border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-slate-50">
+                            操作マニュアルをダウンロード（PDF）
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         {{-- 最終CTA --}}
         <section class="mx-auto max-w-6xl px-6 py-20">
             <div class="reveal relative overflow-hidden rounded-2xl bg-indigo-600 px-8 py-14 text-center sm:px-16">

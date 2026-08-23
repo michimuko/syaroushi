@@ -35,6 +35,11 @@ Route::get('/', function () {
     ]);
 })->name('landing');
 
+// LPの「資料をダウンロード」ボタンから公開アクセスされる（会員登録前の見込み客向けのため認証不要）。
+Route::get('/manual.pdf', function () {
+    return response()->download(base_path('docs/操作マニュアル.pdf'), 'キゲンバン_操作マニュアル.pdf');
+})->name('manual.download');
+
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth:web', 'verified'])
     ->name('dashboard');

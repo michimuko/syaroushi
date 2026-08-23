@@ -8,8 +8,13 @@
             >
                 運営管理
             </span>
-            <span class="text-lg font-semibold text-white">
-                社労士業務進捗管理システム
+            <span class="flex flex-col items-center">
+                <span class="text-lg font-semibold text-white">
+                    キゲンバン
+                </span>
+                <span class="text-xs text-slate-400">
+                    社労士業務進捗管理
+                </span>
             </span>
         </div>
 

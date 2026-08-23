@@ -60,8 +60,13 @@ watch(
                     <ApplicationLogo
                         class="h-8 w-auto shrink-0 fill-current text-indigo-600"
                     />
-                    <span class="text-base font-semibold text-gray-800">
-                        社労士業務進捗管理
+                    <span class="flex flex-col leading-tight">
+                        <span class="text-base font-semibold text-gray-800">
+                            キゲンバン
+                        </span>
+                        <span class="text-[10px] text-gray-400">
+                            社労士業務進捗管理
+                        </span>
                     </span>
                 </Link>
             </div>
@@ -217,8 +222,13 @@ watch(
                         />
                     </svg>
                 </button>
-                <span class="text-sm font-semibold text-gray-800">
-                    社労士業務進捗管理
+                <span class="flex flex-col leading-tight">
+                    <span class="text-sm font-semibold text-gray-800">
+                        キゲンバン
+                    </span>
+                    <span class="text-[9px] text-gray-400">
+                        社労士業務進捗管理
+                    </span>
                 </span>
             </div>
 

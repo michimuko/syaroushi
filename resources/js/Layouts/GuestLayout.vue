@@ -10,8 +10,13 @@ import { Link } from '@inertiajs/vue3';
         <div>
             <Link href="/" class="flex flex-col items-center gap-2">
                 <ApplicationLogo class="h-12 w-12 fill-current text-indigo-600" />
-                <span class="text-lg font-semibold text-gray-800">
-                    社労士業務進捗管理
+                <span class="flex flex-col items-center">
+                    <span class="text-lg font-semibold text-gray-800">
+                        キゲンバン
+                    </span>
+                    <span class="text-xs text-gray-400">
+                        社労士業務進捗管理
+                    </span>
                 </span>
             </Link>
         </div>

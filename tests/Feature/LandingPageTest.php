@@ -18,3 +18,10 @@ test('the root url shows the landing page even for authenticated users', functio
     $response->assertStatus(200);
     $response->assertViewIs('marketing.landing');
 });
+
+test('the manual PDF can be downloaded from the landing page without authentication', function () {
+    $response = $this->get('/manual.pdf');
+
+    $response->assertOk();
+    $response->assertHeader('content-type', 'application/pdf');
+});
