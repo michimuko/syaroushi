@@ -19,6 +19,83 @@ test('a platform admin can update the platform-wide billing settings', function 
         ->and($setting->billing_cycle->value)->toBe('monthly');
 });
 
+test('changing trial_days recalculates trial_ends_at for existing offices still in trial without an active Stripe subscription', function () {
+    $admin = PlatformAdmin::factory()->create();
+    BillingSetting::current()->update(['trial_days' => 30]);
+
+    $trialingOffice = Office::factory()->create([
+        'created_at' => now()->subDays(5),
+        'trial_ends_at' => now()->subDays(5)->addDays(30),
+        'stripe_subscription_status' => null,
+    ]);
+
+    $this->actingAs($admin, 'platform')->put(route('platform.billing-settings.update'), [
+        'trial_days' => 60,
+        'billing_cycle' => 'monthly',
+    ]);
+
+    expect($trialingOffice->fresh()->trial_ends_at->toDateString())
+        ->toBe($trialingOffice->created_at->copy()->addDays(60)->toDateString());
+});
+
+test('changing trial_days does not touch offices with an already-expired trial', function () {
+    $admin = PlatformAdmin::factory()->create();
+    BillingSetting::current()->update(['trial_days' => 30]);
+
+    $expiredOffice = Office::factory()->create([
+        'created_at' => now()->subDays(40),
+        'trial_ends_at' => now()->subDays(10),
+        'stripe_subscription_status' => null,
+    ]);
+
+    $this->actingAs($admin, 'platform')->put(route('platform.billing-settings.update'), [
+        'trial_days' => 60,
+        'billing_cycle' => 'monthly',
+    ]);
+
+    expect($expiredOffice->fresh()->trial_ends_at->toDateString())
+        ->toBe(now()->subDays(10)->toDateString());
+});
+
+test('changing trial_days does not touch offices already on an active Stripe subscription', function () {
+    $admin = PlatformAdmin::factory()->create();
+    BillingSetting::current()->update(['trial_days' => 30]);
+
+    $subscribedOffice = Office::factory()->create([
+        'created_at' => now()->subDays(5),
+        'trial_ends_at' => now()->addDays(25),
+        'stripe_subscription_status' => 'active',
+    ]);
+
+    $this->actingAs($admin, 'platform')->put(route('platform.billing-settings.update'), [
+        'trial_days' => 60,
+        'billing_cycle' => 'monthly',
+    ]);
+
+    expect($subscribedOffice->fresh()->trial_ends_at->toDateString())
+        ->toBe(now()->addDays(25)->toDateString());
+});
+
+test('leaving trial_days unchanged does not touch any office\'s trial_ends_at', function () {
+    $admin = PlatformAdmin::factory()->create();
+    BillingSetting::current()->update(['trial_days' => 30]);
+
+    $trialingOffice = Office::factory()->create([
+        'created_at' => now()->subDays(5),
+        'trial_ends_at' => now()->subDays(5)->addDays(30),
+        'stripe_subscription_status' => null,
+    ]);
+    $originalTrialEndsAt = $trialingOffice->trial_ends_at;
+
+    $this->actingAs($admin, 'platform')->put(route('platform.billing-settings.update'), [
+        'trial_days' => 30,
+        'billing_cycle' => 'monthly',
+    ]);
+
+    expect($trialingOffice->fresh()->trial_ends_at->toDateString())
+        ->toBe($originalTrialEndsAt->toDateString());
+});
+
 test('billing settings default to the seeded values', function () {
     $setting = BillingSetting::current();
 
