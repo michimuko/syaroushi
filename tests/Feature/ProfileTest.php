@@ -25,6 +25,7 @@ test('profile information can be updated', function () {
 
     $response
         ->assertSessionHasNoErrors()
+        ->assertSessionHas('success', 'プロフィールを更新しました。')
         ->assertRedirect('/profile');
 
     $user->refresh();
