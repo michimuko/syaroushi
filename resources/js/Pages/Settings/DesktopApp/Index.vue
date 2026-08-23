@@ -96,10 +96,11 @@ function revokeToken() {
                     下記からインストーラーをダウンロードして実行し、続けてAPIトークンをアプリの初回起動時に設定してください。トークンは本人の通知のみ取得できます。
                 </p>
 
-                <div class="rounded-lg bg-white p-6 shadow-sm">
-                    <h3 class="mb-1 text-sm font-semibold text-gray-700">
+                <h3 class="mb-1 text-sm font-semibold text-gray-700">
                         1. アプリをダウンロードしてインストールする
-                    </h3>
+                </h3>
+
+                <div class="rounded-lg bg-white p-6 shadow-sm">
 
                     <template v-if="release">
                         <p class="mb-4 text-xs text-gray-500">
@@ -193,10 +194,11 @@ function revokeToken() {
                     >{{ issuedToken }}</code>
                 </div>
 
-                <div class="rounded-lg bg-white p-6 shadow-sm">
-                    <h3 class="mb-4 text-sm font-semibold text-gray-700">
+                <h3 class="mb-4 text-sm font-semibold text-gray-700">
                         3. トークンの状態
-                    </h3>
+                </h3>
+
+                <div class="rounded-lg bg-white p-6 shadow-sm">
 
                     <div v-if="token" class="space-y-4">
                         <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
