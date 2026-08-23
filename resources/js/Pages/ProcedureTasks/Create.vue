@@ -19,11 +19,19 @@ const props = defineProps({
     customFieldDefinitions: Array,
 });
 
+// <input type="date">に渡すため、UTC変換によるずれが出ないローカル日付から組み立てる
+function todayDateString() {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${now.getFullYear()}-${month}-${day}`;
+}
+
 const form = useForm({
     client_id: '',
     procedure_type_id: '',
     title: '',
-    due_date: '',
+    due_date: todayDateString(),
     assigned_user_id: '',
     notes: '',
     custom_fields: initialCustomFieldValues(props.customFieldDefinitions),
