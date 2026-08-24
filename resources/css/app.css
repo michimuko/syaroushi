@@ -15,3 +15,13 @@
 .row-highlight {
     animation: row-highlight-fade 2s ease-out;
 }
+
+/* 画面遷移を伴わない通信中（axiosでの部分読み込み）を示す細いバー */
+@keyframes loading-bar {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(300%);
+    }
+}

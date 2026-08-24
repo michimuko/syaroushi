@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const props = defineProps({
     office: Object,
@@ -25,8 +26,15 @@ const subscriptionStatusLabel = {
     unpaid: '未払い',
 };
 
+const checkoutProcessing = ref(false);
+
 const startCheckout = () => {
-    router.post(route('settings.billing.checkout'));
+    checkoutProcessing.value = true;
+    router.post(route('settings.billing.checkout'), {}, {
+        onFinish: () => {
+            checkoutProcessing.value = false;
+        },
+    });
 };
 </script>
 
@@ -178,9 +186,15 @@ const startCheckout = () => {
                                 billingPlan?.checkout_available &&
                                 !office.has_active_stripe_subscription
                             "
+                            :class="{ 'opacity-25': checkoutProcessing }"
+                            :disabled="checkoutProcessing"
                             @click="startCheckout"
                         >
-                            このプランでお申し込みする
+                            {{
+                                checkoutProcessing
+                                    ? '手続き中...'
+                                    : 'このプランでお申し込みする'
+                            }}
                         </PrimaryButton>
                         <p
                             v-else-if="

@@ -5,6 +5,9 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import jaLocale from '@fullcalendar/core/locales/ja';
 import { Head, router } from '@inertiajs/vue3';
 import axios from 'axios';
+import { ref } from 'vue';
+
+const isLoadingEvents = ref(false);
 
 const legend = [
     { label: '未着手', color: '#9ca3af' },
@@ -22,6 +25,7 @@ const calendarOptions = {
     height: 'auto',
     dayMaxEvents: true, // 日付セル内で件数が多い場合は「+N件」に省略し、クリックで一覧展開する（FullCalendar標準機能）
     events: async (fetchInfo, successCallback, failureCallback) => {
+        isLoadingEvents.value = true;
         try {
             const response = await axios.get(route('calendar.events'), {
                 params: {
@@ -32,6 +36,8 @@ const calendarOptions = {
             successCallback(response.data);
         } catch (error) {
             failureCallback(error);
+        } finally {
+            isLoadingEvents.value = false;
         }
     },
     eventClick: (info) => {
@@ -74,7 +80,13 @@ const calendarOptions = {
                     </div>
                 </div>
 
-                <div class="rounded-lg bg-white p-4 shadow-sm">
+                <div class="relative overflow-hidden rounded-lg bg-white p-4 shadow-sm">
+                    <div
+                        v-if="isLoadingEvents"
+                        class="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-gray-100"
+                    >
+                        <div class="h-full w-1/3 animate-[loading-bar_1s_ease-in-out_infinite] bg-gray-500" />
+                    </div>
                     <FullCalendar :options="calendarOptions" />
                 </div>
             </div>
