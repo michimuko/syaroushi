@@ -10,6 +10,11 @@
         <meta property="og:description" content="顧問先ごとの法定手続きの進捗と期限を一元管理し、自動アラートで期限漏れを防ぐ社労士事務所向けSaaS。">
         <meta name="robots" content="index,follow">
 
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
+        <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
+
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet">
 
@@ -51,10 +56,7 @@
         <header class="sticky top-0 z-20 border-b border-slate-100 bg-white/90 backdrop-blur">
             <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
                 <div class="flex items-center gap-2">
-                    <svg viewBox="0 0 24 24" class="h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg">
-                        <path fill="currentColor" d="M7 2a1 1 0 011 1v1h8V3a1 1 0 112 0v1h1a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h1V3a1 1 0 011-1zM4 9v11a1 1 0 001 1h14a1 1 0 001-1V9H4z"/>
-                        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M8 13.2l2.4 2.4L16 10.4"/>
-                    </svg>
+                    <img src="{{ asset('images/brand/icon-64.png') }}" alt="{{ config('app.name') }}" class="h-8 w-8 rounded-lg">
                     <span class="text-lg font-semibold tracking-tight text-slate-900">{{ config('app.name') }}</span>
                 </div>
                 <nav class="flex items-center gap-6">
