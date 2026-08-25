@@ -4,17 +4,8 @@ use App\Enums\UserRole;
 use App\Models\BillingPlan;
 use App\Models\Office;
 use App\Models\PlatformAdmin;
-use App\Services\Stripe\StripeSubscriptionGateway;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Notification;
-
-function mockSuccessfulCheckoutGateway(string $checkoutUrl = 'https://checkout.stripe.com/test-session'): void
-{
-    test()->mock(StripeSubscriptionGateway::class, function ($mock) use ($checkoutUrl) {
-        $mock->shouldReceive('createCustomer')->once()->andReturn('cus_test_123');
-        $mock->shouldReceive('createCheckoutSessionUrl')->once()->andReturn($checkoutUrl);
-    });
-}
 
 test('registration screen can be rendered with the checkout-eligible billing plans', function () {
     // 初期マイグレーションで既にスターター/スタンダード/プロフェッショナル/エンタープライズが
@@ -34,9 +25,8 @@ test('registration screen can be rendered with the checkout-eligible billing pla
             ->where('selectedPlanId', $standardPlan->id));
 });
 
-test('new users can register, get a trial and plan assigned, and are redirected to Stripe Checkout', function () {
+test('new users can register and get a trial and plan assigned without registering a card', function () {
     $plan = BillingPlan::factory()->create(['stripe_price_id' => 'price_test_123']);
-    mockSuccessfulCheckoutGateway();
 
     $response = $this->post('/register', [
         'office_name' => 'テスト社労士事務所',
@@ -50,12 +40,13 @@ test('new users can register, get a trial and plan assigned, and are redirected 
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect('https://checkout.stripe.com/test-session');
+    $response->assertRedirect(route('dashboard', absolute: false));
 
     $user = auth()->user();
     expect($user->role)->toBe(UserRole::Owner);
     expect($user->office->name)->toBe('テスト社労士事務所');
     expect($user->office->billing_plan_id)->toBe($plan->id);
+    expect($user->office->stripe_customer_id)->toBeNull();
     expect($user->office->trial_ends_at)->not->toBeNull();
     expect($user->office->trial_ends_at->isFuture())->toBeTrue();
 });
@@ -63,7 +54,6 @@ test('new users can register, get a trial and plan assigned, and are redirected 
 test('new users receive a verification email and cannot reach the dashboard until verified', function () {
     Notification::fake();
     $plan = BillingPlan::factory()->create(['stripe_price_id' => 'price_test_123']);
-    mockSuccessfulCheckoutGateway();
 
     $this->post('/register', [
         'office_name' => 'メール確認テスト事務所',
@@ -136,36 +126,10 @@ test('a plan without a Stripe price cannot be selected when registering', functi
     expect(Office::where('name', '個別見積りプラン指定テスト事務所')->exists())->toBeFalse();
 });
 
-test('the account is still created even if starting Stripe Checkout fails right after registration', function () {
-    $plan = BillingPlan::factory()->create(['stripe_price_id' => 'price_test_123']);
-    $this->mock(StripeSubscriptionGateway::class, function ($mock) {
-        $mock->shouldReceive('createCustomer')->once()->andThrow(new Exception('stripe unreachable'));
-    });
-
-    $response = $this->post('/register', [
-        'office_name' => 'Stripe失敗テスト事務所',
-        'office_code' => 'stripe-failure-office',
-        'name' => 'Test User',
-        'login_id' => 'test-user-stripe-failure',
-        'email' => 'stripe-failure@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
-        'billing_plan_id' => $plan->id,
-    ]);
-
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('settings.billing.index', absolute: false));
-    expect(session('error'))->not->toBeNull();
-
-    $user = auth()->user();
-    expect($user->office->name)->toBe('Stripe失敗テスト事務所');
-});
-
 test('registering while a platform admin session is active in the same browser still assigns the new office correctly', function () {
     $admin = PlatformAdmin::factory()->create();
     $otherOffice = Office::factory()->create();
     $plan = BillingPlan::factory()->create(['stripe_price_id' => 'price_test_123']);
-    mockSuccessfulCheckoutGateway();
 
     $response = $this->actingAs($admin, 'platform')->post('/register', [
         'office_name' => 'もう一つのテスト事務所',
@@ -179,7 +143,7 @@ test('registering while a platform admin session is active in the same browser s
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect('https://checkout.stripe.com/test-session');
+    $response->assertRedirect(route('dashboard', absolute: false));
 
     $user = auth()->user();
     $office = Office::where('name', 'もう一つのテスト事務所')->sole();

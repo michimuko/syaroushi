@@ -203,7 +203,7 @@ const submit = () => {
             </div>
 
             <p class="mt-4 text-xs text-gray-500">
-                トライアル期間中は課金されません。続けてStripeの決済ページでお支払い方法をご登録いただきます。
+                クレジットカード登録は不要です。トライアル終了後もご継続いただく場合に、その時点でお支払い方法をご登録いただきます。
             </p>
 
             <div class="mt-2 flex items-center justify-end">

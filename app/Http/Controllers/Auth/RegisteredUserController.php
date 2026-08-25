@@ -8,7 +8,6 @@ use App\Models\BillingPlan;
 use App\Models\BillingSetting;
 use App\Models\Office;
 use App\Models\User;
-use App\Services\Stripe\StripeCheckoutStarter;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,7 +20,6 @@ use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
-use Throwable;
 
 class RegisteredUserController extends Controller
 {
@@ -58,12 +56,12 @@ class RegisteredUserController extends Controller
      * 新規登録は「事務所（テナント）の新規契約」を意味するため、
      * officeを新規作成し、登録者をそのofficeのownerとして扱う。トライアル期限・プランの割当は
      * 運営者代理作成（Platform/OfficeController::store）と対称に、登録時点で必ず設定する。
-     * 登録完了後はStripe Checkoutへ自動遷移させ、トライアル終了日をそのままsubscriptionの
-     * trial_endとして渡す（カードは登録時に預かり、トライアル終了の瞬間にStripe側が自動課金する）。
+     * カードは登録時には求めない（トライアル終了後、継続を希望する場合にオーナー自身が
+     * /settings/billingから能動的にStripe Checkoutを開始してお支払い方法を登録する）。
      *
      * @throws ValidationException
      */
-    public function store(Request $request, StripeCheckoutStarter $checkoutStarter): RedirectResponse|Response
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'office_name' => 'required|string|max:255',
@@ -107,22 +105,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        try {
-            $checkoutUrl = $checkoutStarter->start(
-                office: $user->office,
-                ownerEmail: $user->email,
-                successUrl: route('settings.billing.index').'?checkout=success',
-                cancelUrl: route('settings.billing.index').'?checkout=cancel',
-            );
-        } catch (Throwable $e) {
-            report($e);
-
-            return redirect()->route('settings.billing.index')
-                ->with('error', 'お支払い方法の登録手続きの開始に失敗しました。お手数ですが、この画面から再度お手続きください。');
-        }
-
-        // Inertiaのfetch/XHR経由のリクエストでは通常のredirect()だとブラウザ遷移が起きないため、
-        // 外部URL（Stripeのホスト型Checkoutページ）へはInertia::locationで完全な画面遷移をさせる。
-        return Inertia::location($checkoutUrl);
+        return redirect(route('dashboard', absolute: false));
     }
 }
