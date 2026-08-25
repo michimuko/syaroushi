@@ -16,7 +16,7 @@ class EnsureModuleEnabled
     public function handle(Request $request, Closure $next, string $module): Response
     {
         abort_unless(
-            $request->user()->office->hasModule(Module::from($module)),
+            $request->user()?->office?->hasModule(Module::from($module)) ?? false,
             403,
             'この機能は現在のプランでは利用できません。',
         );
