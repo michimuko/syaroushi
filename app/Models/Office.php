@@ -203,6 +203,18 @@ class Office extends Model
     }
 
     /**
+     * 削除予定日の数日前（DATA_DELETION_FINAL_NOTICE_BEFORE_DAYS）に達しており、
+     * 最終リマインドメールを送るべきタイミングか。
+     */
+    public function isDueForFinalDeletionNotice(): bool
+    {
+        return $this->isPastTrialWithoutSubscription()
+            && $this->trial_ends_at->copy()
+                ->addDays(self::DATA_DELETION_SCHEDULED_AFTER_TRIAL_DAYS - self::DATA_DELETION_FINAL_NOTICE_BEFORE_DAYS)
+                ->isPast();
+    }
+
+    /**
      * ソフト削除済みで、かつ物理削除の猶予期間（30日）を経過しているか。
      * 物理削除自体は自動実行しないが、運営管理画面でこの条件を満たす事務所を
      * 目立たせ、運営者が手動で確認・実行できるようにする。
