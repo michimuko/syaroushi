@@ -118,16 +118,15 @@ class Office extends Model
     }
 
     /**
-     * Stripeで請求サイクルが管理されている（=月次請求バッチ側でDB請求記録を重複生成してはいけない）
-     * ことを指す。hasActiveStripeSubscription()と違い、支払い失敗によるpast_due／unpaid等の
-     * 一時的な異常状態でも「Stripeが正」であることに変わりはないためtrueのままにする
-     * （解約されてcanceledになった場合のみfalseに戻り、DBバッチでの請求記録生成対象に戻る）。
+     * 一度でもStripe決済連携が開始された（=stripe_subscription_idが割り当てられた）ことがあるかを指す。
+     * hasActiveStripeSubscription()と違い、支払い失敗によるpast_due／unpaid等の一時的な異常状態は
+     * もちろん、解約されてcanceledになった後もtrueのまま変わらない。月次請求バッチ側で「一度でも
+     * Stripeを経由した事務所はDB請求記録を二重生成してはいけない／解約後もDB請求を再開してはいけない」
+     * 判定に使う（Stripe側が請求の正であり、解約＝サービス終了を意味するため）。
      */
-    public function isStripeManaged(): bool
+    public function hasEverHadStripeSubscription(): bool
     {
-        return $this->stripe_subscription_id !== null
-            && $this->stripe_subscription_status !== null
-            && $this->stripe_subscription_status !== 'canceled';
+        return $this->stripe_subscription_id !== null;
     }
 
     /**

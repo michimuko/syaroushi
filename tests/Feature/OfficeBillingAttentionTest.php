@@ -61,16 +61,16 @@ test('billing_attention_reasons can report multiple reasons at once', function (
     expect($office->billing_attention_reasons)->toBe(['payment_failed', 'no_plan']);
 });
 
-test('isStripeManaged is true once a subscription exists and is not canceled, even mid payment trouble', function () {
+test('hasEverHadStripeSubscription stays true forever once a subscription id is assigned, even after cancellation', function () {
     $active = Office::factory()->create(['stripe_subscription_id' => 'sub_1', 'stripe_subscription_status' => 'active']);
     $pastDue = Office::factory()->create(['stripe_subscription_id' => 'sub_2', 'stripe_subscription_status' => 'past_due']);
     $canceled = Office::factory()->create(['stripe_subscription_id' => 'sub_3', 'stripe_subscription_status' => 'canceled']);
     $neverStarted = Office::factory()->create(['stripe_subscription_id' => null, 'stripe_subscription_status' => null]);
 
-    expect($active->isStripeManaged())->toBeTrue()
-        ->and($pastDue->isStripeManaged())->toBeTrue()
-        ->and($canceled->isStripeManaged())->toBeFalse()
-        ->and($neverStarted->isStripeManaged())->toBeFalse();
+    expect($active->hasEverHadStripeSubscription())->toBeTrue()
+        ->and($pastDue->hasEverHadStripeSubscription())->toBeTrue()
+        ->and($canceled->hasEverHadStripeSubscription())->toBeTrue()
+        ->and($neverStarted->hasEverHadStripeSubscription())->toBeFalse();
 });
 
 test('scopeNeedsBillingAttention matches the same offices billing_attention_reasons flags', function () {

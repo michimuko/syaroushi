@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\OfficeInvoice;
+use App\Services\Stripe\StripeCheckoutStarter;
 use App\Services\Stripe\StripeSubscriptionGateway;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -15,7 +16,10 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class SubscriptionController extends Controller
 {
-    public function __construct(private readonly StripeSubscriptionGateway $gateway) {}
+    public function __construct(
+        private readonly StripeSubscriptionGateway $gateway,
+        private readonly StripeCheckoutStarter $checkoutStarter,
+    ) {}
 
     public function checkout(): Response
     {
@@ -32,20 +36,9 @@ class SubscriptionController extends Controller
             return back()->with('error', 'ご契約プランに決済用の設定がありません。運営者までお問い合わせください。');
         }
 
-        if ($office->stripe_customer_id === null) {
-            $customerId = $this->gateway->createCustomer(
-                email: Auth::user()->email,
-                name: $office->name,
-                metadata: ['office_id' => (string) $office->id],
-            );
-
-            $office->update(['stripe_customer_id' => $customerId]);
-        }
-
-        $checkoutUrl = $this->gateway->createCheckoutSessionUrl(
-            customerId: $office->stripe_customer_id,
-            priceId: $plan->stripe_price_id,
-            subscriptionMetadata: ['office_id' => (string) $office->id],
+        $checkoutUrl = $this->checkoutStarter->start(
+            office: $office,
+            ownerEmail: Auth::user()->email,
             successUrl: route('settings.billing.index').'?checkout=success',
             cancelUrl: route('settings.billing.index').'?checkout=cancel',
         );

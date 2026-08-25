@@ -28,18 +28,30 @@ class StripeSubscriptionGateway
     /**
      * @param  array<string, string>  $subscriptionMetadata
      */
+    /**
+     * $trialEndを指定すると、そのUNIXタイムスタンプまでStripe標準のtrial期間として扱われる。
+     * Checkoutのsubscriptionモードはtrial中でも常に支払い方法を収集するため、trial終了時に
+     * Stripe側が自動で本課金を開始できる（アプリ側の能動的な操作は不要）。
+     */
     public function createCheckoutSessionUrl(
         string $customerId,
         string $priceId,
         array $subscriptionMetadata,
         string $successUrl,
         string $cancelUrl,
+        ?int $trialEnd = null,
     ): string {
+        $subscriptionData = ['metadata' => $subscriptionMetadata];
+
+        if ($trialEnd !== null) {
+            $subscriptionData['trial_end'] = $trialEnd;
+        }
+
         return $this->stripe->checkout->sessions->create([
             'mode' => 'subscription',
             'customer' => $customerId,
             'line_items' => [['price' => $priceId, 'quantity' => 1]],
-            'subscription_data' => ['metadata' => $subscriptionMetadata],
+            'subscription_data' => $subscriptionData,
             'success_url' => $successUrl,
             'cancel_url' => $cancelUrl,
         ])->url;

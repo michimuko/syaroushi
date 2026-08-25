@@ -49,6 +49,12 @@ class StripeWebhookController extends Controller
         return response('ok', 200);
     }
 
+    /**
+     * statusはここでは決め打ちしない（trial付きサブスクリプションなら本来'trialing'になるべきところを
+     * 誤って'active'にしてしまうバグがあったため廃止）。Stripeは新規subscription作成時に
+     * checkout.session.completedとcustomer.subscription.createdを必ず両方発火するため、実際のstatus
+     * はhandleSubscriptionUpdated()（customer.subscription.createdもハンドル済み）に反映を任せる。
+     */
     private function handleCheckoutCompleted(Event $event): void
     {
         $session = $event->data->object;
@@ -59,7 +65,6 @@ class StripeWebhookController extends Controller
 
         Office::where('stripe_customer_id', $session->customer)->first()?->update([
             'stripe_subscription_id' => $session->subscription,
-            'stripe_subscription_status' => 'active',
         ]);
     }
 
@@ -73,12 +78,18 @@ class StripeWebhookController extends Controller
         ]);
     }
 
+    /**
+     * 解約＝サービス終了として扱い、is_activeも自動でfalseにする（運営者が手動でOffice編集画面から
+     * 非アクティブ化する運用に頼らない）。is_activeはログイン時に検証されるため
+     * （app/Http/Requests/Auth/LoginRequest.php）、次回ログイン以降はブロックされる。
+     */
     private function handleSubscriptionDeleted(Event $event): void
     {
         $subscription = $event->data->object;
 
         Office::where('stripe_customer_id', $subscription->customer)->first()?->update([
             'stripe_subscription_status' => 'canceled',
+            'is_active' => false,
         ]);
     }
 

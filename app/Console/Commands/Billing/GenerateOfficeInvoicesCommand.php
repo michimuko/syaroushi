@@ -14,10 +14,11 @@ use Illuminate\Console\Command;
  * またはoffices.custom_monthly_priceによる個別上書きを優先して請求額を決定する）。
  * 決済連携は行わず、あくまで「その月いくら請求すべきか」の記録を残すのみ。
  * トライアル終了日が前月の期間に一部でもかかる事務所、および利用停止中の事務所は対象外とする。
- * Stripeでの決済連携が開始済み（過去にStripe側でsubscriptionを作成しており、解約済みでない）な
- * 事務所は、Stripe側のSubscription/Invoiceが実際の請求の正とみなし、このバッチでは二重に請求記録を
- * 作らずスキップする。支払い失敗によるpast_due／unpaid等の一時的な異常状態でもStripe側が正であることに
- * 変わりはないためスキップ対象のまま（解約されcanceledになって初めてこのバッチの対象に戻る）。
+ * 一度でもStripeでの決済連携が開始された（過去にStripe側でsubscriptionを作成した）事務所は、
+ * Stripe側のSubscription/Invoiceが実際の請求の正とみなし、このバッチでは二重に請求記録を作らず
+ * スキップする。支払い失敗によるpast_due／unpaid等の一時的な異常状態はもちろん、解約されcanceledに
+ * なった後も永久にスキップ対象のまま（解約＝サービス終了であり、DBバッチでの請求記録生成を再開しては
+ * いけないため）。
  * プラン未割当かつ個別価格も未設定で金額が確定できない事務所は、エラーにせず警告ログを出してスキップする
  * （新規登録をブロックしない方針のため、料金未確定は運用上の注意喚起にとどめる）。
  * 同一期間の請求は一意制約（office_id, period_start）で重複生成を防ぐ。
@@ -55,7 +56,7 @@ class GenerateOfficeInvoicesCommand extends Command
                 return;
             }
 
-            if ($office->isStripeManaged()) {
+            if ($office->hasEverHadStripeSubscription()) {
                 $skippedStripeManagedCount++;
 
                 return;

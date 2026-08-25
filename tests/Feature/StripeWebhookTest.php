@@ -18,7 +18,7 @@ function signedStripeWebhookRequest(array $payload): array
     return [$body, $signature];
 }
 
-test('checkout.session.completed activates the subscription for the matching office', function () {
+test('checkout.session.completed assigns the subscription id but does not guess the status', function () {
     $office = Office::factory()->create(['stripe_customer_id' => 'cus_abc', 'stripe_subscription_id' => null, 'stripe_subscription_status' => null]);
 
     [$body, $signature] = signedStripeWebhookRequest([
@@ -44,7 +44,53 @@ test('checkout.session.completed activates the subscription for the matching off
     $response->assertOk();
     expect($office->refresh())
         ->stripe_subscription_id->toBe('sub_1')
-        ->stripe_subscription_status->toBe('active');
+        ->stripe_subscription_status->toBeNull();
+});
+
+test('checkout.session.completed followed by customer.subscription.created ends up with the real trial status', function () {
+    $office = Office::factory()->create(['stripe_customer_id' => 'cus_abc', 'stripe_subscription_id' => null, 'stripe_subscription_status' => null]);
+
+    [$checkoutBody, $checkoutSignature] = signedStripeWebhookRequest([
+        'id' => 'evt_1a',
+        'object' => 'event',
+        'type' => 'checkout.session.completed',
+        'data' => [
+            'object' => [
+                'id' => 'cs_1',
+                'object' => 'checkout.session',
+                'mode' => 'subscription',
+                'customer' => 'cus_abc',
+                'subscription' => 'sub_1',
+            ],
+        ],
+    ]);
+    $this->call('POST', route('webhooks.stripe'), [], [], [], [
+        'HTTP_STRIPE_SIGNATURE' => $checkoutSignature,
+        'CONTENT_TYPE' => 'application/json',
+    ], $checkoutBody)->assertOk();
+
+    [$subscriptionBody, $subscriptionSignature] = signedStripeWebhookRequest([
+        'id' => 'evt_1b',
+        'object' => 'event',
+        'type' => 'customer.subscription.created',
+        'data' => [
+            'object' => [
+                'id' => 'sub_1',
+                'object' => 'subscription',
+                'customer' => 'cus_abc',
+                'status' => 'trialing',
+            ],
+        ],
+    ]);
+    $response = $this->call('POST', route('webhooks.stripe'), [], [], [], [
+        'HTTP_STRIPE_SIGNATURE' => $subscriptionSignature,
+        'CONTENT_TYPE' => 'application/json',
+    ], $subscriptionBody);
+
+    $response->assertOk();
+    expect($office->refresh())
+        ->stripe_subscription_id->toBe('sub_1')
+        ->stripe_subscription_status->toBe('trialing');
 });
 
 test('customer.subscription.updated syncs the subscription status', function () {
@@ -77,8 +123,9 @@ test('customer.subscription.updated syncs the subscription status', function () 
     expect($office->refresh()->stripe_subscription_status)->toBe('past_due');
 });
 
-test('customer.subscription.deleted marks the office subscription as canceled', function () {
+test('customer.subscription.deleted marks the office subscription as canceled and deactivates the office', function () {
     $office = Office::factory()->create([
+        'is_active' => true,
         'stripe_customer_id' => 'cus_abc',
         'stripe_subscription_id' => 'sub_1',
         'stripe_subscription_status' => 'active',
@@ -104,7 +151,9 @@ test('customer.subscription.deleted marks the office subscription as canceled', 
     ], $body);
 
     $response->assertOk();
-    expect($office->refresh()->stripe_subscription_status)->toBe('canceled');
+    expect($office->refresh())
+        ->stripe_subscription_status->toBe('canceled')
+        ->is_active->toBeFalse();
 });
 
 test('invoice.payment_failed flags the office and notifies every platform admin', function () {

@@ -4,16 +4,17 @@ use App\Models\BillingPlan;
 use App\Models\Office;
 use App\Models\User;
 use App\Services\Stripe\StripeSubscriptionGateway;
+use Carbon\CarbonImmutable;
 
 test('an owner starting checkout for the first time creates a Stripe customer and redirects to Checkout', function () {
     $plan = BillingPlan::factory()->create(['stripe_price_id' => 'price_test_123']);
-    $office = Office::factory()->create(['billing_plan_id' => $plan->id, 'stripe_customer_id' => null]);
+    $office = Office::factory()->create(['billing_plan_id' => $plan->id, 'stripe_customer_id' => null, 'trial_ends_at' => null]);
     $owner = User::factory()->for($office)->owner()->create();
 
     $this->mock(StripeSubscriptionGateway::class, function ($mock) {
         $mock->shouldReceive('createCustomer')->once()->andReturn('cus_test_123');
         $mock->shouldReceive('createCheckoutSessionUrl')->once()
-            ->with('cus_test_123', 'price_test_123', Mockery::any(), Mockery::any(), Mockery::any())
+            ->with('cus_test_123', 'price_test_123', Mockery::any(), Mockery::any(), Mockery::any(), null)
             ->andReturn('https://checkout.stripe.com/test-session');
     });
 
@@ -29,13 +30,38 @@ test('an owner starting checkout for the first time creates a Stripe customer an
 
 test('checkout reuses an existing Stripe customer id without creating a new one', function () {
     $plan = BillingPlan::factory()->create(['stripe_price_id' => 'price_test_123']);
-    $office = Office::factory()->create(['billing_plan_id' => $plan->id, 'stripe_customer_id' => 'cus_existing']);
+    $office = Office::factory()->create(['billing_plan_id' => $plan->id, 'stripe_customer_id' => 'cus_existing', 'trial_ends_at' => null]);
     $owner = User::factory()->for($office)->owner()->create();
 
     $this->mock(StripeSubscriptionGateway::class, function ($mock) {
         $mock->shouldReceive('createCustomer')->never();
         $mock->shouldReceive('createCheckoutSessionUrl')->once()
-            ->with('cus_existing', 'price_test_123', Mockery::any(), Mockery::any(), Mockery::any())
+            ->with('cus_existing', 'price_test_123', Mockery::any(), Mockery::any(), Mockery::any(), null)
+            ->andReturn('https://checkout.stripe.com/test-session');
+    });
+
+    $this->actingAs($owner)
+        ->withHeaders(['X-Inertia' => 'true'])
+        ->post(route('settings.billing.checkout'))
+        ->assertStatus(409);
+});
+
+test('checkout passes the office trial end date to Stripe as the subscription trial_end', function () {
+    $plan = BillingPlan::factory()->create(['stripe_price_id' => 'price_test_123']);
+    $trialEndsAt = CarbonImmutable::today()->addDays(14);
+    $office = Office::factory()->create([
+        'billing_plan_id' => $plan->id,
+        'stripe_customer_id' => 'cus_existing',
+        'trial_ends_at' => $trialEndsAt,
+    ]);
+    $owner = User::factory()->for($office)->owner()->create();
+
+    $expectedTrialEnd = $trialEndsAt->endOfDay()->timestamp;
+
+    $this->mock(StripeSubscriptionGateway::class, function ($mock) use ($expectedTrialEnd) {
+        $mock->shouldReceive('createCustomer')->never();
+        $mock->shouldReceive('createCheckoutSessionUrl')->once()
+            ->with('cus_existing', 'price_test_123', Mockery::any(), Mockery::any(), Mockery::any(), $expectedTrialEnd)
             ->andReturn('https://checkout.stripe.com/test-session');
     });
 

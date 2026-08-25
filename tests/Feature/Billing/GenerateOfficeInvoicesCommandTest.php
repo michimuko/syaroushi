@@ -127,7 +127,7 @@ test('it still skips offices whose Stripe subscription is past_due (Stripe alrea
     expect(OfficeInvoice::where('office_id', $office->id)->exists())->toBeFalse();
 });
 
-test('it resumes generating DB invoices once a Stripe subscription is canceled', function () {
+test('it never resumes generating DB invoices for an office that was ever Stripe-managed, even after cancellation', function () {
     $plan = BillingPlan::factory()->create(['name' => 'スタンダード', 'monthly_price' => 6800]);
     $office = Office::factory()->create([
         'is_active' => true,
@@ -140,8 +140,7 @@ test('it resumes generating DB invoices once a Stripe subscription is canceled',
 
     $this->artisan('billing:generate-invoices')->assertExitCode(0);
 
-    $invoice = OfficeInvoice::where('office_id', $office->id)->sole();
-    expect($invoice->amount)->toBe(6800);
+    expect(OfficeInvoice::where('office_id', $office->id)->exists())->toBeFalse();
 });
 
 test('running it twice does not duplicate invoices for the same period', function () {
