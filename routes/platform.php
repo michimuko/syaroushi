@@ -4,6 +4,7 @@ use App\Http\Controllers\Platform\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Platform\BillingPlanController;
 use App\Http\Controllers\Platform\BillingSettingController;
 use App\Http\Controllers\Platform\OfficeController;
+use App\Http\Controllers\Platform\ReceivableController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -22,5 +23,7 @@ Route::prefix('admin')->name('platform.')->group(function () {
         Route::post('offices/{office}/sync-billing', [OfficeController::class, 'syncBilling'])->name('offices.sync-billing');
         Route::resource('billing-plans', BillingPlanController::class)->only(['index', 'store', 'update']);
         Route::put('billing-settings', [BillingSettingController::class, 'update'])->name('billing-settings.update');
+        Route::get('receivables', [ReceivableController::class, 'index'])->name('receivables.index');
+        Route::post('receivables/{officeInvoice}/mark-paid', [ReceivableController::class, 'markPaid'])->name('receivables.mark-paid');
     });
 });

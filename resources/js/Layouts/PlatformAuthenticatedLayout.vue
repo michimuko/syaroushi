@@ -52,6 +52,12 @@ watch(
 
                     <div class="flex items-center gap-4">
                         <Link
+                            :href="route('platform.receivables.index')"
+                            class="text-sm text-slate-300 hover:text-white"
+                        >
+                            未収金
+                        </Link>
+                        <Link
                             :href="route('platform.billing-plans.index')"
                             class="text-sm text-slate-300 hover:text-white"
                         >
