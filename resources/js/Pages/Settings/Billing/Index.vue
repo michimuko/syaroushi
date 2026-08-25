@@ -170,19 +170,30 @@ const startCheckout = () => {
                             <dd
                                 class="mt-1 text-lg font-semibold text-gray-900"
                             >
-                                {{ office.is_trial_active ? '0円' : formatYen(estimatedMonthlyAmount) }}
+                                {{
+                                    office.is_trial_active || office.is_past_trial_without_subscription
+                                        ? '0円'
+                                        : formatYen(estimatedMonthlyAmount)
+                                }}
                             </dd>
                             <p
-                                v-if="office.is_trial_active && office.stripe_subscription_status === 'trialing'"
+                                v-if="office.is_trial_active"
                                 class="mt-1 text-xs text-gray-500"
                             >
-                                トライアル中です。{{ office.trial_ends_at }}から自動的に{{ formatYen(estimatedMonthlyAmount) }}/月の課金が開始されます（お支払い方法は登録済みです）。
+                                トライアル中です（{{ office.trial_ends_at }}まで）。クレジットカードの登録は不要です。継続をご希望の場合は、トライアル終了後にお支払い方法をご登録いただけます。
                             </p>
                             <p
-                                v-else-if="office.is_trial_active"
-                                class="mt-1 text-xs font-medium text-amber-700"
+                                v-else-if="office.is_in_deletion_warning_period"
+                                class="mt-2 rounded-md bg-red-50 px-3 py-2 text-xs font-medium text-red-800"
                             >
-                                お支払い方法がまだ登録されていません。{{ office.trial_ends_at }}を過ぎるとご利用を継続いただけなくなります。
+                                お支払い方法が未登録のため、{{ office.scheduled_deletion_at }}に登録データが削除される予定です。
+                                継続してご利用いただく場合は、今すぐお支払い方法をご登録ください。
+                            </p>
+                            <p
+                                v-else-if="office.is_past_trial_without_subscription"
+                                class="mt-1 text-xs text-gray-500"
+                            >
+                                トライアルが終了しました。継続してご利用いただく場合は、お支払い方法をご登録ください。
                             </p>
                             <p v-else class="mt-1 text-xs text-gray-500">
                                 実際の請求額は、月初のバッチで確定した内容をもとに算出されます（下記の請求履歴を参照）。
@@ -205,7 +216,7 @@ const startCheckout = () => {
                             {{
                                 checkoutProcessing
                                     ? '手続き中...'
-                                    : office.is_trial_active
+                                    : office.is_trial_active || office.is_past_trial_without_subscription
                                         ? 'お支払い方法を登録する'
                                         : 'このプランでお申し込みする'
                             }}

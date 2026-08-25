@@ -26,6 +26,38 @@ test('an owner can view their office\'s billing status and estimated monthly amo
         );
 });
 
+test('billing shows the data-deletion warning state once the trial has been over for 7+ days without a subscription', function () {
+    $office = Office::factory()->create([
+        'trial_ends_at' => now()->subDays(10),
+        'stripe_subscription_id' => null,
+    ]);
+    $owner = User::factory()->for($office)->owner()->create();
+
+    $response = $this->actingAs($owner)->get(route('settings.billing.index'));
+
+    $response->assertInertia(fn ($page) => $page
+        ->where('office.is_trial_active', false)
+        ->where('office.is_past_trial_without_subscription', true)
+        ->where('office.is_in_deletion_warning_period', true)
+        ->where('office.scheduled_deletion_at', now()->subDays(10)->addDays(60)->toDateString())
+    );
+});
+
+test('billing does not show the deletion warning within the first 7 days after trial end', function () {
+    $office = Office::factory()->create([
+        'trial_ends_at' => now()->subDays(3),
+        'stripe_subscription_id' => null,
+    ]);
+    $owner = User::factory()->for($office)->owner()->create();
+
+    $response = $this->actingAs($owner)->get(route('settings.billing.index'));
+
+    $response->assertInertia(fn ($page) => $page
+        ->where('office.is_past_trial_without_subscription', true)
+        ->where('office.is_in_deletion_warning_period', false)
+    );
+});
+
 test('custom_monthly_price overrides the assigned plan\'s price in the estimate', function () {
     $plan = BillingPlan::factory()->create(['monthly_price' => 14800]);
     $office = Office::factory()->create([

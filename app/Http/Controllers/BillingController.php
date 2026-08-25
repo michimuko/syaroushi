@@ -30,6 +30,9 @@ class BillingController extends Controller
                 'has_active_stripe_subscription' => $office->hasActiveStripeSubscription(),
                 'stripe_subscription_status' => $office->stripe_subscription_status,
                 'has_stripe_customer' => $office->stripe_customer_id !== null,
+                'is_past_trial_without_subscription' => $office->isPastTrialWithoutSubscription(),
+                'is_in_deletion_warning_period' => $office->isInDeletionWarningPeriod(),
+                'scheduled_deletion_at' => $office->scheduledDeletionAt()?->toDateString(),
             ],
             'billingPlan' => $office->billingPlan ? [
                 'name' => $office->billingPlan->name,
