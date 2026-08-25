@@ -4,9 +4,9 @@
 月額は変動するため契約時に公式サイトで要確認）、Ubuntu 24.04 LTS、単一インスタンス構成
 （Webサーバー・MySQL・キューワーカーを1台に同居させる）。
 
-このディレクトリには実際の設定ファイルのテンプレートを置いている（`sharoushi.korotane.site`等は要書き換え）。
+このディレクトリには実際の設定ファイルのテンプレートを置いている（`sharoushi.korotane.jp`等は要書き換え）。
 korotaneブランド配下で複数のtoB DX SaaSをサブドメインで展開する想定のため、本アプリはドメイン直下
-（`korotane.site`）ではなくサブドメイン（`sharoushi.korotane.site`）で運用する。
+（`korotane.jp`）ではなくサブドメイン（`sharoushi.korotane.jp`）で運用する。
 1GBプランではメモリに余裕がないため、キャッシュ/セッション/キューは全て`database`ドライバとし、
 Redisは使わない（`.env`参照）。事務所数が増えて2GBプランへスケールアップする場合は
 「12. 2GBプランへスケールアップする場合」を参照。
@@ -137,7 +137,7 @@ nginx -t && systemctl reload nginx
 
 # TLS証明書取得（DNS反映後）
 apt install -y certbot python3-certbot-nginx
-certbot --nginx -d sharoushi.korotane.site
+certbot --nginx -d sharoushi.korotane.jp
 ```
 
 ## 6. キューワーカー（1GBプランではcron方式）
@@ -216,7 +216,7 @@ Resend側の管理画面に表示されるレコードをドメインのDNS設�
 
 ## 11. 動作確認チェックリスト
 
-- [ ] `https://sharoushi.korotane.site` にアクセスしてログイン画面が表示される
+- [ ] `https://sharoushi.korotane.jp` にアクセスしてログイン画面が表示される
 - [ ] `/register` から事務所（office）＋ownerアカウントを新規作成できる（本番用の最初の事務所はここから作る。ダミーseederは使わない）
 - [ ] `php artisan schedule:list` でバッチが正しく登録されている
 - [ ] 顧問先を1件登録し、手続きタスクが自動生成されることを確認
