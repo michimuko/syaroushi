@@ -21,6 +21,11 @@ use Illuminate\Console\Command;
  * いけないため）。
  * プラン未割当かつ個別価格も未設定で金額が確定できない事務所は、エラーにせず警告ログを出してスキップする
  * （新規登録をブロックしない方針のため、料金未確定は運用上の注意喚起にとどめる）。
+ * トライアル終了日(trial_ends_at)が設定されておりそれを過ぎている（=セルフ登録／運営者が
+ * トライアル付きで作成した事務所）のに一度もStripe決済連携をしていない事務所も対象外とする
+ * （未払い放置時のデータ削除ポリシーの対象であり、削除予定なのにDB請求記録だけ積み上がる矛盾を
+ * 避けるため。Office::isPastTrialWithoutSubscription()参照）。一方trial_ends_atが未設定
+ * （運営者が個別に即時課金として作成した事務所）は引き続きこのバッチの対象。
  * 同一期間の請求は一意制約（office_id, period_start）で重複生成を防ぐ。
  */
 #[Signature('billing:generate-invoices')]
@@ -40,6 +45,7 @@ class GenerateOfficeInvoicesCommand extends Command
         $skippedDuplicateCount = 0;
         $skippedNoPriceCount = 0;
         $skippedStripeManagedCount = 0;
+        $skippedPendingDeletionCount = 0;
 
         Office::query()->where('is_active', true)->with('billingPlan')->each(function (Office $office) use (
             $periodStart,
@@ -48,7 +54,8 @@ class GenerateOfficeInvoicesCommand extends Command
             &$skippedTrialCount,
             &$skippedDuplicateCount,
             &$skippedNoPriceCount,
-            &$skippedStripeManagedCount
+            &$skippedStripeManagedCount,
+            &$skippedPendingDeletionCount
         ) {
             if ($office->trial_ends_at !== null && $office->trial_ends_at->greaterThan($periodStart)) {
                 $skippedTrialCount++;
@@ -58,6 +65,12 @@ class GenerateOfficeInvoicesCommand extends Command
 
             if ($office->hasEverHadStripeSubscription()) {
                 $skippedStripeManagedCount++;
+
+                return;
+            }
+
+            if ($office->isPastTrialWithoutSubscription()) {
+                $skippedPendingDeletionCount++;
 
                 return;
             }
@@ -90,7 +103,7 @@ class GenerateOfficeInvoicesCommand extends Command
             $generatedCount++;
         });
 
-        $this->info("{$periodStart->toDateString()}〜{$periodEnd->toDateString()}分の請求記録を{$generatedCount}件生成しました（トライアル対象外{$skippedTrialCount}件、Stripe決済連携済み{$skippedStripeManagedCount}件、生成済み{$skippedDuplicateCount}件、料金未確定{$skippedNoPriceCount}件）。");
+        $this->info("{$periodStart->toDateString()}〜{$periodEnd->toDateString()}分の請求記録を{$generatedCount}件生成しました（トライアル対象外{$skippedTrialCount}件、Stripe決済連携済み{$skippedStripeManagedCount}件、トライアル終了後未契約（削除ポリシー対象）{$skippedPendingDeletionCount}件、生成済み{$skippedDuplicateCount}件、料金未確定{$skippedNoPriceCount}件）。");
 
         return self::SUCCESS;
     }

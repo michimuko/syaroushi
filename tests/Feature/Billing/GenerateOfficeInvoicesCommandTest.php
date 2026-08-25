@@ -39,6 +39,21 @@ test('it skips offices still within their trial period', function () {
     expect(OfficeInvoice::where('office_id', $office->id)->exists())->toBeFalse();
 });
 
+test('it skips offices whose trial ended without ever subscribing via Stripe (pending the data-deletion policy)', function () {
+    $plan = BillingPlan::factory()->create(['monthly_price' => 6800]);
+    $office = Office::factory()->create([
+        'is_active' => true,
+        'trial_ends_at' => CarbonImmutable::today()->subDays(90),
+        'billing_plan_id' => $plan->id,
+        'stripe_subscription_id' => null,
+    ]);
+    Client::factory()->for($office)->create(['status' => ClientStatus::Active]);
+
+    $this->artisan('billing:generate-invoices')->assertExitCode(0);
+
+    expect(OfficeInvoice::where('office_id', $office->id)->exists())->toBeFalse();
+});
+
 test('it skips inactive offices', function () {
     $office = Office::factory()->create(['is_active' => false, 'trial_ends_at' => null]);
     Client::factory()->for($office)->create(['status' => ClientStatus::Active]);

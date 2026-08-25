@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ClientStatus;
 use App\Enums\Module;
+use Carbon\CarbonInterface;
 use Database\Factories\OfficeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -12,21 +13,36 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'name', 'office_code', 'is_active', 'trial_ends_at', 'enabled_modules', 'billing_plan_id', 'custom_monthly_price',
     'stripe_customer_id', 'stripe_subscription_id', 'stripe_subscription_status', 'stripe_payment_failed_at',
+    'trial_ended_notified_at', 'deletion_warning_notified_at', 'deletion_final_notice_notified_at',
 ])]
 class Office extends Model
 {
     /** @use HasFactory<OfficeFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * billingAttentionReasons()の'trial_ending_soon'判定・scopeNeedsBillingAttention()の
      * 両方で使う残り日数のしきい値。値をここ一箇所にまとめ、判定基準のズレを防ぐ。
      */
     public const TRIAL_ENDING_SOON_WITHIN_DAYS = 7;
+
+    /**
+     * トライアル終了後もStripe未契約のまま放置された事務所のデータ削除ポリシー（企画書・
+     * 2026-08-25の方針転換）。削除予定日は常にtrial_ends_at + DATA_DELETION_SCHEDULED_AFTER_TRIAL_DAYS
+     * で固定し、DATA_DELETION_WARNING_AFTER_TRIAL_DAYS経過後から請求画面・メールで警告を開始する
+     * （締切自体は動かさない）。削除の実行（ソフト削除・物理削除とも）は運営者の手動確認を必須とする
+     * （自動バッチでは行わない、バグによる誤削除を防ぐため）。
+     */
+    public const DATA_DELETION_WARNING_AFTER_TRIAL_DAYS = 7;
+
+    public const DATA_DELETION_SCHEDULED_AFTER_TRIAL_DAYS = 60;
+
+    public const DATA_DELETION_FINAL_NOTICE_BEFORE_DAYS = 7;
 
     protected $appends = ['billing_attention_reasons'];
 
@@ -37,6 +53,9 @@ class Office extends Model
             'trial_ends_at' => 'date',
             'enabled_modules' => 'array',
             'stripe_payment_failed_at' => 'datetime',
+            'trial_ended_notified_at' => 'datetime',
+            'deletion_warning_notified_at' => 'datetime',
+            'deletion_final_notice_notified_at' => 'datetime',
         ];
     }
 
@@ -139,10 +158,48 @@ class Office extends Model
     }
 
     /**
+     * データ削除ポリシー上の削除予定日（trial_ends_at + 60日）。トライアル未設定なら対象外。
+     */
+    public function scheduledDeletionAt(): ?CarbonInterface
+    {
+        return $this->trial_ends_at?->copy()->addDays(self::DATA_DELETION_SCHEDULED_AFTER_TRIAL_DAYS);
+    }
+
+    /**
+     * トライアルが終了しており、かつ一度もStripe決済連携をしていない（＝課金が一度も
+     * 始まっていない）状態か。データ削除ポリシーの対象条件の基礎となる判定。
+     */
+    public function isPastTrialWithoutSubscription(): bool
+    {
+        return $this->trial_ends_at !== null
+            && $this->trial_ends_at->isPast()
+            && ! $this->hasEverHadStripeSubscription();
+    }
+
+    /**
+     * トライアル終了から7日経過し、請求画面・メールでの削除警告を出すべき期間に入っているか。
+     */
+    public function isInDeletionWarningPeriod(): bool
+    {
+        return $this->isPastTrialWithoutSubscription()
+            && $this->trial_ends_at->copy()->addDays(self::DATA_DELETION_WARNING_AFTER_TRIAL_DAYS)->isPast();
+    }
+
+    /**
+     * 削除予定日（trial_ends_at+60日）を過ぎており、運営者による削除操作の対象になっているか。
+     * ソフト削除の実行はここがtrueの事務所に限り、運営者が手動で確認して行う。
+     */
+    public function isEligibleForDeletion(): bool
+    {
+        return $this->isPastTrialWithoutSubscription()
+            && $this->scheduledDeletionAt()->isPast();
+    }
+
+    /**
      * 運営者が気づいて対応すべき請求まわりの注意点。Platform/Offices一覧・編集画面の
      * バッジ表示に使う（判定条件をモデルに集約し、画面側では並べ替えるだけにするため）。
      *
-     * @return list<'payment_failed'|'no_plan'|'trial_ending_soon'>
+     * @return list<'payment_failed'|'no_plan'|'trial_ending_soon'|'pending_deletion'>
      */
     protected function billingAttentionReasons(): Attribute
     {
@@ -161,6 +218,10 @@ class Office extends Model
                 $reasons[] = 'trial_ending_soon';
             }
 
+            if ($this->isEligibleForDeletion()) {
+                $reasons[] = 'pending_deletion';
+            }
+
             return $reasons;
         });
     }
@@ -175,8 +236,9 @@ class Office extends Model
     {
         $today = today();
         $trialWindowEnd = $today->copy()->addDays(self::TRIAL_ENDING_SOON_WITHIN_DAYS);
+        $deletionThreshold = $today->copy()->subDays(self::DATA_DELETION_SCHEDULED_AFTER_TRIAL_DAYS);
 
-        $query->where(function (Builder $query) use ($today, $trialWindowEnd) {
+        $query->where(function (Builder $query) use ($today, $trialWindowEnd, $deletionThreshold) {
             $query->whereNotNull('stripe_payment_failed_at')
                 ->orWhere(function (Builder $query) use ($today) {
                     $query->whereNull('billing_plan_id')
@@ -190,6 +252,13 @@ class Office extends Model
                     $query->whereNotNull('trial_ends_at')
                         ->where('trial_ends_at', '>', $today->toDateString())
                         ->where('trial_ends_at', '<=', $trialWindowEnd->toDateString());
+                })
+                ->orWhere(function (Builder $query) use ($deletionThreshold) {
+                    // isEligibleForDeletion()と一致させる：trial_ends_atが削除しきい値以前
+                    // （=trial_ends_at+60日を経過）、かつ一度もStripe決済連携をしていない事務所。
+                    $query->whereNotNull('trial_ends_at')
+                        ->where('trial_ends_at', '<=', $deletionThreshold->toDateString())
+                        ->whereNull('stripe_subscription_id');
                 });
         });
     }
