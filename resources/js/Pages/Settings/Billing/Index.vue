@@ -170,9 +170,21 @@ const startCheckout = () => {
                             <dd
                                 class="mt-1 text-lg font-semibold text-gray-900"
                             >
-                                {{ formatYen(estimatedMonthlyAmount) }}
+                                {{ office.is_trial_active ? '0円' : formatYen(estimatedMonthlyAmount) }}
                             </dd>
-                            <p class="mt-1 text-xs text-gray-500">
+                            <p
+                                v-if="office.is_trial_active && office.stripe_subscription_status === 'trialing'"
+                                class="mt-1 text-xs text-gray-500"
+                            >
+                                トライアル中です。{{ office.trial_ends_at }}から自動的に{{ formatYen(estimatedMonthlyAmount) }}/月の課金が開始されます（お支払い方法は登録済みです）。
+                            </p>
+                            <p
+                                v-else-if="office.is_trial_active"
+                                class="mt-1 text-xs font-medium text-amber-700"
+                            >
+                                お支払い方法がまだ登録されていません。{{ office.trial_ends_at }}を過ぎるとご利用を継続いただけなくなります。
+                            </p>
+                            <p v-else class="mt-1 text-xs text-gray-500">
                                 実際の請求額は、月初のバッチで確定した内容をもとに算出されます（下記の請求履歴を参照）。
                             </p>
                         </div>
@@ -193,7 +205,9 @@ const startCheckout = () => {
                             {{
                                 checkoutProcessing
                                     ? '手続き中...'
-                                    : 'このプランでお申し込みする'
+                                    : office.is_trial_active
+                                        ? 'お支払い方法を登録する'
+                                        : 'このプランでお申し込みする'
                             }}
                         </PrimaryButton>
                         <p
@@ -248,6 +262,11 @@ const startCheckout = () => {
                                     >
                                         請求額
                                     </th>
+                                    <th
+                                        class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                                    >
+                                        支払い状況
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
@@ -274,10 +293,18 @@ const startCheckout = () => {
                                     >
                                         {{ formatYen(invoice.amount) }}
                                     </td>
+                                    <td class="px-3 py-2 text-sm">
+                                        <span
+                                            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                                            :class="invoice.is_paid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                                        >
+                                            {{ invoice.is_paid ? '支払い済み' : '未収金' }}
+                                        </span>
+                                    </td>
                                 </tr>
                                 <tr v-if="invoices.data.length === 0">
                                     <td
-                                        colspan="5"
+                                        colspan="6"
                                         class="px-3 py-8 text-center text-sm text-gray-500"
                                     >
                                         請求履歴はまだありません。

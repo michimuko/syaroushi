@@ -72,6 +72,24 @@ test('a staff member cannot view the office\'s billing page', function () {
     $this->actingAs($staff)->get(route('settings.billing.index'))->assertForbidden();
 });
 
+test('invoice history exposes the payment status of each invoice', function () {
+    $office = Office::factory()->create();
+    $owner = User::factory()->for($office)->owner()->create();
+
+    $unpaid = OfficeInvoice::factory()->for($office)->create(['period_start' => '2026-01-01', 'period_end' => '2026-01-31', 'paid_at' => null]);
+    $paid = OfficeInvoice::factory()->for($office)->create(['period_start' => '2026-02-01', 'period_end' => '2026-02-28', 'paid_at' => now()]);
+
+    $response = $this->actingAs($owner)->get(route('settings.billing.index'));
+
+    $response->assertInertia(fn ($page) => $page
+        ->has('invoices.data', 2)
+        ->where("invoices.data.0.id", $paid->id)
+        ->where('invoices.data.0.is_paid', true)
+        ->where('invoices.data.1.id', $unpaid->id)
+        ->where('invoices.data.1.is_paid', false)
+    );
+});
+
 test('an owner only sees their own office\'s invoice history', function () {
     $officeA = Office::factory()->create();
     $officeB = Office::factory()->create();
