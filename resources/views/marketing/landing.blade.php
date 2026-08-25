@@ -116,7 +116,7 @@
                             機能を見る
                         </a>
                     </div>
-                    <p class="mt-4 text-xs text-slate-400">クレジットカード登録不要。すぐにお試しいただけます。</p>
+                    <p class="mt-4 text-xs text-slate-400">トライアル期間中のお支払いは発生しません。登録時にお支払い方法をご登録いただくと、トライアル終了後も自動でご利用を継続いただけます。</p>
                 </div>
 
                 {{-- モバイル：シンプルな単一スクリーンショット --}}
@@ -367,7 +367,7 @@
             <div class="mx-auto max-w-2xl text-center">
                 <h2 class="reveal text-2xl font-bold text-slate-900 sm:text-3xl">シンプルな料金プラン</h2>
                 <p class="reveal mt-3 text-sm text-slate-600 sm:text-base">
-                    どのプランも{{ $trialDays }}日間無料トライアル付き、クレジットカード登録は不要です。
+                    どのプランも{{ $trialDays }}日間無料トライアル付き。トライアル中の課金は一切発生しません（お支払い方法は登録時にご登録いただきます）。
                 </p>
             </div>
             <div class="mx-auto mt-12 grid max-w-5xl gap-6 lg:grid-cols-4">
@@ -397,7 +397,7 @@
                         </ul>
                         <div class="mt-6">
                             @if ($plan->monthly_price !== null)
-                                <a href="{{ route('register') }}" class="block w-full rounded-md px-4 py-2.5 text-center text-sm font-semibold transition hover:-translate-y-0.5 {{ $isRecommended ? 'bg-indigo-600 text-white shadow-sm hover:bg-indigo-700' : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50' }}">
+                                <a href="{{ route('register', ['plan' => $plan->id]) }}" class="block w-full rounded-md px-4 py-2.5 text-center text-sm font-semibold transition hover:-translate-y-0.5 {{ $isRecommended ? 'bg-indigo-600 text-white shadow-sm hover:bg-indigo-700' : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50' }}">
                                     無料トライアルを始める
                                 </a>
                             @else
@@ -526,7 +526,7 @@
                 <div class="relative">
                     <h2 class="text-2xl font-bold text-white sm:text-3xl">まずは無料トライアルでお試しください</h2>
                     <p class="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-indigo-100 sm:text-base">
-                        クレジットカード登録は不要です。{{ $trialDays }}日間、実際の画面で機能をご確認いただけます。
+                        {{ $trialDays }}日間、実際の画面で機能をご確認いただけます。トライアル期間中のお支払いは発生しません。
                         エンタープライズプランや導入相談は、お気軽にお問い合わせください。
                     </p>
                     <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
