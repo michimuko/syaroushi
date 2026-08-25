@@ -21,6 +21,9 @@ Route::prefix('admin')->name('platform.')->group(function () {
         Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
         Route::resource('offices', OfficeController::class)->except(['show', 'destroy']);
         Route::post('offices/{office}/sync-billing', [OfficeController::class, 'syncBilling'])->name('offices.sync-billing');
+        Route::post('offices/{office}/soft-delete', [OfficeController::class, 'softDelete'])->name('offices.soft-delete');
+        Route::post('offices/{office}/restore', [OfficeController::class, 'restore'])->name('offices.restore')->withTrashed();
+        Route::post('offices/{office}/purge', [OfficeController::class, 'purge'])->name('offices.purge')->withTrashed();
         Route::resource('billing-plans', BillingPlanController::class)->only(['index', 'store', 'update']);
         Route::put('billing-settings', [BillingSettingController::class, 'update'])->name('billing-settings.update');
         Route::get('receivables', [ReceivableController::class, 'index'])->name('receivables.index');

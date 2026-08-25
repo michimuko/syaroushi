@@ -18,6 +18,7 @@ const props = defineProps({
     usage: Object,
     exceededLimits: Array,
     canConfirmBilling: Boolean,
+    canDelete: Boolean,
 });
 
 // 「Stripe請求」欄・確認モーダル用：DBに保存済みの値から計算する（sync-billingが実際に読むのはこちら）
@@ -40,6 +41,21 @@ const syncBilling = () => {
         preserveScroll: true,
         onSuccess: () => closeBillingSyncModal(),
     });
+};
+
+const confirmingSoftDelete = ref(false);
+const softDeleteForm = useForm({});
+
+const confirmSoftDelete = () => {
+    confirmingSoftDelete.value = true;
+};
+
+const closeSoftDeleteModal = () => {
+    confirmingSoftDelete.value = false;
+};
+
+const softDelete = () => {
+    softDeleteForm.post(route('platform.offices.soft-delete', props.office.id));
 };
 
 const form = useForm({
@@ -95,6 +111,8 @@ const attentionMessages = {
         'トライアルが終了していますが、料金プランが割り当てられていません。下のフォームでプランまたは個別価格を設定してください（設定しないと月次の請求記録が生成されません）。',
     trial_ending_soon:
         'トライアル終了日が近づいています（7日以内）。契約継続の意思確認や、必要に応じたトライアル延長を検討してください。',
+    pending_deletion:
+        'トライアル終了から60日以上経過し、一度もお支払いいただいていません。データ削除ポリシーの対象です。下部の「この事務所を削除する」から確認の上ソフト削除できます。',
 };
 
 const applyPreset = (key) => {
@@ -435,6 +453,29 @@ const submit = () => {
                         </DangerButton>
                     </div>
                 </div>
+
+                <div
+                    v-if="canDelete"
+                    class="mt-6 rounded-lg border border-red-200 bg-red-50 p-6"
+                >
+                    <h3 class="text-sm font-semibold text-red-800">
+                        データ削除ポリシー
+                    </h3>
+                    <p class="mt-1 text-xs text-red-700">
+                        トライアル終了から60日以上経過し、一度もお支払いいただいていない事務所です。
+                        「この事務所を削除する」を押すとソフト削除され、全ユーザーがログインできなくなります。
+                        30日間は復元可能です（一覧の「削除済みを表示」から確認・復元できます）。
+                    </p>
+
+                    <div class="mt-4 flex justify-end">
+                        <DangerButton
+                            type="button"
+                            @click="confirmSoftDelete"
+                        >
+                            この事務所を削除する
+                        </DangerButton>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -462,6 +503,33 @@ const submit = () => {
                         @click="syncBilling"
                     >
                         請求確定を実行する
+                    </DangerButton>
+                </div>
+            </div>
+        </Modal>
+
+        <Modal :show="confirmingSoftDelete" @close="closeSoftDeleteModal">
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900">
+                    「{{ office.name }}」を削除しますか？
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-600">
+                    全ユーザーが即座にログインできなくなります。30日間は一覧の「削除済みを表示」から
+                    復元できますが、それ以降は物理削除の対象になり復元できなくなります。
+                </p>
+
+                <div class="mt-6 flex justify-end gap-3">
+                    <SecondaryButton @click="closeSoftDeleteModal">
+                        キャンセル
+                    </SecondaryButton>
+
+                    <DangerButton
+                        :class="{ 'opacity-25': softDeleteForm.processing }"
+                        :disabled="softDeleteForm.processing"
+                        @click="softDelete"
+                    >
+                        削除する
                     </DangerButton>
                 </div>
             </div>

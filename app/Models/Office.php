@@ -44,7 +44,14 @@ class Office extends Model
 
     public const DATA_DELETION_FINAL_NOTICE_BEFORE_DAYS = 7;
 
-    protected $appends = ['billing_attention_reasons'];
+    /**
+     * ソフト削除（運営者の手動確認）から物理削除が可能になるまでの猶予日数。
+     * 物理削除も自動バッチでは行わず、この日数を経過した事務所を運営管理画面に
+     * 表示した上で運営者が改めて手動確認する（PurgeはApp\Http\Controllers\Platform\OfficeController参照）。
+     */
+    public const PHYSICAL_PURGE_AFTER_SOFT_DELETE_DAYS = 30;
+
+    protected $appends = ['billing_attention_reasons', 'eligible_for_physical_purge'];
 
     protected function casts(): array
     {
@@ -193,6 +200,25 @@ class Office extends Model
     {
         return $this->isPastTrialWithoutSubscription()
             && $this->scheduledDeletionAt()->isPast();
+    }
+
+    /**
+     * ソフト削除済みで、かつ物理削除の猶予期間（30日）を経過しているか。
+     * 物理削除自体は自動実行しないが、運営管理画面でこの条件を満たす事務所を
+     * 目立たせ、運営者が手動で確認・実行できるようにする。
+     */
+    public function isEligibleForPhysicalPurge(): bool
+    {
+        return $this->trashed()
+            && $this->deleted_at->copy()->addDays(self::PHYSICAL_PURGE_AFTER_SOFT_DELETE_DAYS)->isPast();
+    }
+
+    /**
+     * eligible_for_physical_purgeとしてVue側に渡すための$appends用アクセサ。
+     */
+    protected function eligibleForPhysicalPurge(): Attribute
+    {
+        return Attribute::get(fn () => $this->isEligibleForPhysicalPurge());
     }
 
     /**
