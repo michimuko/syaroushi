@@ -9,6 +9,7 @@ Webアプリの「設定 &gt; デスクトップ通知アプリ」（`/settings/
 
 ## 構成
 
+
 - `src/` … 設定画面（トークン・確認間隔・自動起動のON/OFFを保存するだけの単純なフォーム）。
   自動起動は初回起動時のみ既定でONにする（`settings.json`が無い＝初回起動、と判定。
   `src-tauri/src/lib.rs`の`load_settings`／`src-tauri/src/settings.rs`の`is_first_run`）。
