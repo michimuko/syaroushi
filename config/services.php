@@ -44,6 +44,11 @@ return [
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
     ],
 
+    'google_analytics' => [
+        // LP（marketing.landing）にのみ埋め込む。未設定ならgtag.jsを読み込まない。
+        'measurement_id' => env('GOOGLE_ANALYTICS_MEASUREMENT_ID'),
+    ],
+
     'github' => [
         // デスクトップ通知アプリのインストーラーをGitHub Releasesから配布するために使う。
         // リポジトリがprivateのため、一覧取得・ダウンロードともにトークンでの認証が必要。

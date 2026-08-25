@@ -20,6 +20,16 @@
 
         @vite('resources/css/app.css')
 
+        @if ($gaMeasurementId = config('services.google_analytics.measurement_id'))
+            <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaMeasurementId }}"></script>
+            <script>
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){ dataLayer.push(arguments); }
+                gtag('js', new Date());
+                gtag('config', '{{ $gaMeasurementId }}');
+            </script>
+        @endif
+
         <style>
             @media (prefers-reduced-motion: no-preference) {
                 .reveal {
